@@ -35,20 +35,23 @@ function isTypingTarget(target: EventTarget | null) {
     target.tagName === "TEXTAREA" ||
     target.tagName === "SELECT"
   );
+};
+
+function isModKey(event: KeyboardEvent): boolean {
+  return event.metaKey || event.ctrlKey || event.altKey;
 }
 
 function ThemeHotkey() {
   const theme = useTheme();
 
   React.useEffect(() => {
+    //* Event listener function
     function onKeyDown(event: KeyboardEvent) {
       const canToggle =
         !event.defaultPrevented &&
         !event.repeat &&
-        !event.metaKey &&
-        !event.ctrlKey &&
-        !event.altKey &&
         event.key.toLowerCase() === "d" &&
+        !isModKey(event) &&
         !isTypingTarget(event.target)
 
       if (!canToggle) return;
@@ -58,6 +61,7 @@ function ThemeHotkey() {
 
     window.addEventListener("keydown", onKeyDown);
 
+    //* Cleanup function
     return () => { window.removeEventListener("keydown", onKeyDown) };
   }, [theme.resolvedTheme, theme.setTheme]);
 
