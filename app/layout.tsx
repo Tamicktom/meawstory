@@ -1,19 +1,23 @@
-import { Geist, Geist_Mono, Outfit, Roboto_Slab } from "next/font/google"
+import { Geist, Geist_Mono, Outfit, Roboto_Slab } from "next/font/google";
 
-import "./globals.css"
+// * Providers imports
 import { ThemeProvider } from "@/components/theme-provider"
+
+//* Utils imports
 import { cn } from "@/lib/utils";
 
-const robotoSlabHeading = Roboto_Slab({subsets:['latin'],variable:'--font-heading'});
+//* Styles imports
+import "./globals.css";
 
-const outfit = Outfit({subsets:['latin'],variable:'--font-sans'})
-
+//* Fonts
+const robotoSlabHeading = Roboto_Slab({ subsets: ['latin'], variable: '--font-heading' });
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-sans' })
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode

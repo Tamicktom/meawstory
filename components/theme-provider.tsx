@@ -10,12 +10,22 @@ function ThemeProvider({
   children,
   ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
+  // next-themes injects a blocking script so the theme is applied before paint.
+  // React 19 refuses to execute <script> tags rendered by client components and
+  // logs an error when it sees one. The server copy stays executable; the client
+  // copy is a data block so the warning does not fire and hydration can match.
+  const scriptProps: NonNullable<typeof props.scriptProps> = {
+    ...props.scriptProps,
+    type: typeof window === "undefined" ? props.scriptProps?.type : "application/json",
+  };
+
   return (
     <NextThemesProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      scriptProps={scriptProps}
       {...props}
     >
       <ThemeHotkey />

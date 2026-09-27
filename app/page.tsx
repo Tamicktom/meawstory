@@ -1,15 +1,20 @@
 //* Libraries imports
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
 //* Components imports
 import { Button } from "@/components/ui/button";
+
+//* Local imports
+import { client } from "@/lib/eden";
 
 export const metadata: Metadata = {
   title: "Meawstory",
   description: "Project ready. Add components and start building.",
 }
 
-export default function Page() {
+export default async function Page() {
+  const hello = await client.api.get();
+
   return (
     <div className="flex min-h-svh p-6">
       <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
@@ -21,6 +26,9 @@ export default function Page() {
         </div>
         <div className="font-mono text-xs text-muted-foreground">
           (Press <kbd>d</kbd> to toggle dark mode)
+        </div>
+        <div>
+          {hello.data?.message}
         </div>
       </div>
     </div>
