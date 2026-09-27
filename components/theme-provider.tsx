@@ -1,6 +1,9 @@
 "use client"
 
+//* Libraries imports
 import * as React from "react"
+
+//* Components imports
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
 function ThemeProvider({
@@ -18,54 +21,47 @@ function ThemeProvider({
       <ThemeHotkey />
       {children}
     </NextThemesProvider>
-  )
+  );
 }
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) {
-    return false
-  }
+    return false;
+  };
 
   return (
     target.isContentEditable ||
     target.tagName === "INPUT" ||
     target.tagName === "TEXTAREA" ||
     target.tagName === "SELECT"
-  )
+  );
 }
 
 function ThemeHotkey() {
-  const { resolvedTheme, setTheme } = useTheme()
+  const theme = useTheme();
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
+      const canToggle =
+        !event.defaultPrevented &&
+        !event.repeat &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        event.key.toLowerCase() === "d" &&
+        !isTypingTarget(event.target)
 
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
+      if (!canToggle) return;
 
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
+      theme.setTheme(theme.resolvedTheme === "dark" ? "light" : "dark")
+    };
 
-      if (isTypingTarget(event.target)) {
-        return
-      }
+    window.addEventListener("keydown", onKeyDown);
 
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
-    }
+    return () => { window.removeEventListener("keydown", onKeyDown) };
+  }, [theme.resolvedTheme, theme.setTheme]);
 
-    window.addEventListener("keydown", onKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-    }
-  }, [resolvedTheme, setTheme])
-
-  return null
+  return null;
 }
 
-export { ThemeProvider }
+export { ThemeProvider };

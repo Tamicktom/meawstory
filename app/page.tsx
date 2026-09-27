@@ -1,4 +1,13 @@
-import { Button } from "@/components/ui/button"
+//* Libraries imports
+import type { Metadata } from "next"
+
+//* Components imports
+import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Meawstory",
+  description: "Project ready. Add components and start building.",
+}
 
 export default function Page() {
   return (
