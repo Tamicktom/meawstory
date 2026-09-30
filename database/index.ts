@@ -1,6 +1,6 @@
 //* Libraries imports
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/bun-sql';
+import { drizzle } from "drizzle-orm/node-postgres";
 
 //* Local imports
 import { relations } from "@/database/schema";
