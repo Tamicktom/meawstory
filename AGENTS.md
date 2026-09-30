@@ -12,8 +12,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Bun and PostgreSQL 18 are already installed. Docker is not available; do not use `docker-compose.yml` to start the database.
 
-- Dependencies: `bun install --frozen-lockfile`. The Bun binary is `/home/ubuntu/.bun/bin/bun`.
+- Dependencies: `bun install --frozen-lockfile`, then `bunx playwright install --with-deps chromium`. The environment install already does both. The Bun binary is `/home/ubuntu/.bun/bin/bun`.
 - Database: `sudo pg_ctlcluster 18 main start`, then wait until `pg_isready -h 127.0.0.1 -p 5432` succeeds. The local URL is `postgresql://postgres:postgres@localhost:5432/postgres`, matching `example.env`.
 - Env file: copy `example.env` to `.env` and set `BETTER_AUTH_SECRET` before `bun run db:migrate` or the dev server. `.env` is gitignored.
-- Dev server: `database/index.ts` imports `drizzle-orm/bun-sql`, so Next must run inside Bun. `bun run dev` follows Next's Node shebang and cannot load that driver. Use `bun --bun ./node_modules/next/dist/bin/next dev --hostname 0.0.0.0 --port 3000`.
-- Checks: `bun run typecheck` type-checks the project. `bun run lint` exits because `typescript-eslint` does not support the pinned TypeScript 7. Production `next build` collects page data in Node workers, which also cannot load the Bun SQL driver. Use the dev server for end-to-end checks.
+- Dev server: the database client is `pg` through `drizzle-orm/node-postgres`, so Next must run on Node. Keep `/opt/meawstory/bin` first on `PATH` (it strips `NODE_OPTIONS=--bun`). Start with `bun run dev --hostname 0.0.0.0 --port 3000`. Do not pass `--bun`; Turbopack then fails to resolve `pg` and sign-up returns 500.
+- Checks: `bun run test` runs the unit tests and Playwright. `bun run typecheck` type-checks the project. `bun run lint` exits because `typescript-eslint` does not support the pinned TypeScript 7.
