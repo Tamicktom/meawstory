@@ -5,6 +5,9 @@ import { type ComponentType } from "react"
 import { flushSync } from "react-dom"
 import { createRoot, type Root } from "react-dom/client"
 
+//* Components imports
+import { QueryProvider } from "@/components/providers/query-provider"
+
 //* Styles imports
 import "../../app/globals.css"
 
@@ -71,7 +74,11 @@ window.mount = async (params: MountParams) => {
   root ??= createRoot(rootElement)
 
   flushSync(() => {
-    root?.render(<Story {...params.props} />)
+    root?.render(
+      <QueryProvider>
+        <Story {...params.props} />
+      </QueryProvider>
+    )
   })
 }
 
