@@ -1,12 +1,5 @@
 "use client"
 
-//* Libraries imports
-import { type FormEvent } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "@tanstack/react-form"
-import { useMutation } from "@tanstack/react-query"
-import { z } from "zod"
-
 //* Components imports
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -27,74 +20,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
+//* Hooks imports
+import { useSignUpForm } from "@/hooks/use-sign-up-form"
+
 //* Local imports
 import { toFieldErrors } from "@/components/auth/field-errors"
-import { authClient } from "@/lib/auth-client"
-
-const signUpSchema = z
-  .object({
-    name: z.string().trim().min(1, "Name is required"),
-    email: z.email("Enter a valid email address"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must be at most 128 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  })
-
-type SignUpValues = z.infer<typeof signUpSchema>
-
-const defaultValues: SignUpValues = {
-  name: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-}
 
 export function SignUpForm() {
-  const router = useRouter()
-  const signUpMutation = useMutation({
-    mutationFn: async (values: SignUpValues) => {
-      const parsed = signUpSchema.parse(values)
-      const { data, error } = await authClient.signUp.email({
-        name: parsed.name,
-        email: parsed.email,
-        password: parsed.password,
-      })
-
-      if (error) {
-        throw new Error(error.message ?? "Could not create your account.")
-      }
-
-      return data
-    },
-    onSuccess: () => {
-      router.push("/")
-    },
-  })
-  const form = useForm({
-    defaultValues,
-    validators: {
-      onSubmit: signUpSchema,
-    },
-    onSubmit: async ({ value }) => {
-      await signUpMutation.mutateAsync(value)
-    },
-  })
-  const isBusy = signUpMutation.isPending || signUpMutation.isSuccess
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    event.stopPropagation()
-    signUpMutation.reset()
-    void form.handleSubmit().catch(() => {
-      // The mutation error is rendered from mutation state.
-    })
-  }
+  const { form, signUpMutation, isBusy, handleSubmit } = useSignUpForm()
 
   return (
     <Card className="w-full max-w-md">
