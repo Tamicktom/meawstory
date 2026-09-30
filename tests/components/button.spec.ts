@@ -1,5 +1,5 @@
-//* Libraries imports
-import { expect, test } from "@playwright/test"
+//* Local imports
+import { expect, test } from "../../playwright/component"
 
 test.describe("Button", () => {
   test("renders the default story", { tag: "@smoke" }, async ({ mount }) => {
