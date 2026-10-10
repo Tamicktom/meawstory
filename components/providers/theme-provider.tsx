@@ -60,7 +60,7 @@ function ThemeHotkey() {
       const canToggle =
         !event.defaultPrevented &&
         !event.repeat &&
-        event.key.toLowerCase() === "d" &&
+        event?.key?.toLowerCase() === "d" &&
         !isModKey(event) &&
         !isTypingTarget(event.target)
 
