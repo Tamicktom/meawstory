@@ -1,8 +1,9 @@
 import { Geist, Geist_Mono, Outfit, Roboto_Slab } from "next/font/google";
 
 // * Providers imports
-import { QueryProvider } from "@/components/providers/query-provider"
-import { ThemeProvider } from "@/components/providers/theme-provider"
+import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 //* Utils imports
 import { cn } from "@/lib/utils";
@@ -31,7 +32,11 @@ export default async function RootLayout({
     >
       <body>
         <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

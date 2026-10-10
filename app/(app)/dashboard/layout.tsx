@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
+//* Components imports
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app/sidebar";
+
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -21,8 +25,12 @@ export default async function DashboardLayout(props: DashboardLayoutProps) {
   }
 
   return (
-    <div>
-      {props.children}
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <main>
+        <SidebarTrigger />
+        {props.children}
+      </main>
+    </SidebarProvider>
   )
 }
