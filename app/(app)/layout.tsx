@@ -12,7 +12,7 @@ type DashboardLayoutProps = {
   children: ReactNode;
 }
 
-export default async function DashboardLayout(props: DashboardLayoutProps) {
+export default async function AppLayout(props: DashboardLayoutProps) {
 
   const session = await auth.api.getSession({
     headers: await headers(),

@@ -16,7 +16,8 @@
     "doctor": "npx react-doctor@latest",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
-    "db:studio": "npx drizzle-kit studio"
+    "db:studio": "npx drizzle-kit studio",
+    "migrate:fresh": "bun scripts/migrate-fresh.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
