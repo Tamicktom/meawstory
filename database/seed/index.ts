@@ -7,6 +7,8 @@ import {
 } from "@/database/seed/catalog"
 import { rubric, theme } from "@/database/schema"
 
+export { seedTestUser } from "@/database/seed/test-user"
+
 export async function seedNarrativeCatalog(): Promise<{
   rubrics: number
   themes: number
