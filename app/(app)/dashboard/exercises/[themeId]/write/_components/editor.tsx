@@ -77,7 +77,7 @@ const Editor = (props: EditorProps) => {
       <Button
         id="submit-text"
         type="button"
-        disabled={isPreparingCorrection}
+        disabled={isPreparingCorrection || writeText.isPending}
         onClick={handleSubmit}
       >
         Enviar texto
