@@ -27,8 +27,10 @@ export default async function AppLayout(props: DashboardLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
-        <SidebarTrigger />
+      <main className="w-full flex flex-col items-center justify-start">
+        <div className="w-full flex flex-row items-center justify-start p-2">
+          <SidebarTrigger />
+        </div>
         {props.children}
       </main>
     </SidebarProvider>
