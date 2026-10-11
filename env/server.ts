@@ -6,6 +6,7 @@ export const serverEnv = createEnv({
   server: {
     DATABASE_URL: z.string(),
     BETTER_AUTH_SECRET: z.string(),
+    OPENAI_API_KEY: z.string(),
   },
   experimental__runtimeEnv: process.env
 });

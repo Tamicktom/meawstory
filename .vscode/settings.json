@@ -15,5 +15,6 @@
   "explorer.fileNesting.patterns": {
     "package.json": "*.lock, *.json, *.ts, *.mjs, *.toml",
     ".env": "*.env"
-  }
+  },
+  "json.schemaDownload.enable": true
 }
