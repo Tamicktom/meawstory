@@ -23,7 +23,6 @@
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@elysia/eden": "^1.4.10",
-    "@faker-js/faker": "^10.6.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-form-nextjs": "^1.33.5",
@@ -47,6 +46,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/vite": "^4.3.3",
