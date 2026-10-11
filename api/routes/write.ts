@@ -42,18 +42,7 @@ const writeRoutes = new Elysia({ prefix: '/write' })
         })
         .returning();
 
-
-
-
-      console.log({
-        themeId,
-        content,
-        session,
-        newText
-      });
-
       await start(correctText, [newText[0].id]);
-
 
       return ({ message: 'Hello World' });
     },
