@@ -37,7 +37,7 @@ function themeExcerpt(description: string): string {
 function ThemeCard(props: ThemeCardProps) {
   return (
     <Link
-      href={`/dashboard/exercises/${props.theme.id}/write`}
+      href={`/dashboard/themes/${props.theme.id}`}
       className="block h-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card className="h-full transition-colors hover:bg-accent">
