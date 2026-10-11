@@ -1,0 +1,1 @@
+export const CORRECTION_REDIRECT_DELAY_MS = 30_000
