@@ -7,8 +7,8 @@
       "dependencies": {
         "@base-ui/react": "^1.8.0",
         "@elysia/eden": "^1.4.10",
-        "@faker-js/faker": "^10.6.0",
         "@t3-oss/env-nextjs": "^0.13.11",
+        "@tanstack/markdown": "^1.0.0",
         "@tanstack/react-form": "^1.33.5",
         "@tanstack/react-form-nextjs": "^1.33.5",
         "@tanstack/react-query": "^5.104.0",
@@ -31,6 +31,7 @@
         "zod": "^4.6.5",
       },
       "devDependencies": {
+        "@faker-js/faker": "^10.6.0",
         "@playwright/test": "^1.63.0",
         "@tailwindcss/postcss": "^4",
         "@tailwindcss/vite": "^4.3.3",
@@ -565,6 +566,8 @@
     "@tanstack/devtools-event-client": ["@tanstack/devtools-event-client@0.4.4", "", { "bin": { "intent": "./bin/intent.js" } }, "sha512-6T5Yop/793YI+H+5J8Hsyj4kCih9sl4t3ElLgKioW5hk3ocn+ZdSJ94tT7vL7uabxSugWYBZlOTMPzEw2puvQw=="],
 
     "@tanstack/form-core": ["@tanstack/form-core@1.33.5", "", { "dependencies": { "@tanstack/devtools-event-client": "^0.4.1", "@tanstack/pacer-lite": "^0.1.1", "@tanstack/store": "^0.11.0" } }, "sha512-3dfx9MBP0aq5sXKteikG629X9oviptrQj0IFRk9YGcb+lB7Kv5x8S17oOSk1wUWgjQZ4xVJEMbKwOAODymocgA=="],
+
+    "@tanstack/markdown": ["@tanstack/markdown@1.0.0", "", { "peerDependencies": { "octane": ">=0.1.12", "react": ">=18" }, "optionalPeers": ["octane", "react"] }, "sha512-zE07RepFMbSQlHdnE82twgiVOKy50rP6a/X9UPOOBt8Z8x9lzaPvGpn2zioCnjXMvNt/IQkW5sSalXQ25C/FKw=="],
 
     "@tanstack/pacer-lite": ["@tanstack/pacer-lite@0.1.1", "", {}, "sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w=="],
 
