@@ -1,12 +1,10 @@
 //* Libraries imports
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { parseMarkdown } from '@tanstack/markdown/parser';
 import { Markdown } from '@tanstack/markdown/react';
 
-//* Local imports
-import { db } from "@/database";
-import { theme } from "@/database/schema";
+//* Services imports
+import { findThemeById } from "@/services/theme";
 
 //* Style imports
 import { buttonVariants } from "@/components/ui/button";
@@ -24,17 +22,13 @@ type WritePageProps = {
 export default async function WritePage(props: WritePageProps) {
   const params = await props.params;
 
-  const thisTheme = await db
-    .select()
-    .from(theme)
-    .where(eq(theme.id, params.themeId))
-    .limit(1);
+  const thisTheme = await findThemeById(params.themeId);
 
-  if (thisTheme.length === 0) {
+  if (!thisTheme) {
     notFound();
   }
 
-  const parsedDescription = parseMarkdown(thisTheme[0].description);
+  const parsedDescription = parseMarkdown(thisTheme.description);
 
   return (
     <div className="flex-row justify-center items-start gap-2 w-full grid grid-cols-3">

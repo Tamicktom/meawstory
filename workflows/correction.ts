@@ -1,14 +1,18 @@
 //* Libraries imports
 import { generateText, Output } from "ai"
-import { and, eq, isNull } from "drizzle-orm"
 import { FatalError, getStepMetadata } from "workflow"
 
 //* Services imports
 import { openAI } from "@/services/ai"
+import { correctionService } from "@/services/correction"
+import {
+  rubricService
+} from "@/services/rubric"
+import {
+  textService
+} from "@/services/text"
 
 //* Local imports
-import { db } from "@/database"
-import { correction, rubric, text, theme } from "@/database/schema"
 import {
   buildCorrectionPrompt,
   correctionInstructions,
@@ -52,53 +56,25 @@ export async function correctText(textId: string) {
 async function getText(textId: string) {
   "use step"
 
-  const result = await db
-    .select({
-      id: text.id,
-      content: text.content,
-      themeId: text.themeId,
-      themeTitle: theme.title,
-      themeDescription: theme.description,
-    })
-    .from(text)
-    .innerJoin(theme, eq(text.themeId, theme.id))
-    .where(
-      and(eq(text.id, textId), isNull(text.deletedAt), isNull(theme.deletedAt))
-    )
-    .limit(1)
+  const result = await textService.findActiveTextWithTheme(textId)
 
-  if (result.length === 0) {
+  if (!result) {
     throw new FatalError("Text not found")
   }
 
-  return result[0]
+  return result
 }
 
 async function getRubric(themeId: string) {
   "use step"
 
-  const result = await db
-    .select({
-      id: rubric.id,
-      title: rubric.title,
-      content: rubric.content,
-    })
-    .from(theme)
-    .innerJoin(rubric, eq(theme.rubricId, rubric.id))
-    .where(
-      and(
-        eq(theme.id, themeId),
-        isNull(theme.deletedAt),
-        isNull(rubric.deletedAt)
-      )
-    )
-    .limit(1)
+  const result = await rubricService.findActiveRubricForTheme(themeId)
 
-  if (result.length === 0) {
+  if (!result) {
     throw new FatalError("Rubric not found")
   }
 
-  return result[0]
+  return result
 }
 
 async function gradeText(source: CorrectionSource) {
@@ -137,77 +113,51 @@ async function saveCorrection(graded: GradedCorrection) {
   "use step"
 
   const { stepId } = getStepMetadata()
-  const currentText = await db
-    .select({
-      content: text.content,
-    })
-    .from(text)
-    .where(and(eq(text.id, graded.textId), isNull(text.deletedAt)))
-    .limit(1)
+  const currentText = await textService.findActiveTextContent(graded.textId)
 
-  if (currentText.length === 0) {
+  if (!currentText) {
     throw new FatalError("Text not found")
   }
 
-  if (currentText[0].content !== graded.textContent) {
+  if (currentText.content !== graded.textContent) {
     throw new FatalError("Text changed before the correction was saved")
   }
 
-  const currentRubric = await db
-    .select({
-      content: rubric.content,
-    })
-    .from(rubric)
-    .where(and(eq(rubric.id, graded.rubricId), isNull(rubric.deletedAt)))
-    .limit(1)
+  const currentRubric = await rubricService.findActiveRubricContent(graded.rubricId)
 
-  if (currentRubric.length === 0) {
+  if (!currentRubric) {
     throw new FatalError("Rubric not found")
   }
 
-  if (currentRubric[0].content !== graded.rubricContent) {
+  if (currentRubric.content !== graded.rubricContent) {
     throw new FatalError("Rubric changed before the correction was saved")
   }
 
-  const inserted = await db
-    .insert(correction)
-    .values({
-      id: stepId,
-      content: graded.content,
-      score: graded.score,
-      textContent: currentText[0].content,
-      rubricId: graded.rubricId,
-      rubricContent: currentRubric[0].content,
-      textId: graded.textId,
-    })
-    .onConflictDoNothing()
-    .returning({
-      id: correction.id,
-      score: correction.score,
-    })
+  const inserted = await correctionService.insertCorrection({
+    id: stepId,
+    content: graded.content,
+    score: graded.score,
+    textContent: currentText.content,
+    rubricId: graded.rubricId,
+    rubricContent: currentRubric.content,
+    textId: graded.textId,
+  })
 
-  if (inserted.length > 0) {
+  if (inserted) {
     return {
-      correctionId: inserted[0].id,
-      score: inserted[0].score,
+      correctionId: inserted.id,
+      score: inserted.score,
     }
   }
 
-  const existing = await db
-    .select({
-      id: correction.id,
-      score: correction.score,
-    })
-    .from(correction)
-    .where(eq(correction.id, stepId))
-    .limit(1)
+  const existing = await correctionService.findCorrectionById(stepId)
 
-  if (existing.length === 0) {
+  if (!existing) {
     throw new FatalError("Correction was not saved")
   }
 
   return {
-    correctionId: existing[0].id,
-    score: existing[0].score,
+    correctionId: existing.id,
+    score: existing.score,
   }
 }

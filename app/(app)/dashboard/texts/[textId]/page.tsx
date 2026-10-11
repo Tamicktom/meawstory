@@ -5,8 +5,11 @@ import { notFound } from "next/navigation"
 //* Components imports
 import { FeedbackView } from "@/components/feedback/feedback-view"
 
+//* Services imports
+import { correctionService } from "@/services/correction"
+import { textService } from "@/services/text"
+
 //* Local imports
-import { db } from "@/database"
 import { auth } from "@/lib/auth"
 
 type TextFeedbackPageProps = {
@@ -25,46 +28,13 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
     notFound()
   }
 
-  const ownedText = await db.query.text.findFirst({
-    columns: {
-      id: true,
-    },
-    where: {
-      id: params.textId,
-      userId: session.user.id,
-      deletedAt: {
-        isNull: true,
-      },
-    },
-    with: {
-      theme: {
-        columns: {
-          title: true,
-        },
-      },
-    },
-  })
+  const ownedText = await textService.findOwnedText(params.textId, session.user.id)
 
   if (!ownedText) {
     notFound()
   }
 
-  const latestCorrection = await db.query.correction.findFirst({
-    columns: {
-      content: true,
-      score: true,
-      textContent: true,
-    },
-    where: {
-      textId: ownedText.id,
-      deletedAt: {
-        isNull: true,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  })
+  const latestCorrection = await correctionService.findLatestActiveCorrection(ownedText.id)
 
   return (
     <FeedbackView
@@ -72,10 +42,10 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
       correction={
         latestCorrection
           ? {
-              content: latestCorrection.content,
-              score: latestCorrection.score,
-              textContent: latestCorrection.textContent,
-            }
+            content: latestCorrection.content,
+            score: latestCorrection.score,
+            textContent: latestCorrection.textContent,
+          }
           : null
       }
     />

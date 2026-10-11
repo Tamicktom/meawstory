@@ -1,8 +1,8 @@
 //* Libraries imports
 import Link from "next/link";
 
-//* Local imports
-import { db } from "@/database";
+//* Services imports
+import { themeService } from "@/services/theme";
 
 //* Components imports
 import {
@@ -58,23 +58,7 @@ function ThemeCard(props: ThemeCardProps) {
 }
 
 export default async function ThemesPage() {
-  const themes = await db.query.theme.findMany({
-    columns: {
-      id: true,
-      title: true,
-      description: true,
-      image: true,
-    },
-    where: {
-      deletedAt: {
-        isNull: true,
-      },
-    },
-    orderBy: {
-      title: "asc",
-    },
-    limit: 32,
-  });
+  const themes = await themeService.listActiveThemes();
 
   return (
     <div className="flex flex-col gap-4 p-4">

@@ -4,9 +4,8 @@ import { Elysia } from "elysia"
 import { headers } from "next/headers"
 import z from "zod"
 
-//* Database imports
-import { db } from "@/database"
-import { text } from "@/database/schema"
+//* Services imports
+import { createText } from "@/services/text"
 
 //* Workflow import
 import { correctText } from "@/workflows/correction"
@@ -29,21 +28,15 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
       return { message: "Unauthorized" }
     }
 
-    // create text
-    const newText = await db
-      .insert(text)
-      .values({
-        id: Bun.randomUUIDv7(),
-        userId: session.user.id,
-        title: `Text for theme ${themeId}`,
-        content,
-        themeId,
-      })
-      .returning()
+    const newText = await createText({
+      userId: session.user.id,
+      themeId,
+      content,
+    })
 
-    await start(correctText, [newText[0].id])
+    await start(correctText, [newText.id])
 
-    return { textId: newText[0].id }
+    return { textId: newText.id }
   },
   {
     body: z.object({

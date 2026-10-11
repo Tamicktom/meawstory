@@ -1,13 +1,11 @@
 //* Libraries imports
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { parseMarkdown } from '@tanstack/markdown/parser';
 import { Markdown } from '@tanstack/markdown/react';
 
-//* Local imports
-import { db } from "@/database";
-import { theme } from "@/database/schema";
+//* Services imports
+import { themeService } from "@/services/theme";
 
 //* Style imports
 import { buttonVariants } from "@/components/ui/button";
@@ -22,17 +20,13 @@ type WritePageProps = {
 export default async function WritePage(props: WritePageProps) {
   const params = await props.params;
 
-  const thisTheme = await db
-    .select()
-    .from(theme)
-    .where(eq(theme.id, params.id))
-    .limit(1);
+  const thisTheme = await themeService.findThemeById(params.id);
 
-  if (thisTheme.length === 0) {
+  if (!thisTheme) {
     notFound();
   }
 
-  const parsedDescription = parseMarkdown(thisTheme[0].description);
+  const parsedDescription = parseMarkdown(thisTheme.description);
 
   return (
     <div>
