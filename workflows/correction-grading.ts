@@ -3,7 +3,7 @@ import { z } from "zod"
 
 export const correctionOutputSchema = z.object({
   content: z.string().trim().min(1),
-  score: z.coerce.number().min(0).max(1000),
+  score: z.number().min(0).max(1000),
 })
 
 export type CorrectionOutput = z.infer<typeof correctionOutputSchema>
@@ -39,4 +39,18 @@ export function buildCorrectionPrompt(source: CorrectionSource): string {
     "",
     source.rubricContent,
   ].join("\n")
+}
+
+export function formatCorrectionScore(score: number): string {
+  if (!Number.isFinite(score)) {
+    throw new Error("Correction score must be a finite number.")
+  }
+
+  const rounded = Number(score.toFixed(2))
+
+  if (rounded < 0 || rounded > 1000) {
+    throw new Error("Correction score is outside 0 through 1000.")
+  }
+
+  return rounded.toFixed(2)
 }
