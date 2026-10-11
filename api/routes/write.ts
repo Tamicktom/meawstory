@@ -5,7 +5,7 @@ import { headers } from "next/headers"
 import z from "zod"
 
 //* Services imports
-import { createText } from "@/services/text"
+import { textService } from "@/services/text"
 
 //* Workflow import
 import { correctText } from "@/workflows/correction"
@@ -28,7 +28,7 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
       return { message: "Unauthorized" }
     }
 
-    const newText = await createText({
+    const newText = await textService.createText({
       userId: session.user.id,
       themeId,
       content,
