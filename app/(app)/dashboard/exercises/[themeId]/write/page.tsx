@@ -4,7 +4,7 @@ import { parseMarkdown } from '@tanstack/markdown/parser';
 import { Markdown } from '@tanstack/markdown/react';
 
 //* Services imports
-import { findThemeById } from "@/services/theme";
+import { themeService } from "@/services/theme";
 
 //* Style imports
 import { buttonVariants } from "@/components/ui/button";
@@ -22,7 +22,7 @@ type WritePageProps = {
 export default async function WritePage(props: WritePageProps) {
   const params = await props.params;
 
-  const thisTheme = await findThemeById(params.themeId);
+  const thisTheme = await themeService.findThemeById(params.themeId);
 
   if (!thisTheme) {
     notFound();
