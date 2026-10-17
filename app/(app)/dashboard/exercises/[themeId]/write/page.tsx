@@ -6,9 +6,6 @@ import { Markdown } from '@tanstack/markdown/react';
 //* Services imports
 import { themeService } from "@/services/theme";
 
-//* Style imports
-import { buttonVariants } from "@/components/ui/button";
-
 //* Component imports
 import { Editor } from "./_components/editor";
 
