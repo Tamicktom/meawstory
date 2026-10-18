@@ -40,14 +40,6 @@ const Editor = (props: EditorProps) => {
     immediatelyRender: false,
   })
 
-  useEffect(() => {
-    if (checkCorrectionStatus.data?.data?.status === "COMPLETED" && textId) {
-      setIsWaitingForCorrection(false);
-      setTextId(null);
-      router.push(`/dashboard/texts/${textId}`);
-    }
-  }, [checkCorrectionStatus.data?.data?.status, textId])
-
   const handleSubmit = () => {
     const content = editor?.getText() || ""
 
@@ -73,6 +65,15 @@ const Editor = (props: EditorProps) => {
       }
     )
   }
+
+  //* Handle the correction status
+  useEffect(() => {
+    if (checkCorrectionStatus.data?.data?.status === "COMPLETED" && textId) {
+      setIsWaitingForCorrection(false);
+      setTextId(null);
+      router.push(`/dashboard/texts/${textId}`);
+    }
+  }, [checkCorrectionStatus.data?.data?.status, textId])
 
   return (
     <div className="col-span-2 flex h-full w-full max-w-5xl flex-col items-start justify-start gap-2">
