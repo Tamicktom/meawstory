@@ -1,4 +1,6 @@
 "use client"
+//* Libraries imports
+import Link from "next/link"
 
 //* Components imports
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -127,13 +129,13 @@ export function SignInForm() {
           {isBusy ? <Spinner data-icon="inline-start" /> : null}
           {isBusy ? "Signing in..." : "Sign in"}
         </Button>
-        <a
+        <Link
           id="sign-in-create-account"
           href="/sign-up"
           className="text-center text-sm text-muted-foreground underline"
         >
           Create an account
-        </a>
+        </Link>
       </CardFooter>
     </Card>
   )
