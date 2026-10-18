@@ -81,10 +81,10 @@ export async function createEmptyCorrection(
   "use step"
 
   const { stepId } = getStepMetadata()
-  const currentText = await textService.findActiveTextContent(values.textId)
-  const currentRubric = await rubricService.findActiveRubricContent(
-    values.rubricId
-  )
+  const [currentText, currentRubric] = await Promise.all([
+    textService.findActiveTextContent(values.textId),
+    rubricService.findActiveRubricContent(values.rubricId),
+  ])
 
   if (!currentText || !currentRubric) {
     return null

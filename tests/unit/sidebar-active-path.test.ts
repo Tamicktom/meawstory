@@ -2,7 +2,7 @@
 import { describe, expect, it } from "bun:test"
 
 //* Local imports
-import { isActivePath } from "@/components/app/sidebar"
+import { isActivePath } from "@/components/app/sidebar-active-path"
 
 describe("isActivePath", () => {
   describe("dashboard", () => {
