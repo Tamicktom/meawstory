@@ -2,8 +2,8 @@
 import { eq } from "drizzle-orm"
 
 //* Local imports
-import { db } from "@/database"
-import { correction } from "@/database/schema"
+import { db } from "@/database";
+import { correction, type CorrectionStatus } from "@/database/schema";
 
 type InsertCorrectionValues = {
   id: string
@@ -13,6 +13,7 @@ type InsertCorrectionValues = {
   rubricId: string
   rubricContent: string
   textId: string
+  status: CorrectionStatus
 }
 
 async function insertCorrection(values: InsertCorrectionValues) {
@@ -23,6 +24,7 @@ async function insertCorrection(values: InsertCorrectionValues) {
     .returning({
       id: correction.id,
       score: correction.score,
+      status: correction.status,
     })
 
   return inserted[0] ?? null
@@ -33,6 +35,7 @@ async function findCorrectionById(id: string) {
     .select({
       id: correction.id,
       score: correction.score,
+      status: correction.status,
     })
     .from(correction)
     .where(eq(correction.id, id))
@@ -47,6 +50,7 @@ async function findLatestActiveCorrection(textId: string) {
       content: true,
       score: true,
       textContent: true,
+      status: true,
     },
     where: {
       textId,
@@ -62,8 +66,31 @@ async function findLatestActiveCorrection(textId: string) {
   return latestCorrection ?? null
 }
 
+async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
+  await db
+    .update(correction)
+    .set({ status })
+    .where(eq(correction.id, id))
+}
+
+async function updateCorrection(id: string, values: Partial<Omit<InsertCorrectionValues, "id">>) {
+  const result = await db
+    .update(correction)
+    .set(values)
+    .where(eq(correction.id, id))
+    .returning({
+      id: correction.id,
+      score: correction.score,
+      status: correction.status,
+    })
+
+  return result[0] ?? null
+}
+
 export const correctionService = {
   insertCorrection,
   findCorrectionById,
-  findLatestActiveCorrection
+  findLatestActiveCorrection,
+  updateCorrectionStatus,
+  updateCorrection,
 }

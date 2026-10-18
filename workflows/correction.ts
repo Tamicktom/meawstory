@@ -11,6 +11,7 @@ import {
 import {
   textService
 } from "@/services/text"
+import type { CorrectionStatus } from "@/database/schema"
 
 //* Local imports
 import {
@@ -22,19 +23,32 @@ import {
 } from "@/workflows/correction-grading"
 
 type GradedCorrection = {
-  textId: string
-  textContent: string
-  rubricId: string
-  rubricContent: string
-  content: string
-  score: string
+  textId: string;
+  textContent: string;
+  rubricId: string;
+  rubricContent: string;
+  content: string;
+  score: string;
+  status: CorrectionStatus;
 }
 
 export async function correctText(textId: string) {
-  "use workflow"
+  "use workflow";
 
   const textToCorrect = await getText(textId)
   const themeRubric = await getRubric(textToCorrect.themeId)
+
+  const correctionId = await createEmptyCorrection({
+    textId: textToCorrect.id,
+    rubricId: themeRubric.id,
+  });
+
+  if (!correctionId) {
+    throw new FatalError("Correction not created")
+  }
+
+  await updateCorrectionStatus(correctionId, "IN_PROGRESS");
+
   const graded = await gradeText({
     themeTitle: textToCorrect.themeTitle,
     themeDescription: textToCorrect.themeDescription,
@@ -43,14 +57,47 @@ export async function correctText(textId: string) {
     rubricContent: themeRubric.content,
   })
 
-  return saveCorrection({
+  const saved = await updateCorrection(correctionId, {
     textId: textToCorrect.id,
     textContent: textToCorrect.content,
     rubricId: themeRubric.id,
     rubricContent: themeRubric.content,
     content: graded.content,
     score: graded.score,
-  })
+    status: "COMPLETED",
+  });
+
+  return saved;
+}
+
+type CreateEmptyCorrectionValues = {
+  textId: string;
+  rubricId: string;
+}
+
+async function createEmptyCorrection(values: CreateEmptyCorrectionValues): Promise<string | null> {
+  "use step";
+
+  const { stepId } = getStepMetadata();
+
+  const inserted = await correctionService.insertCorrection({
+    id: stepId,
+    content: "",
+    score: "0.00",
+    textContent: "",
+    rubricId: values.rubricId,
+    rubricContent: "",
+    textId: values.textId,
+    status: "PENDING",
+  });
+
+  return inserted?.id ?? null;
+}
+
+async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
+  "use step"
+
+  await correctionService.updateCorrectionStatus(id, status)
 }
 
 async function getText(textId: string) {
@@ -109,10 +156,9 @@ async function gradeText(source: CorrectionSource) {
   }
 }
 
-async function saveCorrection(graded: GradedCorrection) {
+async function updateCorrection(correctionId: string, graded: GradedCorrection) {
   "use step"
 
-  const { stepId } = getStepMetadata()
   const currentText = await textService.findActiveTextContent(graded.textId)
 
   if (!currentText) {
@@ -133,24 +179,24 @@ async function saveCorrection(graded: GradedCorrection) {
     throw new FatalError("Rubric changed before the correction was saved")
   }
 
-  const inserted = await correctionService.insertCorrection({
-    id: stepId,
+  const updated = await correctionService.updateCorrection(correctionId, {
     content: graded.content,
     score: graded.score,
     textContent: currentText.content,
     rubricId: graded.rubricId,
     rubricContent: currentRubric.content,
     textId: graded.textId,
+    status: graded.status,
   })
 
-  if (inserted) {
+  if (updated) {
     return {
-      correctionId: inserted.id,
-      score: inserted.score,
+      correctionId: updated.id,
+      score: updated.score,
     }
   }
 
-  const existing = await correctionService.findCorrectionById(stepId)
+  const existing = await correctionService.findCorrectionById(correctionId)
 
   if (!existing) {
     throw new FatalError("Correction was not saved")
