@@ -387,17 +387,17 @@ Hotspots: `app/page.tsx` (score 15.6), `api/index.ts` (score 26.8), and `app/lay
 
 ### Home and `GET /api`
 
-- [ ] `GET /api` returns `{ message: "Hello World" }`.
-- [ ] The home page renders that message under the `Project ready!` heading.
-- [ ] The page tells the visitor to press `d` to toggle dark mode.
+- [x] `GET /api` returns `{ message: "Hello World" }`.
+- [x] The home page renders that message under the `Project ready!` heading.
+- [x] The page tells the visitor to press `d` to toggle dark mode.
 
 ### Dark mode hotkey
 
 `components/providers/theme-provider.tsx`.
 
-- [ ] The default theme follows the system preference.
-- [ ] Pressing `d` switches between light and dark.
-- [ ] The hotkey does nothing while the target is an input, textarea, select, or contenteditable element.
-- [ ] The hotkey does nothing when Ctrl, Meta, or Alt is held, or when the key event is a repeat.
+- [x] The default theme follows the system preference.
+- [x] Pressing `d` switches between light and dark.
+- [x] The hotkey does nothing while the target is an input, textarea, select, or contenteditable element.
+- [x] The hotkey does nothing when Ctrl, Meta, or Alt is held, or when the key event is a repeat.
 
 **Done when:** each bullet has a test. The existing sign-in and sign-up e2e tests still pass.
