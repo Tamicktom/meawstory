@@ -8,6 +8,7 @@ import { client } from "@/lib/eden";
 type UseCheckCorrectionStatusProps = {
   textId: string | null;
   onCompleted: () => void;
+  onFailed: () => void;
 }
 
 async function checkCorrectionStatus(props: UseCheckCorrectionStatusProps) {
@@ -18,6 +19,10 @@ async function checkCorrectionStatus(props: UseCheckCorrectionStatusProps) {
 
   if (response.data?.status === "COMPLETED") {
     props.onCompleted();
+  }
+
+  if (response.data?.status === "FAILED") {
+    props.onFailed();
   }
 
   return response;

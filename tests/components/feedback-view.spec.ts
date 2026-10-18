@@ -41,4 +41,25 @@ test.describe("FeedbackView", () => {
       ).toHaveCount(0)
     })
   })
+
+  test.describe("when the score is fractional", () => {
+    test("shows the score with two decimal places", async ({ mount }) => {
+      const component = await mount(
+        "components/feedback/feedback-view/FractionalScore"
+      )
+
+      await expect(component.getByText("Nota 640.50 de 1000")).toBeVisible()
+    })
+  })
+
+  test.describe("when the score is not numeric", () => {
+    test("shows the stored score without a scale", async ({ mount }) => {
+      const component = await mount(
+        "components/feedback/feedback-view/NonNumericScore"
+      )
+
+      await expect(component.getByText("not-a-number")).toBeVisible()
+      await expect(component.getByText("de 1000")).toHaveCount(0)
+    })
+  })
 })

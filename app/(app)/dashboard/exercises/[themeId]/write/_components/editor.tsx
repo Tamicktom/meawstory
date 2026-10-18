@@ -1,6 +1,6 @@
 "use client"
 //* Libraries imports
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import StarterKit from "@tiptap/starter-kit"
 import { useEditor, EditorContent } from "@tiptap/react"
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
 //* Hooks imports
-import { useWriteText } from "@/hooks/write/use-write-text";
+import { useWriteText, writeTextErrorMessage } from "@/hooks/write/use-write-text";
 import { useCheckCorrectionStatus } from "@/hooks/correction/use-check-correction-status";
 import { useInterval } from "@/hooks/utils/use-interval";
 
@@ -25,20 +25,30 @@ const Editor = (props: EditorProps) => {
   const router = useRouter()
   const [textId, setTextId] = useState<string | null>(null);
   const [isWaitingForCorrection, setIsWaitingForCorrection] = useState(false);
+  const [correctionFailed, setCorrectionFailed] = useState(false);
+  const submittedTextId = useRef<string | null>(null);
 
   const writeText = useWriteText();
   const checkCorrectionStatus = useCheckCorrectionStatus({
     textId,
     onCompleted: () => {
+      const completedTextId = submittedTextId.current;
       setIsWaitingForCorrection(() => false);
       setTextId(() => null);
-      router.push(`/dashboard/texts/${textId}`);
+      if (completedTextId) {
+        router.push(`/dashboard/texts/${completedTextId}`);
+      }
+    },
+    onFailed: () => {
+      setIsWaitingForCorrection(false);
+      setTextId(null);
+      setCorrectionFailed(true);
     },
   });
 
   useInterval(() => {
     checkCorrectionStatus.refetch();
-  }, textId ? INTERVAL_CHECK_CORRECTION_STATUS : null); //* Check the correction status every second if a textId is set
+  }, textId ? INTERVAL_CHECK_CORRECTION_STATUS : null);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -50,6 +60,8 @@ const Editor = (props: EditorProps) => {
   const handleSubmit = () => {
     const content = editor?.getText() || ""
 
+    setCorrectionFailed(false);
+
     writeText.mutate(
       {
         themeId: props.themeId,
@@ -57,21 +69,24 @@ const Editor = (props: EditorProps) => {
       },
       {
         onSuccess: (response) => {
-          const textId =
+          const nextTextId =
             response.data && "textId" in response.data
               ? response.data.textId
               : undefined
 
-          if (!textId) {
+          if (!nextTextId) {
             return
           }
 
-          setTextId(textId);
+          submittedTextId.current = nextTextId;
+          setTextId(nextTextId);
           setIsWaitingForCorrection(true);
         },
       }
     )
   }
+
+  const showError = writeText.isError || correctionFailed;
 
   return (
     <div className="col-span-2 flex h-full w-full max-w-5xl flex-col items-start justify-start gap-2">
@@ -88,6 +103,9 @@ const Editor = (props: EditorProps) => {
           <Spinner />
           <span>A correção está sendo preparada.</span>
         </p>
+      ) : null}
+      {showError ? (
+        <p className="p-1 text-sm text-destructive">{writeTextErrorMessage}</p>
       ) : null}
       <EditorContent className="h-full w-full" editor={editor} />
     </div>

@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation"
 import { BookOpenIcon, HouseIcon } from "lucide-react"
 
 //* Components imports
+import { Button } from "@/components/ui/button"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -16,6 +18,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+
+//* Local imports
+import { isActivePath } from "@/components/app/sidebar-active-path"
+import { authClient } from "@/lib/auth-client"
 
 const navigation = [
   {
@@ -31,14 +37,6 @@ const navigation = [
     icon: BookOpenIcon,
   },
 ] as const
-
-function isActivePath(pathname: string, href: string) {
-  if (href === "/dashboard") {
-    return pathname === href
-  }
-
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -78,6 +76,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <Button
+          id="sidebar-sign-out"
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => {
+            void authClient.signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  window.location.assign("/dashboard")
+                },
+              },
+            })
+          }}
+        >
+          Sign out
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   )
 }
