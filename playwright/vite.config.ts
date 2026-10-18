@@ -12,6 +12,12 @@ const nextNavigationMock = fileURLToPath(
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // next/link reads process.env when the gallery renders a story.
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("development"),
+    "process.env.__NEXT_CACHE_COMPONENTS": "false",
+    "process.env.__NEXT_LINK_NO_TOUCH_START": "false",
+  },
   resolve: {
     alias: {
       "@": rootDirectory,
