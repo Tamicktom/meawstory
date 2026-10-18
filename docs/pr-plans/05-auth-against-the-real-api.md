@@ -22,7 +22,7 @@ Use the existing account factory and sign-in helper as the pattern for a fresh u
 
 ## Out of scope
 
-Leave the component-spec stubs in place. Leave form validation, copy, and the shared field extraction from PR 4 as they are. Leave password reset, email-verification UI, and session cookies beyond what these three bullets need. Dashboard sign-out is PR 11.
+Leave the component-spec stubs in place. Leave form validation, copy, and the shared pre-bound field component from PR 4 as they are. Leave password reset, email-verification UI, and session cookies beyond what these three bullets need. Dashboard sign-out is PR 11.
 
 ## Files and areas
 

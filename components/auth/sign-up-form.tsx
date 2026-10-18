@@ -11,23 +11,76 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 
 //* Hooks imports
 import { useSignUpForm } from "@/hooks/use-sign-up-form"
 
-//* Local imports
-import { toFieldErrors } from "@/components/auth/field-errors"
+type SignUpFieldsProps = {
+  appForm: ReturnType<typeof useSignUpForm>["appForm"]
+  disabled: boolean
+}
+
+function SignUpFields(props: SignUpFieldsProps) {
+  const appForm = props.appForm
+
+  return (
+    <FieldGroup>
+      <appForm.AppField
+        name="name"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-name"
+            label="Name"
+            type="text"
+            autoComplete="name"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="email"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="password"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-password"
+            label="Password"
+            type="password"
+            autoComplete="new-password"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="confirmPassword"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-confirm-password"
+            label="Confirm password"
+            type="password"
+            autoComplete="new-password"
+            disabled={props.disabled}
+          />
+        )}
+      />
+    </FieldGroup>
+  )
+}
 
 export function SignUpForm() {
-  const { form, signUpMutation, isBusy, handleSubmit } = useSignUpForm()
+  const { appForm, signUpMutation, isBusy, handleSubmit } = useSignUpForm()
 
   return (
     <Card className="w-full max-w-md">
@@ -50,130 +103,7 @@ export function SignUpForm() {
               </AlertDescription>
             </Alert>
           ) : null}
-          <FieldGroup>
-            <form.Field
-              name="name"
-              children={(field) => {
-                const errors = toFieldErrors(field.state.meta.errors)
-                const isInvalid = errors.length > 0
-
-                return (
-                  <Field
-                    data-invalid={isInvalid || undefined}
-                    data-disabled={isBusy || undefined}
-                  >
-                    <FieldLabel htmlFor="sign-up-name">Name</FieldLabel>
-                    <Input
-                      id="sign-up-name"
-                      name={field.name}
-                      type="text"
-                      autoComplete="name"
-                      value={field.state.value}
-                      disabled={isBusy}
-                      aria-invalid={isInvalid || undefined}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.currentTarget.value)
-                      }
-                    />
-                    <FieldError errors={errors} />
-                  </Field>
-                )
-              }}
-            />
-            <form.Field
-              name="email"
-              children={(field) => {
-                const errors = toFieldErrors(field.state.meta.errors)
-                const isInvalid = errors.length > 0
-
-                return (
-                  <Field
-                    data-invalid={isInvalid || undefined}
-                    data-disabled={isBusy || undefined}
-                  >
-                    <FieldLabel htmlFor="sign-up-email">Email</FieldLabel>
-                    <Input
-                      id="sign-up-email"
-                      name={field.name}
-                      type="email"
-                      autoComplete="email"
-                      value={field.state.value}
-                      disabled={isBusy}
-                      aria-invalid={isInvalid || undefined}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.currentTarget.value)
-                      }
-                    />
-                    <FieldError errors={errors} />
-                  </Field>
-                )
-              }}
-            />
-            <form.Field
-              name="password"
-              children={(field) => {
-                const errors = toFieldErrors(field.state.meta.errors)
-                const isInvalid = errors.length > 0
-
-                return (
-                  <Field
-                    data-invalid={isInvalid || undefined}
-                    data-disabled={isBusy || undefined}
-                  >
-                    <FieldLabel htmlFor="sign-up-password">Password</FieldLabel>
-                    <Input
-                      id="sign-up-password"
-                      name={field.name}
-                      type="password"
-                      autoComplete="new-password"
-                      value={field.state.value}
-                      disabled={isBusy}
-                      aria-invalid={isInvalid || undefined}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.currentTarget.value)
-                      }
-                    />
-                    <FieldError errors={errors} />
-                  </Field>
-                )
-              }}
-            />
-            <form.Field
-              name="confirmPassword"
-              children={(field) => {
-                const errors = toFieldErrors(field.state.meta.errors)
-                const isInvalid = errors.length > 0
-
-                return (
-                  <Field
-                    data-invalid={isInvalid || undefined}
-                    data-disabled={isBusy || undefined}
-                  >
-                    <FieldLabel htmlFor="sign-up-confirm-password">
-                      Confirm password
-                    </FieldLabel>
-                    <Input
-                      id="sign-up-confirm-password"
-                      name={field.name}
-                      type="password"
-                      autoComplete="new-password"
-                      value={field.state.value}
-                      disabled={isBusy}
-                      aria-invalid={isInvalid || undefined}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.currentTarget.value)
-                      }
-                    />
-                    <FieldError errors={errors} />
-                  </Field>
-                )
-              }}
-            />
-          </FieldGroup>
+          <SignUpFields appForm={appForm} disabled={isBusy} />
         </form>
       </CardContent>
       <CardFooter>

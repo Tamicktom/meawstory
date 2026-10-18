@@ -3,8 +3,10 @@
 //* Libraries imports
 import { type SubmitEvent } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "@tanstack/react-form"
 import { useMutation } from "@tanstack/react-query"
+
+//* Hooks imports
+import { useAppForm } from "@/components/auth/form-hook"
 
 //* Local imports
 import { authClient } from "@/lib/auth-client"
@@ -13,7 +15,7 @@ import {
   signInSchema,
   type SignInValues,
 } from "@/schemas/sign-in"
-import { queryClient } from "@/utils/query-client";
+import { queryClient } from "@/utils/query-client"
 
 function useSignInForm() {
   const router = useRouter()
@@ -32,11 +34,11 @@ function useSignInForm() {
       return data
     },
     onSuccess: () => {
-      queryClient.clear(); //* Clear the query client to avoid showing the previous user's data
+      queryClient.clear() //* Clear the query client to avoid showing the previous user's data
       router.push("/")
     },
   })
-  const form = useForm({
+  const appForm = useAppForm({
     defaultValues: signInDefaultValues,
     validators: {
       onSubmit: signInSchema,
@@ -51,12 +53,12 @@ function useSignInForm() {
     event.preventDefault()
     event.stopPropagation()
     signInMutation.reset()
-    void form.handleSubmit().catch(() => {
+    void appForm.handleSubmit().catch(() => {
       // The mutation error is rendered from mutation state.
     })
   }
 
-  return { form, signInMutation, isBusy, handleSubmit }
+  return { appForm, signInMutation, isBusy, handleSubmit }
 }
 
 export { useSignInForm }

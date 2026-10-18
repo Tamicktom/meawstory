@@ -145,16 +145,15 @@ Fallow found 4 clone groups (108 duplicated lines) between `components/auth/sign
 
 Hotspots covered here: sign-in form (score 44.2) and sign-up form (score 38.2).
 
-- [ ] Extract the shared UI imports.
-- [ ] Extract the repeated `form.Field` + `Field` + `FieldLabel` + `Input` + `FieldError` block. Scan hint: sign-in around lines 57–121, sign-up around lines 54–179.
-- [ ] Keep each form's hook, copy, and field names in that form.
-- [ ] In `tests/components/sign-in-form.spec.ts`, extract the shared 401 sign-in setup (scan: lines 213–227 and 267–279).
-- [ ] In `tests/components/sign-up-form.spec.ts`, extract the shared password `aria-invalid` assertions (scan: lines 110–120 and 155–165).
-- [ ] In the same sign-up spec, extract the shared failed sign-up mount and submit (scan: lines 276–290, 307–319, and 334–348). One helper covers the overlapping 13-line and 15-line groups.
-- [ ] Extract the invalid-email assertion shared by both specs (sign-in around lines 112–121, sign-up around lines 127–136).
-- [ ] Extract the post-submit navigation assertion shared by both specs (sign-in around lines 318–328, sign-up around lines 389–399). Parameterize the busy-button name (`Signing in...` vs `Creating account...`).
-- [ ] Split `SignInForm` and `SignUpForm` only when Fallow still lists them after the extract (scan: 112 and 165 lines).
-- [ ] Split the anonymous test arrows in the two specs only when the helpers above leave them listed (sign-up scan lines 60, 83, 231; sign-in scan lines 54, 78, 175).
+- [x] Share the repeated field stack through one TanStack Form pre-bound field component (`createFormHook` + `form.AppField`). Scan hint: sign-in around lines 57–121, sign-up around lines 54–179. The scope doc names the props and which composition APIs stay unused.
+- [x] Keep each form's hook, copy, and field names in that form. The hooks call `useAppForm` in place of `useForm`.
+- [x] In `tests/components/sign-in-form.spec.ts`, extract the shared 401 sign-in setup (scan: lines 213–227 and 267–279).
+- [x] In `tests/components/sign-up-form.spec.ts`, extract the shared password `aria-invalid` assertions (scan: lines 110–120 and 155–165).
+- [x] In the same sign-up spec, extract the shared failed sign-up mount and submit (scan: lines 276–290, 307–319, and 334–348). One helper covers the overlapping 13-line and 15-line groups.
+- [x] Extract the invalid-email assertion shared by both specs (sign-in around lines 112–121, sign-up around lines 127–136).
+- [x] Extract the post-submit navigation assertion shared by both specs (sign-in around lines 318–328, sign-up around lines 389–399). Parameterize the busy-button name (`Signing in...` vs `Creating account...`).
+- [x] Split `SignInForm` and `SignUpForm` only when Fallow still lists them after the extract (scan: 112 and 165 lines).
+- [x] Split the anonymous test arrows in the two specs only when the helpers above leave them listed (sign-up scan lines 60, 83, 231; sign-in scan lines 54, 78, 175).
 
 **Done when:** `fallow dupes` no longer groups those form and spec clones, and `sign-in-form.spec.ts` plus `sign-up-form.spec.ts` pass.
 

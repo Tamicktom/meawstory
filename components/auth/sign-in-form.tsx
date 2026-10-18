@@ -13,23 +13,52 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 
 //* Hooks imports
 import { useSignInForm } from "@/hooks/use-sign-in-form"
 
-//* Local imports
-import { toFieldErrors } from "@/components/auth/field-errors"
+type SignInFieldsProps = {
+  appForm: ReturnType<typeof useSignInForm>["appForm"]
+  disabled: boolean
+}
+
+function SignInFields(props: SignInFieldsProps) {
+  const appForm = props.appForm
+
+  return (
+    <FieldGroup>
+      <appForm.AppField
+        name="email"
+        children={(field) => (
+          <field.TextField
+            id="sign-in-email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="password"
+        children={(field) => (
+          <field.TextField
+            id="sign-in-password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            disabled={props.disabled}
+          />
+        )}
+      />
+    </FieldGroup>
+  )
+}
 
 export function SignInForm() {
-  const { form, signInMutation, isBusy, handleSubmit } = useSignInForm()
+  const { appForm, signInMutation, isBusy, handleSubmit } = useSignInForm()
 
   return (
     <Card className="w-full max-w-md">
@@ -54,68 +83,7 @@ export function SignInForm() {
               </AlertDescription>
             </Alert>
           ) : null}
-          <FieldGroup>
-            <form.Field
-              name="email"
-              children={(field) => {
-                const errors = toFieldErrors(field.state.meta.errors)
-                const isInvalid = errors.length > 0
-
-                return (
-                  <Field
-                    data-invalid={isInvalid || undefined}
-                    data-disabled={isBusy || undefined}
-                  >
-                    <FieldLabel htmlFor="sign-in-email">Email</FieldLabel>
-                    <Input
-                      id="sign-in-email"
-                      name={field.name}
-                      type="email"
-                      autoComplete="email"
-                      value={field.state.value}
-                      disabled={isBusy}
-                      aria-invalid={isInvalid || undefined}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.currentTarget.value)
-                      }
-                    />
-                    <FieldError errors={errors} />
-                  </Field>
-                )
-              }}
-            />
-            <form.Field
-              name="password"
-              children={(field) => {
-                const errors = toFieldErrors(field.state.meta.errors)
-                const isInvalid = errors.length > 0
-
-                return (
-                  <Field
-                    data-invalid={isInvalid || undefined}
-                    data-disabled={isBusy || undefined}
-                  >
-                    <FieldLabel htmlFor="sign-in-password">Password</FieldLabel>
-                    <Input
-                      id="sign-in-password"
-                      name={field.name}
-                      type="password"
-                      autoComplete="current-password"
-                      value={field.state.value}
-                      disabled={isBusy}
-                      aria-invalid={isInvalid || undefined}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.currentTarget.value)
-                      }
-                    />
-                    <FieldError errors={errors} />
-                  </Field>
-                )
-              }}
-            />
-          </FieldGroup>
+          <SignInFields appForm={appForm} disabled={isBusy} />
         </form>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-4">

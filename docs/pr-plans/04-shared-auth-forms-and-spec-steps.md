@@ -1,6 +1,6 @@
 # PR 4 — Shared auth forms and spec steps
 
-Fallow found clone groups between `components/auth/sign-in-form.tsx` and `components/auth/sign-up-form.tsx`, and more cloned lines across `tests/components/sign-in-form.spec.ts` and `tests/components/sign-up-form.spec.ts`. The two forms are also churn hotspots. This PR extracts the repeated markup and the repeated spec steps so later auth tests hit one shared field block. Each form keeps its own hook, copy, and field names.
+Fallow found clone groups between `components/auth/sign-in-form.tsx` and `components/auth/sign-up-form.tsx`, and more cloned lines across `tests/components/sign-in-form.spec.ts` and `tests/components/sign-up-form.spec.ts`. The two forms are also churn hotspots. This PR shares the repeated field markup through TanStack Form's pre-bound field component, and extracts the repeated spec steps so later auth tests hit one shared field block. Each form keeps its own hook, copy, and field names.
 
 Index: `docs/pr-plan.md`.
 
@@ -10,9 +10,17 @@ Depends on PR 3 so the field primitives tests target still exist (`Field`, `Fiel
 
 ## In scope
 
-Extract the shared UI imports into `components/auth`.
+Share the field UI with TanStack Form composition's pre-bound field component. `@tanstack/react-form` `1.33.5` already exports `createFormHook` and `createFormHookContexts`. The guide is [Form Composition](https://tanstack.com/form/latest/docs/framework/react/guides/form-composition), section "Pre-bound Field Components". The installed source is `node_modules/@tanstack/react-form/src/createFormHook.tsx`.
 
-Extract the repeated block of `form.Field`, `Field`, `FieldLabel`, `Input`, and `FieldError`. The scan pointed at the sign-in form's field stack and the sign-up form's field stack. Find them by that structure. The new component takes its inputs as a props object (`props.field`, not a destructured argument). Keep each form's hook (`useSignInForm`, `useSignUpForm`), copy, and field names in that form.
+The duplicated unit is one string field: `form.Field`, `Field`, `FieldLabel`, `Input`, `FieldError`, and `toFieldErrors` from `components/auth/field-errors.ts`. Sign-in repeats it for `email` and `password`. Sign-up repeats it for `name`, `email`, `password`, and `confirmPassword`. Find those stacks by that structure.
+
+Create the contexts once, under `components/auth`. Register one field component on a single `createFormHook` call (`fieldComponents` set, `formComponents` empty). The component takes a props object (`props.id`, `props.label`, `props.type`, `props.autoComplete`, `props.disabled`) and calls `useFieldContext<string>()` from those same contexts. It renders the current stack: `toFieldErrors`, `data-invalid`, `data-disabled`, `aria-invalid`, `onBlur`, and `onChange`. `props.disabled` is that form's `isBusy` flag. The field imports (`Field`, `FieldLabel`, `FieldError`, `Input`) live on this component.
+
+`useSignInForm` and `useSignUpForm` call that hook's `useAppForm` where they call `useForm` today. Keep each hook's `defaultValues`, `validators.onSubmit` schema, `onSubmit`, mutation, and `handleSubmit`. Each form still owns its copy and its field names. Render each field with `form.AppField` plus the registered component. `AppField` is what provides the field context, so the component does not take a field API prop.
+
+`withForm` and `withFieldGroup` stay unused. Those APIs split one form, or reuse a group whose keys are one value object. These two forms are separate: password `autoComplete` is `current-password` on sign-in and `new-password` on sign-up, and only sign-up has `name` and `confirmPassword`. A field group also leaves validators typed as `unknown`. Skip `extendForm`. The context value is the field API instance (TanStack Store), so this binding does not subscribe the tree to every keystroke by itself.
+
+The submit buttons stay in each form. Busy state is `isPending || isSuccess` on that form's mutation, the button sits in `CardFooter` with a `form` attribute, and the ids stay `sign-in-submit` and `sign-up-submit`. A `form.Subscribe` submit button would track `isSubmitting` only, and would miss the post-success busy state.
 
 In `tests/components/sign-in-form.spec.ts`, extract the shared 401 sign-in setup used by the failed sign-in cases (server error, and server response with no message).
 
@@ -34,7 +42,8 @@ Leave Better Auth stubs in these component specs. Wrong-password, duplicate-emai
 
 - `components/auth/sign-in-form.tsx`
 - `components/auth/sign-up-form.tsx`
-- New shared modules under `components/auth/`
+- New shared modules under `components/auth/` (form-hook contexts and the one field component)
+- `hooks/use-sign-in-form.ts` and `hooks/use-sign-up-form.ts` for the `useAppForm` swap only
 - `tests/components/sign-in-form.spec.ts`
 - `tests/components/sign-up-form.spec.ts`
 - A shared spec helper imported by both specs, next to those files
