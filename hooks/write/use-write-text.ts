@@ -6,6 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import { client } from "@/lib/eden";
 import { queryClient } from "@/utils/query-client";
 
+const writeTextErrorMessage = "Erro ao enviar texto";
+
 type WriteTextProps = {
   themeId: string;
   content: string;
@@ -13,6 +15,10 @@ type WriteTextProps = {
 
 async function writeText(props: WriteTextProps) {
   const response = await client.api.write({ themeId: props.themeId }).post({ content: props.content });
+
+  if (response.error) {
+    throw new Error(writeTextErrorMessage);
+  }
 
   return response;
 }
@@ -26,7 +32,9 @@ export function useWriteText() {
       console.log("Texto enviado com sucesso");
     },
     onError: () => {
-      console.log("Erro ao enviar texto");
+      console.log(writeTextErrorMessage);
     },
   });
 }
+
+export { writeTextErrorMessage };

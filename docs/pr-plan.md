@@ -301,19 +301,19 @@ Scope: [10-write-exercise-screen.md](pr-plans/10-write-exercise-screen.md)
 
 Hotspots: `app/(app)/dashboard/exercises/[themeId]/write/_components/editor.tsx` (score 100) and `app/(app)/dashboard/exercises/[themeId]/write/page.tsx` (score 29.6). Files: the page, `editor.tsx`, `hooks/write/use-write-text.ts`, `hooks/correction/use-check-correction-status.ts`, and `hooks/utils/use-interval.ts`.
 
-- [ ] An unknown or soft-deleted theme renders not found.
-- [ ] An active theme shows its markdown beside the editor.
-- [ ] The editor starts with the TipTap starter content.
-- [ ] `Enviar texto` posts the editor's plain text to `POST /api/write/:themeId`.
-- [ ] The button stays disabled while the request is in flight and while the page is waiting for the correction.
-- [ ] A successful response stores the new text id and shows `A correção está sendo preparada.`
-- [ ] While that id is set, the page refetches correction status every 3 seconds.
-- [ ] Status `COMPLETED` clears the wait and opens `/dashboard/texts/:textId`.
-- [ ] A response without `textId` leaves the page as it was.
-- [ ] A failed request shows an error and enables the button again.
-- [ ] Status `FAILED` clears the wait and shows an error.
-- [ ] Polling stays off when there is no text id (`useInterval` with `null`).
-- [ ] Split `Editor` (scan: line 24, 72 lines) when Fallow still lists it after these tests pass.
+- [x] An unknown or soft-deleted theme renders not found.
+- [x] An active theme shows its markdown beside the editor.
+- [x] The editor starts with the TipTap starter content.
+- [x] `Enviar texto` posts the editor's plain text to `POST /api/write/:themeId`.
+- [x] The button stays disabled while the request is in flight and while the page is waiting for the correction.
+- [x] A successful response stores the new text id and shows `A correção está sendo preparada.`
+- [x] While that id is set, the page refetches correction status every 3 seconds.
+- [x] Status `COMPLETED` clears the wait and opens `/dashboard/texts/:textId`.
+- [x] A response without `textId` leaves the page as it was.
+- [x] A failed request shows an error and enables the button again.
+- [x] Status `FAILED` clears the wait and shows an error.
+- [x] Polling stays off when there is no text id (`useInterval` with `null`).
+- [x] Split `Editor` (scan: line 24, 72 lines) when Fallow still lists it after these tests pass.
 
 **Done when:** a component test or an end-to-end test covers each bullet, including the visible error on request failure and on `FAILED`.
 
