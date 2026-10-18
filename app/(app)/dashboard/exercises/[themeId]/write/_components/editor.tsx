@@ -1,6 +1,6 @@
 "use client"
 //* Libraries imports
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import StarterKit from "@tiptap/starter-kit"
 import { useEditor, EditorContent } from "@tiptap/react"
@@ -10,8 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
 //* Hooks imports
-import { CORRECTION_REDIRECT_DELAY_MS } from "@/hooks/write/correction-redirect-delay"
-import { useWriteText } from "@/hooks/write/use-write-text"
+import { useWriteText } from "@/hooks/write/use-write-text";
+import { useCheckCorrectionStatus } from "@/hooks/correction/use-check-correction-status";
+import { useInterval } from "@/hooks/utils/use-interval";
+
+const INITIAL_CONTENT = "<p>Hello World! 🌎️</p>";
+const INTERVAL_CHECK_CORRECTION_STATUS = 3_000;
 
 type EditorProps = {
   themeId: string
@@ -19,24 +23,30 @@ type EditorProps = {
 
 const Editor = (props: EditorProps) => {
   const router = useRouter()
-  const writeText = useWriteText()
-  const [isWaitingForCorrection, setIsWaitingForCorrection] = useState(false)
-  const redirectTimeoutId = useRef<number | null>(null)
+  const [textId, setTextId] = useState<string | null>(null);
+  const [isWaitingForCorrection, setIsWaitingForCorrection] = useState(false);
+
+  const writeText = useWriteText();
+  const checkCorrectionStatus = useCheckCorrectionStatus(textId);
+
+  useInterval(() => {
+    checkCorrectionStatus.refetch();
+  }, textId ? INTERVAL_CHECK_CORRECTION_STATUS : null); //* Check the correction status every second if a textId is set
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "<p>Hello World! 🌎️</p>",
+    content: INITIAL_CONTENT,
     // Don't render immediately on the server to avoid SSR issues
     immediatelyRender: false,
   })
 
   useEffect(() => {
-    return () => {
-      if (redirectTimeoutId.current !== null) {
-        window.clearTimeout(redirectTimeoutId.current)
-      }
+    if (checkCorrectionStatus.data?.data?.status === "COMPLETED" && textId) {
+      setIsWaitingForCorrection(false);
+      setTextId(null);
+      router.push(`/dashboard/texts/${textId}`);
     }
-  }, [])
+  }, [checkCorrectionStatus.data?.data?.status, textId])
 
   const handleSubmit = () => {
     const content = editor?.getText() || ""
@@ -57,32 +67,24 @@ const Editor = (props: EditorProps) => {
             return
           }
 
-          if (redirectTimeoutId.current !== null) {
-            window.clearTimeout(redirectTimeoutId.current)
-          }
-
-          setIsWaitingForCorrection(true)
-          redirectTimeoutId.current = window.setTimeout(() => {
-            router.push(`/dashboard/texts/${textId}`)
-          }, CORRECTION_REDIRECT_DELAY_MS)
+          setTextId(textId);
+          setIsWaitingForCorrection(true);
         },
       }
     )
   }
-
-  const isPreparingCorrection = writeText.isPending || isWaitingForCorrection
 
   return (
     <div className="col-span-2 flex h-full w-full max-w-5xl flex-col items-start justify-start gap-2">
       <Button
         id="submit-text"
         type="button"
-        disabled={isPreparingCorrection || writeText.isPending}
+        disabled={isWaitingForCorrection || writeText.isPending}
         onClick={handleSubmit}
       >
         Enviar texto
       </Button>
-      {isPreparingCorrection ? (
+      {isWaitingForCorrection ? (
         <p className="flex items-center gap-2 p-1 text-sm text-muted-foreground">
           <Spinner />
           <span>A correção está sendo preparada.</span>
