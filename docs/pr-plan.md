@@ -12,7 +12,7 @@ Fallow commands for this CLI: `dead-code`, `dupes`, and `health --hotspots --tar
 | --- | --- | --- |
 | 1 | Teach Fallow the component gallery | Later dead-code runs stay comparable |
 | 2 | Dependencies and the stylesheet | `app/globals.css` imports `shadcn/tailwind.css`, so the package stays installed |
-| 3 | Unused primitives and file-local exports | Tests should target the components the product still renders |
+| 3 | Unused primitives and file-local exports | `components/ui` stays intact; later scans ignore its unused exports |
 | 4 | Shared auth forms and spec steps | New auth tests should hit the extracted markup |
 | 5 | Auth against the real API | The forms and their component tests are already stable |
 | 6 | Schema, services, and seed | API and workflow tests need these queries to be pinned down |
@@ -114,43 +114,10 @@ Scope: [02-dependencies-and-the-stylesheet.md](pr-plans/02-dependencies-and-the-
 
 Scope: [03-unused-primitives-and-file-local-exports.md](pr-plans/03-unused-primitives-and-file-local-exports.md)
 
-Fallow's refactor targets are this work: `components/ui/field.tsx` (6 of 10 value exports unused, priority 23.5) and `components/ui/sidebar.tsx` (14 of 24 value exports unused, plus fan-out 7, priority 28.8).
+Fallow's refactor targets are this work: `components/ui/field.tsx` (6 of 10 value exports unused, priority 23.5) and `components/ui/sidebar.tsx` (14 of 24 value exports unused, plus fan-out 7, priority 28.8). Those files are shadcn primitives. Keep every export. Turn `unused-exports` off for `components/ui/**` in `.fallowrc.json`.
 
-Delete the unused component when a repo search shows zero references. Dropping only the `export` keyword leaves a private function that nothing calls.
-
-### `components/ui/field.tsx`
-
-- [ ] `FieldDescription`
-- [ ] `FieldLegend`
-- [ ] `FieldSeparator`
-- [ ] `FieldSet`
-- [ ] `FieldContent`
-- [ ] `FieldTitle`
-
-### `components/ui/sidebar.tsx`
-
-- [ ] `SidebarFooter`
-- [ ] `SidebarGroupAction`
-- [ ] `SidebarGroupLabel`
-- [ ] `SidebarInput`
-- [ ] `SidebarInset`
-- [ ] `SidebarMenuAction`
-- [ ] `SidebarMenuBadge`
-- [ ] `SidebarMenuSkeleton`
-- [ ] `SidebarMenuSub`
-- [ ] `SidebarMenuSubButton`
-- [ ] `SidebarMenuSubItem`
-- [ ] `SidebarRail`
-- [ ] `SidebarSeparator`
-- [ ] `useSidebar`
-
-### Other primitives
-
-- [ ] `AlertAction` in `components/ui/alert.tsx`
-- [ ] `CardAction` in `components/ui/card.tsx`
-- [ ] `SheetTrigger` in `components/ui/sheet.tsx`
-- [ ] `SheetClose` in `components/ui/sheet.tsx`
-- [ ] `SheetFooter` in `components/ui/sheet.tsx`
+- [x] `overrides` in `.fallowrc.json` sets `unused-exports` to `off` for `components/ui/**`.
+- [x] `fallow dead-code` no longer lists unused exports under `components/ui`, including `FieldDescription`, `FieldLegend`, `FieldSeparator`, `FieldSet`, `FieldContent`, `FieldTitle`, the unused `Sidebar*` pieces, `useSidebar`, `AlertAction`, `CardAction`, `SheetTrigger`, `SheetClose`, and `SheetFooter`.
 
 ### Exports used only in their own file
 
@@ -168,7 +135,7 @@ Keep the declaration when the file still uses it. Remove `export` / `export type
 - [ ] Split `Sidebar` (scan: line 152, 101 lines) when Fallow still lists it after the deletions above.
 - [ ] Split `SidebarProvider` (scan: line 56, 95 lines) on the same condition.
 
-**Done when:** `fallow dead-code` no longer lists these symbols, the app shell and the feedback story still render, and `tests/unit/correction-grading.test.ts` passes.
+**Done when:** `fallow dead-code` no longer lists unused exports under `components/ui` or the file-local symbols in this PR, the app shell and the feedback story still render, and `tests/unit/correction-grading.test.ts` passes.
 
 ## PR 4 — Shared auth forms and spec steps
 

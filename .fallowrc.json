@@ -16,5 +16,13 @@
       "file": "playwright/mocks/next-navigation.ts",
       "exports": ["useRouter"]
     }
+  ],
+  "overrides": [
+    {
+      "files": ["components/ui/**"],
+      "rules": {
+        "unused-exports": "off"
+      }
+    }
   ]
 }
