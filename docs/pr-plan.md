@@ -163,9 +163,9 @@ Scope: [05-auth-against-the-real-api.md](pr-plans/05-auth-against-the-real-api.m
 
 The component tests stub Better Auth. These paths never hit the auth API or the database.
 
-- [ ] Sign-in with a wrong password fails and stays on the form.
-- [ ] Sign-up with an email that already exists fails and stays on the form.
-- [ ] Sign-in and sign-up clear the TanStack Query cache before navigating home (`queryClient.clear` in the form hooks).
+- [x] Sign-in with a wrong password fails and stays on the form.
+- [x] Sign-up with an email that already exists fails and stays on the form.
+- [x] Sign-in and sign-up clear the TanStack Query cache before navigating home (`queryClient.clear` in the form hooks).
 
 **Done when:** an end-to-end or integration test for each bullet fails if that behavior is removed. The existing component specs still pass.
 
