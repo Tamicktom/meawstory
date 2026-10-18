@@ -6,6 +6,7 @@ import z from "zod"
 
 //* Services imports
 import { textService } from "@/services/text"
+import { themeService } from "@/services/theme"
 
 //* Workflow import
 import { correctText } from "@/workflows/correction"
@@ -26,6 +27,18 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
     if (!session) {
       request.set.status = 401
       return { message: "Unauthorized" }
+    }
+
+    if (content === "") {
+      request.set.status = 400
+      return { message: "Content is required" }
+    }
+
+    const activeTheme = await themeService.findThemeById(themeId)
+
+    if (!activeTheme) {
+      request.set.status = 404
+      return { message: "Theme not found" }
     }
 
     const newText = await textService.createText({

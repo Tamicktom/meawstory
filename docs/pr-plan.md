@@ -250,28 +250,28 @@ Hotspots: `api/routes/write.ts` (score 27.9) and `app/(app)/dashboard/texts/[tex
 
 ### `POST /api/write/:themeId` and `textService.createText`
 
-- [ ] Without a session the route returns 401 and `{ message: "Unauthorized" }`.
-- [ ] With a session it inserts a text for that user and theme, titled `Text for theme ${themeId}`, starts the `correctText` workflow, and returns `{ textId }`.
-- [ ] An empty body is rejected.
-- [ ] A missing theme or a soft-deleted theme is rejected and inserts no text.
-- [ ] When the insert returns no row, the caller surfaces `Text was not created`.
+- [x] Without a session the route returns 401 and `{ message: "Unauthorized" }`.
+- [x] With a session it inserts a text for that user and theme, titled `Text for theme ${themeId}`, starts the `correctText` workflow, and returns `{ textId }`.
+- [x] An empty body is rejected.
+- [x] A missing theme or a soft-deleted theme is rejected and inserts no text.
+- [x] When the insert returns no row, the caller surfaces `Text was not created`.
 
 ### `api/routes/correction.ts` and `correctionService.findLatestActiveCorrection`
 
-- [ ] Without a session the route returns 401.
-- [ ] With a session it returns the latest active correction status for that text id.
-- [ ] When no active correction exists, the status is `PENDING`.
-- [ ] A soft-deleted correction is ignored.
-- [ ] A text owned by another user is rejected.
+- [x] Without a session the route returns 401.
+- [x] With a session it returns the latest active correction status for that text id.
+- [x] When no active correction exists, the status is `PENDING`.
+- [x] A soft-deleted correction is ignored.
+- [x] A text owned by another user is rejected.
 
 ### `app/(app)/dashboard/texts/[textId]/page.tsx`
 
-- [ ] Without a session the page renders not found.
-- [ ] A text owned by another user, a missing text, or a soft-deleted text renders not found.
-- [ ] An owned text passes the theme title and the latest active correction into `FeedbackView`.
-- [ ] When that correction is missing, the view stays on the pending copy.
-- [ ] A fractional score renders with two decimal places (`formatFeedbackScore`).
-- [ ] A non-numeric score is shown as stored, without the `de 1000` wording.
+- [x] Without a session the page renders not found.
+- [x] A text owned by another user, a missing text, or a soft-deleted text renders not found.
+- [x] An owned text passes the theme title and the latest active correction into `FeedbackView`.
+- [x] When that correction is missing, the view stays on the pending copy.
+- [x] A fractional score renders with two decimal places (`formatFeedbackScore`).
+- [x] A non-numeric score is shown as stored, without the `de 1000` wording.
 
 **Done when:** each bullet has a test, and the empty-body, inactive-theme, and ownership checks exist in the route or the service it calls.
 

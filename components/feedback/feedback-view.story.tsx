@@ -25,3 +25,23 @@ export const Ready = () => (
 export const Pending = () => (
   <FeedbackView themeTitle={themeTitle} correction={null} />
 )
+
+export const FractionalScore = () => (
+  <FeedbackView
+    themeTitle={themeTitle}
+    correction={{
+      ...readyCorrection,
+      score: "640.5",
+    }}
+  />
+)
+
+export const NonNumericScore = () => (
+  <FeedbackView
+    themeTitle={themeTitle}
+    correction={{
+      ...readyCorrection,
+      score: "not-a-number",
+    }}
+  />
+)
