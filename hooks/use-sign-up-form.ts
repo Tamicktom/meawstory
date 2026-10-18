@@ -13,6 +13,7 @@ import {
   signUpSchema,
   type SignUpValues,
 } from "@/schemas/sign-up"
+import { queryClient } from "@/utils/query-client";
 
 function useSignUpForm() {
   const router = useRouter()
@@ -32,7 +33,8 @@ function useSignUpForm() {
       return data
     },
     onSuccess: () => {
-      router.push("/")
+      queryClient.clear(); //* Clear the query client to avoid showing the previous user's data
+      router.push("/");
     },
   })
   const form = useForm({

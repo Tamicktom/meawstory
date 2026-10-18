@@ -8,7 +8,7 @@ import { Markdown } from '@tanstack/markdown/react';
 import { themeService } from "@/services/theme";
 
 //* Style imports
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button/button-variants";
 
 
 type WritePageProps = {

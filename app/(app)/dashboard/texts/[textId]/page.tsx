@@ -19,10 +19,12 @@ type TextFeedbackPageProps = {
 }
 
 export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
-  const params = await props.params
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  const [params, session] = await Promise.all([
+    props.params,
+    auth.api.getSession({
+      headers: await headers(),
+    })
+  ]);
 
   if (!session) {
     notFound()

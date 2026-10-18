@@ -2,7 +2,7 @@
 import Link from "next/link"
 
 //* Components imports
-import { buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button/button-variants"
 
 export default function DashboardPage() {
   return (

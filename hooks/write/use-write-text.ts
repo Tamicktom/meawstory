@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 
 //* API imports
 import { client } from "@/lib/eden";
+import { queryClient } from "@/utils/query-client";
 
 type WriteTextProps = {
   themeId: string;
@@ -21,6 +22,7 @@ export function useWriteText() {
   return useMutation({
     mutationFn: writeText,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["correction-status"] });
       console.log("Texto enviado com sucesso");
     },
     onError: () => {

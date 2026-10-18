@@ -1,6 +1,6 @@
 "use client"
 //* Libraries imports
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import StarterKit from "@tiptap/starter-kit"
 import { useEditor, EditorContent } from "@tiptap/react"
@@ -27,7 +27,14 @@ const Editor = (props: EditorProps) => {
   const [isWaitingForCorrection, setIsWaitingForCorrection] = useState(false);
 
   const writeText = useWriteText();
-  const checkCorrectionStatus = useCheckCorrectionStatus(textId);
+  const checkCorrectionStatus = useCheckCorrectionStatus({
+    textId,
+    onCompleted: () => {
+      setIsWaitingForCorrection(() => false);
+      setTextId(() => null);
+      router.push(`/dashboard/texts/${textId}`);
+    },
+  });
 
   useInterval(() => {
     checkCorrectionStatus.refetch();
@@ -65,15 +72,6 @@ const Editor = (props: EditorProps) => {
       }
     )
   }
-
-  //* Handle the correction status
-  useEffect(() => {
-    if (checkCorrectionStatus.data?.data?.status === "COMPLETED" && textId) {
-      setIsWaitingForCorrection(false);
-      setTextId(null);
-      router.push(`/dashboard/texts/${textId}`);
-    }
-  }, [checkCorrectionStatus.data?.data?.status, textId])
 
   return (
     <div className="col-span-2 flex h-full w-full max-w-5xl flex-col items-start justify-start gap-2">

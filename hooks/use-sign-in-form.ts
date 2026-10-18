@@ -13,6 +13,7 @@ import {
   signInSchema,
   type SignInValues,
 } from "@/schemas/sign-in"
+import { queryClient } from "@/utils/query-client";
 
 function useSignInForm() {
   const router = useRouter()
@@ -31,6 +32,7 @@ function useSignInForm() {
       return data
     },
     onSuccess: () => {
+      queryClient.clear(); //* Clear the query client to avoid showing the previous user's data
       router.push("/")
     },
   })
