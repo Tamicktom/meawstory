@@ -1,3 +1,4 @@
+CREATE TYPE "correction_status" AS ENUM('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY,
 	"account_id" text NOT NULL,
@@ -22,6 +23,7 @@ CREATE TABLE "correction" (
 	"rubric_id" text NOT NULL,
 	"rubric_content" text NOT NULL,
 	"text_id" text NOT NULL,
+	"status" "correction_status" DEFAULT 'PENDING'::"correction_status" NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"deleted_at" timestamp,

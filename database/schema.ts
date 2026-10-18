@@ -15,7 +15,12 @@ const softDelete = {
   deletedAt: p.timestamp("deleted_at"),
 }
 
-const score = p.decimal("score", { precision: 6, scale: 2 })
+const score = p.decimal("score", { precision: 6, scale: 2 });
+
+export const correctionStatusEnum = ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"] as const;
+export type CorrectionStatus = (typeof correctionStatusEnum)[number];
+
+export const correctionStatus = p.pgEnum("correction_status", correctionStatusEnum);
 
 export const user = p.pgTable("user", {
   id: p.text("id").primaryKey(),
@@ -159,6 +164,8 @@ export const correction = p.pgTable(
       .text("text_id")
       .notNull()
       .references(() => text.id, { onDelete: "cascade" }),
+
+    status: correctionStatus("status").default("PENDING").notNull(),
 
     ...timestamps,
     ...softDelete,

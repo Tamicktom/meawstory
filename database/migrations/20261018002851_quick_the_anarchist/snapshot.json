@@ -1,11 +1,22 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "60aa86b2-67c8-4007-9772-9a4fe1567091",
+  "id": "158d48ff-a1d7-481a-8cb2-09b0fc9420b1",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
+    {
+      "values": [
+        "PENDING",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "name": "correction_status",
+      "entityType": "enums",
+      "schema": "public"
+    },
     {
       "isRlsEnabled": false,
       "name": "account",
@@ -310,6 +321,19 @@
       "generated": null,
       "identity": null,
       "name": "text_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "correction"
+    },
+    {
+      "type": "correction_status",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'PENDING'",
+      "generated": null,
+      "identity": null,
+      "name": "status",
       "entityType": "columns",
       "schema": "public",
       "table": "correction"
