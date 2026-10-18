@@ -17,6 +17,7 @@ import {
   formatCorrectionScore,
   type CorrectionSource,
 } from "@/workflows/correction-grading"
+import { readSavedCorrection } from "@/workflows/correction-stand-in"
 
 type GradedCorrection = {
   textId: string
@@ -136,6 +137,12 @@ export async function getRubric(themeId: string) {
 async function gradeText(source: CorrectionSource) {
   "use step"
 
+  const saved = readSavedCorrection()
+
+  if (saved) {
+    return gradedResult(saved.content, saved.score)
+  }
+
   const result = await generateText({
     model: openAI("gpt-5-mini"),
     instructions: correctionInstructions,
@@ -147,11 +154,14 @@ async function gradeText(source: CorrectionSource) {
     }),
   })
 
-  const output = result.output
-  let score: string
+  return gradedResult(result.output.content, result.output.score)
+}
+
+function gradedResult(content: string, score: number) {
+  let formattedScore: string
 
   try {
-    score = formatCorrectionScore(output.score)
+    formattedScore = formatCorrectionScore(score)
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Correction score is invalid."
@@ -160,8 +170,8 @@ async function gradeText(source: CorrectionSource) {
   }
 
   return {
-    content: output.content,
-    score,
+    content,
+    score: formattedScore,
   }
 }
 

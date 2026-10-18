@@ -373,9 +373,9 @@ Scope: [12-product-loop-end-to-end.md](pr-plans/12-product-loop-end-to-end.md)
 
 One browser test walks the path the earlier PRs covered in pieces. Replace the model step with a saved correction so the test stays deterministic.
 
-- [ ] A signed-in user opens the theme list, opens a theme, and starts the exercise.
-- [ ] They submit a text and land on `/dashboard/texts/:textId` once the correction is `COMPLETED`.
-- [ ] The feedback page shows that theme's title and the saved correction.
+- [x] A signed-in user opens the theme list, opens a theme, and starts the exercise.
+- [x] They submit a text and land on `/dashboard/texts/:textId` once the correction is `COMPLETED`.
+- [x] The feedback page shows that theme's title and the saved correction.
 
 **Done when:** `bun run test:e2e` includes this path, and the test fails if the link from the theme card to the feedback page breaks.
 

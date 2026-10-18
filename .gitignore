@@ -13,6 +13,7 @@
 /test-results/
 /playwright-report/
 /blob-report/
+/tests/helpers/.saved-correction.json
 
 # next.js
 /.next/
