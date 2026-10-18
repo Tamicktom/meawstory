@@ -6,8 +6,6 @@ export const correctionOutputSchema = z.object({
   score: z.number().min(0).max(1000),
 })
 
-export type CorrectionOutput = z.infer<typeof correctionOutputSchema>
-
 export type CorrectionSource = {
   themeTitle: string
   themeDescription: string

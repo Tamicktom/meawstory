@@ -2,7 +2,7 @@
 import { parseMarkdown } from "@tanstack/markdown/parser"
 import { Markdown } from "@tanstack/markdown/react"
 
-export type FeedbackCorrection = {
+type FeedbackCorrection = {
   score: string
   content: string
   textContent: string

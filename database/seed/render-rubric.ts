@@ -1,4 +1,4 @@
-export const NARRATIVE_SCORE_MAX = 1000
+const NARRATIVE_SCORE_MAX = 1000
 
 export type CriterionKind = "objective" | "subjective"
 
