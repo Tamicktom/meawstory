@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "playwright/gallery/main.tsx",
+    "playwright/vite.config.ts",
+    "components/**/*.story.tsx"
+  ],
+  "ignoreExports": [
+    {
+      "file": "playwright/mocks/next-navigation.ts",
+      "exports": ["useRouter"]
+    }
+  ]
+}

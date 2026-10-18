@@ -84,13 +84,13 @@ These six files load outside static imports. Deleting them removes the Playwrigh
 
 `playwright/gallery/main.tsx` loads every story with `import.meta.glob("../../components/**/*.story.tsx")`. `playwright/vite.config.ts` aliases `next/navigation` to `playwright/mocks/next-navigation.ts` by file URL.
 
-- [ ] Register `playwright/gallery/main.tsx` as an entry point (Fallow config or the detected Vite plugin).
-- [ ] Keep these story files once that entry is visible:
-  - [ ] `components/auth/sign-in-form.story.tsx`
-  - [ ] `components/auth/sign-up-form.story.tsx`
-  - [ ] `components/feedback/feedback-view.story.tsx`
-  - [ ] `components/ui/button/button.story.tsx`
-- [ ] Keep `playwright/mocks/next-navigation.ts` once the Vite alias is visible.
+- [x] Register `playwright/gallery/main.tsx` as an entry point (Fallow config or the detected Vite plugin).
+- [x] Keep these story files once that entry is visible:
+  - [x] `components/auth/sign-in-form.story.tsx`
+  - [x] `components/auth/sign-up-form.story.tsx`
+  - [x] `components/feedback/feedback-view.story.tsx`
+  - [x] `components/ui/button/button.story.tsx`
+- [x] Keep `playwright/mocks/next-navigation.ts` once the Vite alias is visible.
 
 **Done when:** `fallow dead-code` no longer reports those six files, and the component gallery still serves the four stories.
 
