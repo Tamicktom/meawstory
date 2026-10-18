@@ -16,6 +16,12 @@ type InsertCorrectionValues = {
   status: CorrectionStatus
 }
 
+type CorrectionWriteResult = {
+  id: string
+  score: string
+  status: CorrectionStatus
+}
+
 async function insertCorrection(values: InsertCorrectionValues) {
   const inserted = await db
     .insert(correction)
@@ -73,7 +79,10 @@ async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
     .where(eq(correction.id, id))
 }
 
-async function updateCorrection(id: string, values: Partial<Omit<InsertCorrectionValues, "id">>) {
+async function updateCorrection(
+  id: string,
+  values: Partial<Omit<InsertCorrectionValues, "id">>
+): Promise<CorrectionWriteResult | null> {
   const result = await db
     .update(correction)
     .set(values)

@@ -281,17 +281,17 @@ Scope: [09-correction-workflow.md](pr-plans/09-correction-workflow.md)
 
 `workflows/correction.ts` is a hotspot (score 58.7). The prompt, the output schema, and `formatCorrectionScore` already have tests. This PR covers the steps.
 
-- [ ] `getText` loads an active text joined to an active theme, and fails with `Text not found` otherwise.
-- [ ] `getRubric` loads the theme's active rubric, and fails with `Rubric not found` otherwise.
-- [ ] `createEmptyCorrection` inserts a `PENDING` row with empty content, score `0.00`, and the frozen bodies from PR 7, using the workflow step id.
-- [ ] A conflicting id inserts nothing and the workflow fails with `Correction not created`.
-- [ ] The status then moves to `IN_PROGRESS`.
-- [ ] Grading calls the model with `correctionInstructions` and `buildCorrectionPrompt`. An invalid score fails with `FatalError` before save.
-- [ ] Before the final write, the step re-reads the text and the rubric. It fails when either row is gone, when `text.content` changed, or when `rubric.content` changed.
-- [ ] A successful save stores status `COMPLETED` plus the frozen `text_content` and `rubric_content`.
-- [ ] When the update returns no row and the correction still exists, the step returns that existing id and score.
-- [ ] When the correction is missing after the update, the step fails with `Correction was not saved`.
-- [ ] A failed run stores status `FAILED` on the correction row.
+- [x] `getText` loads an active text joined to an active theme, and fails with `Text not found` otherwise.
+- [x] `getRubric` loads the theme's active rubric, and fails with `Rubric not found` otherwise.
+- [x] `createEmptyCorrection` inserts a `PENDING` row with empty content, score `0.00`, and the frozen bodies from PR 7, using the workflow step id.
+- [x] A conflicting id inserts nothing and the workflow fails with `Correction not created`.
+- [x] The status then moves to `IN_PROGRESS`.
+- [x] Grading calls the model with `correctionInstructions` and `buildCorrectionPrompt`. An invalid score fails with `FatalError` before save.
+- [x] Before the final write, the step re-reads the text and the rubric. It fails when either row is gone, when `text.content` changed, or when `rubric.content` changed.
+- [x] A successful save stores status `COMPLETED` plus the frozen `text_content` and `rubric_content`.
+- [x] When the update returns no row and the correction still exists, the step returns that existing id and score.
+- [x] When the correction is missing after the update, the step fails with `Correction was not saved`.
+- [x] A failed run stores status `FAILED` on the correction row.
 
 **Done when:** each bullet has a test that uses a stand-in for the model call, and a grading failure leaves the row in `FAILED`.
 

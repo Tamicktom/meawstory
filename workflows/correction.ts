@@ -43,27 +43,30 @@ export async function correctText(textId: string) {
     throw new FatalError("Correction not created")
   }
 
-  await updateCorrectionStatus(correctionId, "IN_PROGRESS")
+  try {
+    await updateCorrectionStatus(correctionId, "IN_PROGRESS")
 
-  const graded = await gradeText({
-    themeTitle: textToCorrect.themeTitle,
-    themeDescription: textToCorrect.themeDescription,
-    textContent: textToCorrect.content,
-    rubricTitle: themeRubric.title,
-    rubricContent: themeRubric.content,
-  })
+    const graded = await gradeText({
+      themeTitle: textToCorrect.themeTitle,
+      themeDescription: textToCorrect.themeDescription,
+      textContent: textToCorrect.content,
+      rubricTitle: themeRubric.title,
+      rubricContent: themeRubric.content,
+    })
 
-  const saved = await updateCorrection(correctionId, {
-    textId: textToCorrect.id,
-    textContent: textToCorrect.content,
-    rubricId: themeRubric.id,
-    rubricContent: themeRubric.content,
-    content: graded.content,
-    score: graded.score,
-    status: "COMPLETED",
-  })
-
-  return saved
+    return await updateCorrection(correctionId, {
+      textId: textToCorrect.id,
+      textContent: textToCorrect.content,
+      rubricId: themeRubric.id,
+      rubricContent: themeRubric.content,
+      content: graded.content,
+      score: graded.score,
+      status: "COMPLETED",
+    })
+  } catch (error) {
+    await updateCorrectionStatus(correctionId, "FAILED")
+    throw error
+  }
 }
 
 type CreateEmptyCorrectionValues = {
@@ -106,7 +109,7 @@ async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
   await correctionService.updateCorrectionStatus(id, status)
 }
 
-async function getText(textId: string) {
+export async function getText(textId: string) {
   "use step"
 
   const result = await textService.findActiveTextWithTheme(textId)
@@ -118,7 +121,7 @@ async function getText(textId: string) {
   return result
 }
 
-async function getRubric(themeId: string) {
+export async function getRubric(themeId: string) {
   "use step"
 
   const result = await rubricService.findActiveRubricForTheme(themeId)
