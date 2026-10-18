@@ -227,18 +227,18 @@ Scope: [07-lifetime-rules.md](pr-plans/07-lifetime-rules.md)
 
 `database/schema.md` states these rules. Application code enforces them in part, and `database/migrations` has no trigger for them. Enforce each rule for every writer (the API and the workflow both insert). A database constraint or trigger is the single place that covers both.
 
-- [ ] A rubric can be retired only when no active theme points at it.
-- [ ] A theme can be retired only when no active text points at it.
-- [ ] A new theme, or a theme that changes rubric, points at an active rubric.
-- [ ] A new text, or a text that changes theme, points at an active theme.
-- [ ] A new correction points at an active text and an active rubric.
-- [ ] On insert, `text_content` equals the current `text.content`, and `rubric_content` equals the current `rubric.content`.
+- [x] A rubric can be retired only when no active theme points at it.
+- [x] A theme can be retired only when no active text points at it.
+- [x] A new theme, or a theme that changes rubric, points at an active rubric.
+- [x] A new text, or a text that changes theme, points at an active theme.
+- [x] A new correction points at an active text and an active rubric.
+- [x] On insert, `text_content` equals the current `text.content`, and `rubric_content` equals the current `rubric.content`.
 
 The workflow's `PENDING` row currently stores empty frozen bodies, then copies the real bodies on the final save. Change that first insert so it stores the current text body and the current rubric body. The final save still refuses to complete when either source changed after the freeze.
 
-- [ ] `createEmptyCorrection` writes the current text body and rubric body into the `PENDING` row.
-- [ ] A test rejects a correction insert whose frozen bodies differ from the current rows.
-- [ ] A test rejects each of the other five illegal writes above.
+- [x] `createEmptyCorrection` writes the current text body and rubric body into the `PENDING` row.
+- [x] A test rejects a correction insert whose frozen bodies differ from the current rows.
+- [x] A test rejects each of the other five illegal writes above.
 
 **Done when:** those six tests pass on a migrated database, and `database/schema.md` still describes the same rules.
 

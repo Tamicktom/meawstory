@@ -73,9 +73,10 @@ describe("textService.findActiveTextWithTheme", () => {
     expect(await textService.findActiveTextWithTheme(graph.textId)).toBeNull()
   })
 
-  it("returns null when the theme is soft-deleted", async () => {
+  it("returns null when the theme is retired after its text", async () => {
     const graph = await rows.insertActiveText({
-      themeDeletedAt: new Date("2024-01-01T00:00:00.000Z"),
+      textDeletedAt: new Date("2024-01-01T00:00:00.000Z"),
+      themeDeletedAt: new Date("2024-01-02T00:00:00.000Z"),
     })
 
     expect(await textService.findActiveTextWithTheme(graph.textId)).toBeNull()

@@ -1,5 +1,5 @@
 //* Libraries imports
-import { inArray } from "drizzle-orm"
+import { eq, inArray } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
@@ -285,6 +285,19 @@ async function insertText(ids: TrackedIds, input: TextInput) {
   return id
 }
 
+async function currentBody(
+  table: typeof text | typeof rubric,
+  id: string
+): Promise<string | undefined> {
+  const stored = await db
+    .select({ content: table.content })
+    .from(table)
+    .where(eq(table.id, id))
+    .limit(1)
+
+  return stored[0]?.content
+}
+
 async function insertCorrection(ids: TrackedIds, input: CorrectionInput) {
   const id = input.id ?? newId()
 
@@ -298,8 +311,14 @@ async function insertCorrection(ids: TrackedIds, input: CorrectionInput) {
     rubricId: input.rubricId,
     score: input.score ?? "10.00",
     content: input.content ?? "Correction body",
-    textContent: input.textContent ?? "Text body",
-    rubricContent: input.rubricContent ?? "Rubric body",
+    textContent:
+      input.textContent ??
+      (await currentBody(text, input.textId)) ??
+      "Text body",
+    rubricContent:
+      input.rubricContent ??
+      (await currentBody(rubric, input.rubricId)) ??
+      "Rubric body",
     status: input.status ?? "PENDING",
     ...(input.createdAt ? { createdAt: input.createdAt } : {}),
     ...(input.deletedAt ? { deletedAt: input.deletedAt } : {}),
@@ -313,7 +332,6 @@ async function insertActiveText(ids: TrackedIds, input?: ActiveTextInput) {
   const themeId = await insertTheme(ids, rubricId, {
     title: input?.themeTitle,
     description: input?.themeDescription,
-    deletedAt: input?.themeDeletedAt,
   })
   const userId = await insertUser(ids)
   const textId = await insertText(ids, {
@@ -322,6 +340,13 @@ async function insertActiveText(ids: TrackedIds, input?: ActiveTextInput) {
     content: input?.content,
     deletedAt: input?.textDeletedAt,
   })
+
+  if (input?.themeDeletedAt) {
+    await db
+      .update(theme)
+      .set({ deletedAt: input.themeDeletedAt })
+      .where(eq(theme.id, themeId))
+  }
 
   return { rubricId, themeId, userId, textId }
 }

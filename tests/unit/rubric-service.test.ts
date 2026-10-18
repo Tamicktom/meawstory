@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
-import { rubric } from "@/database/schema"
+import { rubric, theme } from "@/database/schema"
 import { rubricService } from "@/services/rubric"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
 
@@ -43,11 +43,18 @@ describe("rubricService.findActiveRubricForTheme", () => {
     expect(await rubricService.findActiveRubricForTheme(themeId)).toBeNull()
   })
 
-  it("returns null when the rubric is soft-deleted", async () => {
-    const rubricId = await rows.insertRubric({
-      deletedAt: new Date("2024-01-01T00:00:00.000Z"),
-    })
+  it("returns null when the rubric is retired after its theme", async () => {
+    const rubricId = await rows.insertRubric()
     const themeId = await rows.insertTheme(rubricId)
+
+    await db
+      .update(theme)
+      .set({ deletedAt: new Date("2024-01-01T00:00:00.000Z") })
+      .where(eq(theme.id, themeId))
+    await db
+      .update(rubric)
+      .set({ deletedAt: new Date("2024-01-02T00:00:00.000Z") })
+      .where(eq(rubric.id, rubricId))
 
     expect(await rubricService.findActiveRubricForTheme(themeId)).toBeNull()
   })

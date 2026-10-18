@@ -5,12 +5,8 @@ import { FatalError, getStepMetadata } from "workflow"
 //* Services imports
 import { openAI } from "@/services/ai"
 import { correctionService } from "@/services/correction"
-import {
-  rubricService
-} from "@/services/rubric"
-import {
-  textService
-} from "@/services/text"
+import { rubricService } from "@/services/rubric"
+import { textService } from "@/services/text"
 import type { CorrectionStatus } from "@/database/schema"
 
 //* Local imports
@@ -23,17 +19,17 @@ import {
 } from "@/workflows/correction-grading"
 
 type GradedCorrection = {
-  textId: string;
-  textContent: string;
-  rubricId: string;
-  rubricContent: string;
-  content: string;
-  score: string;
-  status: CorrectionStatus;
+  textId: string
+  textContent: string
+  rubricId: string
+  rubricContent: string
+  content: string
+  score: string
+  status: CorrectionStatus
 }
 
 export async function correctText(textId: string) {
-  "use workflow";
+  "use workflow"
 
   const textToCorrect = await getText(textId)
   const themeRubric = await getRubric(textToCorrect.themeId)
@@ -41,13 +37,13 @@ export async function correctText(textId: string) {
   const correctionId = await createEmptyCorrection({
     textId: textToCorrect.id,
     rubricId: themeRubric.id,
-  });
+  })
 
   if (!correctionId) {
     throw new FatalError("Correction not created")
   }
 
-  await updateCorrectionStatus(correctionId, "IN_PROGRESS");
+  await updateCorrectionStatus(correctionId, "IN_PROGRESS")
 
   const graded = await gradeText({
     themeTitle: textToCorrect.themeTitle,
@@ -65,33 +61,43 @@ export async function correctText(textId: string) {
     content: graded.content,
     score: graded.score,
     status: "COMPLETED",
-  });
+  })
 
-  return saved;
+  return saved
 }
 
 type CreateEmptyCorrectionValues = {
-  textId: string;
-  rubricId: string;
+  textId: string
+  rubricId: string
 }
 
-async function createEmptyCorrection(values: CreateEmptyCorrectionValues): Promise<string | null> {
-  "use step";
+export async function createEmptyCorrection(
+  values: CreateEmptyCorrectionValues
+): Promise<string | null> {
+  "use step"
 
-  const { stepId } = getStepMetadata();
+  const { stepId } = getStepMetadata()
+  const currentText = await textService.findActiveTextContent(values.textId)
+  const currentRubric = await rubricService.findActiveRubricContent(
+    values.rubricId
+  )
+
+  if (!currentText || !currentRubric) {
+    return null
+  }
 
   const inserted = await correctionService.insertCorrection({
     id: stepId,
     content: "",
     score: "0.00",
-    textContent: "",
+    textContent: currentText.content,
     rubricId: values.rubricId,
-    rubricContent: "",
+    rubricContent: currentRubric.content,
     textId: values.textId,
     status: "PENDING",
-  });
+  })
 
-  return inserted?.id ?? null;
+  return inserted?.id ?? null
 }
 
 async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
@@ -136,7 +142,7 @@ async function gradeText(source: CorrectionSource) {
       name: "correction",
       description: "Rubric-based correction of one student text.",
     }),
-  });
+  })
 
   const output = result.output
   let score: string
@@ -156,7 +162,10 @@ async function gradeText(source: CorrectionSource) {
   }
 }
 
-async function updateCorrection(correctionId: string, graded: GradedCorrection) {
+async function updateCorrection(
+  correctionId: string,
+  graded: GradedCorrection
+) {
   "use step"
 
   const currentText = await textService.findActiveTextContent(graded.textId)
@@ -169,7 +178,9 @@ async function updateCorrection(correctionId: string, graded: GradedCorrection) 
     throw new FatalError("Text changed before the correction was saved")
   }
 
-  const currentRubric = await rubricService.findActiveRubricContent(graded.rubricId)
+  const currentRubric = await rubricService.findActiveRubricContent(
+    graded.rubricId
+  )
 
   if (!currentRubric) {
     throw new FatalError("Rubric not found")

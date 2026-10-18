@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
-import { correction } from "@/database/schema"
+import { correction, rubric, text } from "@/database/schema"
 import { correctionService } from "@/services/correction"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
 
@@ -15,7 +15,13 @@ afterEach(async () => {
 })
 
 async function expectExistingCorrectionIdInsertsNothing() {
-  const graph = await rows.insertActiveText()
+  const graph = await rows.insertActiveText({ content: "Frozen text" })
+
+  await db
+    .update(rubric)
+    .set({ content: "Frozen rubric" })
+    .where(eq(rubric.id, graph.rubricId))
+
   const id = rows.trackCorrection()
   const values = {
     id,
@@ -59,7 +65,13 @@ async function expectExistingCorrectionIdInsertsNothing() {
 
 describe("correctionService.insertCorrection", () => {
   it("inserts the correction", async () => {
-    const graph = await rows.insertActiveText()
+    const graph = await rows.insertActiveText({ content: "Frozen text" })
+
+    await db
+      .update(rubric)
+      .set({ content: "Frozen rubric" })
+      .where(eq(rubric.id, graph.rubricId))
+
     const id = rows.trackCorrection()
 
     const inserted = await correctionService.insertCorrection({
@@ -125,6 +137,10 @@ describe("correctionService.findLatestActiveCorrection", () => {
   it("returns the newest active correction for the text", async () => {
     const graph = await rows.insertActiveText()
 
+    await db
+      .update(text)
+      .set({ content: "Older text" })
+      .where(eq(text.id, graph.textId))
     await rows.insertCorrection({
       textId: graph.textId,
       rubricId: graph.rubricId,
@@ -134,6 +150,11 @@ describe("correctionService.findLatestActiveCorrection", () => {
       status: "COMPLETED",
       createdAt: new Date("2020-01-01T00:00:00.000Z"),
     })
+
+    await db
+      .update(text)
+      .set({ content: "Newer text" })
+      .where(eq(text.id, graph.textId))
     await rows.insertCorrection({
       textId: graph.textId,
       rubricId: graph.rubricId,
@@ -143,6 +164,11 @@ describe("correctionService.findLatestActiveCorrection", () => {
       status: "IN_PROGRESS",
       createdAt: new Date("2024-06-01T00:00:00.000Z"),
     })
+
+    await db
+      .update(text)
+      .set({ content: "Deleted text" })
+      .where(eq(text.id, graph.textId))
     await rows.insertCorrection({
       textId: graph.textId,
       rubricId: graph.rubricId,
@@ -211,8 +237,6 @@ describe("correctionService.updateCorrection", () => {
       rubricId: graph.rubricId,
       content: "Pending note",
       score: "0.00",
-      textContent: "",
-      rubricContent: "",
       status: "PENDING",
     })
 
