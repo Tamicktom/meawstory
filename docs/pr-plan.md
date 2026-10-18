@@ -100,13 +100,13 @@ Scope: [02-dependencies-and-the-stylesheet.md](pr-plans/02-dependencies-and-the-
 
 `app/globals.css` imports `shadcn/tailwind.css` and loads `@plugin "@tailwindcss/typography"`. Fallow only follows JavaScript imports, so both packages show up as unused. The unresolved import it reports (`./shadcn/tailwind.css` on line 1) is that package export, which the source writes as `shadcn/tailwind.css` on line 3.
 
-- [ ] Confirm `shadcn/tailwind.css` resolves from the installed `shadcn` package at build time.
-- [ ] Keep `shadcn` installed. Move it to `devDependencies` when the CSS export and the CLI are its only uses.
-- [ ] When the build already resolves the export, record it so Fallow stops reporting the unresolved import. Keep the working `@import`.
+- [x] Confirm `shadcn/tailwind.css` resolves from the installed `shadcn` package at build time.
+- [x] Keep `shadcn` installed. Move it to `devDependencies` when the CSS export and the CLI are its only uses.
+- [x] When the build already resolves the export, record it so Fallow stops reporting the unresolved import. Keep the working `@import`.
 - [ ] When the package export is missing, point the import at the real stylesheet.
-- [ ] Remove `@tanstack/react-form-nextjs` after confirming no script, stylesheet, or TypeScript file references it.
-- [ ] Remove `@tiptap/pm` after the same check.
-- [ ] Add `@tailwindcss/typography` to `ignoreDependencies` in the Fallow config. Leave the package installed.
+- [x] Remove `@tanstack/react-form-nextjs` after confirming no script, stylesheet, or TypeScript file references it.
+- [x] Remove `@tiptap/pm` after the same check.
+- [x] Add `@tailwindcss/typography` to `ignoreDependencies` in the Fallow config. Leave the package installed.
 
 **Done when:** `fallow dead-code` drops the three unused dependencies, the typography dev-dependency finding, and the unresolved CSS import. `prose` styles still build.
 

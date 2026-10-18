@@ -5,6 +5,12 @@
     "playwright/vite.config.ts",
     "components/**/*.story.tsx"
   ],
+  "ignorePatterns": ["**/*.css"],
+  "ignoreDependencies": [
+    "@tailwindcss/typography",
+    "shadcn",
+    "tw-animate-css"
+  ],
   "ignoreExports": [
     {
       "file": "playwright/mocks/next-navigation.ts",
