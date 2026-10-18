@@ -23,11 +23,11 @@ type ThemeCardProps = {
   theme: ThemeCardTheme;
 };
 
-function themeExcerpt(description: string): string {
+export function themeExcerpt(description: string): string {
   const situation = description.match(/## Situação\s+([\s\S]*?)(?:\n## |$)/);
   const excerpt = situation?.[1]?.trim();
 
-  if (!excerpt) {
+  if (!excerpt || excerpt.startsWith("## ")) {
     return description.trim();
   }
 
