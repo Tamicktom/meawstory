@@ -179,12 +179,12 @@ No test inserts, updates, or deletes rows today. Pin the rules the current schem
 
 ### Constraints already in the schema
 
-- [ ] `correction.score` is rejected outside `0.00` through `1000.00`.
-- [ ] Deleting a rubric leaves themes and corrections in place (`ON DELETE RESTRICT`).
-- [ ] Deleting a theme leaves texts in place (`ON DELETE RESTRICT`).
-- [ ] Deleting a user deletes that user's sessions, accounts, and texts.
-- [ ] Deleting a text deletes its corrections.
-- [ ] `user.email` and `session.token` are unique.
+- [x] `correction.score` is rejected outside `0.00` through `1000.00`.
+- [x] Deleting a rubric leaves themes and corrections in place (`ON DELETE RESTRICT`).
+- [x] Deleting a theme leaves texts in place (`ON DELETE RESTRICT`).
+- [x] Deleting a user deletes that user's sessions, accounts, and texts.
+- [x] Deleting a text deletes its corrections.
+- [x] `user.email` and `session.token` are unique.
 
 ### Services
 
@@ -204,20 +204,20 @@ No test inserts, updates, or deletes rows today. Pin the rules the current schem
 | `correctionService.updateCorrectionStatus` | Status write |
 | `correctionService.updateCorrection` | Content, score, frozen text, frozen rubric, and status |
 
-- [ ] Each row in the table has a test that fails when the behavior changes.
+- [x] Each row in the table has a test that fails when the behavior changes.
 
 ### Seed
 
 The in-memory catalog shape already has a unit test. Persist these:
 
-- [ ] `seedNarrativeCatalog` upserts rubrics and themes and refreshes `updatedAt` when the id already exists.
-- [ ] `seedTestUser` creates `user@user.user` with a verified email and a credential account when the email is new.
-- [ ] When that email already exists, the seed resets the password and marks the email verified.
+- [x] `seedNarrativeCatalog` upserts rubrics and themes and refreshes `updatedAt` when the id already exists.
+- [x] `seedTestUser` creates `user@user.user` with a verified email and a credential account when the email is new.
+- [x] When that email already exists, the seed resets the password and marks the email verified.
 
 ### Large units in this area
 
-- [ ] Split `renderRubric` in `database/seed/render-rubric.ts` (scan: line 71, 87 lines) when Fallow still lists it after the seed tests.
-- [ ] Split the anonymous test at `tests/unit/narrative-catalog.test.ts` line 38 (scan: 85 lines) when Fallow still lists it.
+- [x] Split `renderRubric` in `database/seed/render-rubric.ts` (scan: line 71, 87 lines) when Fallow still lists it after the seed tests.
+- [x] Split the anonymous test at `tests/unit/narrative-catalog.test.ts` line 38 (scan: 85 lines) when Fallow still lists it.
 
 **Done when:** `bun test` covers the constraints, the service table, and the three seed behaviors against the migrated database.
 
