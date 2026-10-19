@@ -3,7 +3,7 @@
 //* Libraries imports
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpenIcon, HouseIcon } from "lucide-react"
+import { BookOpenIcon, FileTextIcon, HouseIcon } from "lucide-react"
 
 //* Components imports
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,12 @@ const navigation = [
     href: "/dashboard/themes",
     icon: BookOpenIcon,
   },
+  {
+    id: "sidebar-texts",
+    title: "Texts",
+    href: "/dashboard/texts",
+    icon: FileTextIcon,
+  },
 ] as const
 
 export function AppSidebar() {
@@ -51,7 +57,9 @@ export function AppSidebar() {
               size="lg"
               render={<Link href="/dashboard" />}
             >
-              <span className="font-heading text-sm font-medium">Meawstory</span>
+              <span className="font-heading text-sm font-medium">
+                Meawstory
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

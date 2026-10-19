@@ -21,4 +21,12 @@ describe("DashboardPage", () => {
     expect(markup).toContain('href="/dashboard/themes"')
     expect(markup).toContain("Browse themes")
   })
+
+  it("links Your texts to the text history", () => {
+    const markup = renderToStaticMarkup(DashboardPage())
+
+    expect(markup).toContain('id="dashboard-your-texts"')
+    expect(markup).toContain('href="/dashboard/texts"')
+    expect(markup).toContain("Your texts")
+  })
 })

@@ -147,6 +147,109 @@ describe("textService.findOwnedText", () => {
   })
 })
 
+describe("textService.listOwnedTexts", () => {
+  it("returns that user's active texts newest first with the latest completed score", async () => {
+    const older = await rows.insertActiveText({
+      content: "The older draft stays on the desk.",
+      themeTitle: "Older theme",
+    })
+    const newerId = await rows.insertText({
+      userId: older.userId,
+      themeId: older.themeId,
+      content: "The newer draft names the missing key.",
+    })
+    const retiredId = await rows.insertText({
+      userId: older.userId,
+      themeId: older.themeId,
+      content: "This draft was retired.",
+      deletedAt: new Date("2024-03-01T00:00:00.000Z"),
+    })
+    const other = await rows.insertActiveText({
+      content: "Another writer keeps this draft.",
+      themeTitle: "Someone else's theme",
+    })
+
+    await db
+      .update(text)
+      .set({ createdAt: new Date("2020-01-01T00:00:00.000Z") })
+      .where(eq(text.id, older.textId))
+    await db
+      .update(text)
+      .set({ createdAt: new Date("2024-06-01T00:00:00.000Z") })
+      .where(eq(text.id, newerId))
+
+    await rows.insertCorrection({
+      textId: newerId,
+      rubricId: older.rubricId,
+      score: "10.00",
+      status: "COMPLETED",
+      createdAt: new Date("2024-06-01T00:00:00.000Z"),
+    })
+    await rows.insertCorrection({
+      textId: newerId,
+      rubricId: older.rubricId,
+      score: "640.00",
+      status: "COMPLETED",
+      createdAt: new Date("2024-06-02T00:00:00.000Z"),
+    })
+    await rows.insertCorrection({
+      textId: newerId,
+      rubricId: older.rubricId,
+      score: "900.00",
+      status: "COMPLETED",
+      createdAt: new Date("2024-06-03T00:00:00.000Z"),
+      deletedAt: new Date("2024-06-04T00:00:00.000Z"),
+    })
+
+    const listed = await textService.listOwnedTexts(older.userId)
+
+    expect(listed.map((item) => item.id)).toEqual([newerId, older.textId])
+    expect(listed[0]).toEqual({
+      id: newerId,
+      content: "The newer draft names the missing key.",
+      createdAt: new Date("2024-06-01T00:00:00.000Z"),
+      themeTitle: "Older theme",
+      correction: {
+        status: "COMPLETED",
+        score: "640.00",
+      },
+    })
+    expect(listed[1]?.correction).toBeNull()
+    expect(listed.some((item) => item.id === retiredId)).toBe(false)
+    expect(listed.some((item) => item.id === other.textId)).toBe(false)
+  })
+
+  it("omits the score when the latest active correction is not completed", async () => {
+    const graph = await rows.insertActiveText({
+      content: "A draft still waiting on the grade.",
+    })
+
+    await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      score: "640.00",
+      status: "COMPLETED",
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    })
+    await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      score: "0.00",
+      status: "PENDING",
+      createdAt: new Date("2024-06-01T00:00:00.000Z"),
+    })
+
+    const listed = await textService.listOwnedTexts(graph.userId)
+
+    expect(listed).toHaveLength(1)
+    expect(listed[0]?.id).toBe(graph.textId)
+    expect(listed[0]?.correction).toEqual({
+      status: "PENDING",
+      score: null,
+    })
+  })
+})
+
 describe("textService.createText", () => {
   it("inserts the text titled for its theme", async () => {
     const graph = await rows.insertActiveText()

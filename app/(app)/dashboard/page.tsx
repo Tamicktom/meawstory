@@ -12,13 +12,22 @@ export default function DashboardPage() {
         Start by choosing a theme. Write a text for it and receive a correction
         against that theme&apos;s rubric.
       </p>
-      <Link
-        id="dashboard-browse-themes"
-        href="/dashboard/themes"
-        className={buttonVariants({ className: "w-fit" })}
-      >
-        Browse themes
-      </Link>
+      <div className="flex flex-row flex-wrap gap-2">
+        <Link
+          id="dashboard-browse-themes"
+          href="/dashboard/themes"
+          className={buttonVariants({ className: "w-fit" })}
+        >
+          Browse themes
+        </Link>
+        <Link
+          id="dashboard-your-texts"
+          href="/dashboard/texts"
+          className={buttonVariants({ variant: "outline", className: "w-fit" })}
+        >
+          Your texts
+        </Link>
+      </div>
     </div>
   )
 }
