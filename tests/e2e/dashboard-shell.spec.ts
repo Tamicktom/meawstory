@@ -16,6 +16,7 @@ test.describe("dashboard session gate", () => {
     await expect(page.getByRole("link", { name: "Meawstory" })).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Dashboard" })).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Themes" })).toHaveCount(0)
+    await expect(page.getByRole("link", { name: "Texts" })).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: "Toggle Sidebar" })
     ).toHaveCount(0)
@@ -34,12 +35,11 @@ test.describe("dashboard session gate", () => {
     await expect(page.getByRole("link", { name: "Meawstory" })).toBeVisible()
     await expect(page.locator("#sidebar-dashboard")).toBeVisible()
     await expect(page.locator("#sidebar-themes")).toBeVisible()
+    await expect(page.locator("#sidebar-texts")).toBeVisible()
     await expect(
       page.getByRole("button", { name: "Toggle Sidebar" })
     ).toBeVisible()
-    await expect(
-      page.getByRole("heading", { name: "Dashboard" })
-    ).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
     await expect(page.getByText("Start by choosing a theme.")).toBeVisible()
     await expect(
       page.getByText("Write a text for it and receive a correction", {
@@ -64,7 +64,24 @@ test.describe("dashboard session gate", () => {
     await expect(page.getByRole("heading", { name: "Themes" })).toBeVisible()
   })
 
-  test("signs out and shows Unauthorized on the dashboard", async ({ page }) => {
+  test("links Your texts to the text history", async ({ page }) => {
+    await signIn(page)
+    await page.goto("/dashboard")
+
+    const yourTexts = page.locator("#dashboard-your-texts")
+
+    await expect(yourTexts).toHaveText("Your texts")
+    await expect(yourTexts).toHaveAttribute("href", "/dashboard/texts")
+
+    await yourTexts.click()
+
+    await expect(page).toHaveURL("/dashboard/texts")
+    await expect(page.getByRole("heading", { name: "Texts" })).toBeVisible()
+  })
+
+  test("signs out and shows Unauthorized on the dashboard", async ({
+    page,
+  }) => {
     await signIn(page)
     await page.goto("/dashboard")
 
@@ -109,13 +126,15 @@ test.describe("dashboard sidebar", () => {
       "href",
       "/dashboard/themes"
     )
+    await expect(page.locator("#sidebar-texts")).toHaveAttribute(
+      "href",
+      "/dashboard/texts"
+    )
 
     await page.locator("#sidebar-dashboard").click()
 
     await expect(page).toHaveURL("/dashboard")
-    await expect(
-      page.getByRole("heading", { name: "Dashboard" })
-    ).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
   })
 
   test("marks Dashboard active only on that path and keeps Themes active on nested paths", async ({
@@ -149,6 +168,36 @@ test.describe("dashboard sidebar", () => {
       ""
     )
     await expect(page.locator("#sidebar-dashboard")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(page.locator("#sidebar-texts")).not.toHaveAttribute(
+      "data-active"
+    )
+
+    await page.goto("/dashboard/texts")
+
+    await expect(page.locator("#sidebar-texts")).toHaveAttribute(
+      "data-active",
+      ""
+    )
+    await expect(page.locator("#sidebar-dashboard")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(page.locator("#sidebar-themes")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(page.getByRole("heading", { name: "Texts" })).toBeVisible()
+
+    await page.goto("/dashboard/texts/missing-text")
+
+    await expect(page.locator("#sidebar-texts")).toHaveAttribute(
+      "data-active",
+      ""
+    )
+    await expect(page.locator("#sidebar-dashboard")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(page.locator("#sidebar-themes")).not.toHaveAttribute(
       "data-active"
     )
   })

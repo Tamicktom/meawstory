@@ -24,4 +24,15 @@ describe("isActivePath", () => {
       expect(isActivePath("/dashboard", "/dashboard/themes")).toBe(false)
     })
   })
+
+  describe("texts", () => {
+    it("stays active on the texts path and on a nested text", () => {
+      expect(isActivePath("/dashboard/texts", "/dashboard/texts")).toBe(true)
+      expect(
+        isActivePath("/dashboard/texts/text_late_letter", "/dashboard/texts")
+      ).toBe(true)
+      expect(isActivePath("/dashboard", "/dashboard/texts")).toBe(false)
+      expect(isActivePath("/dashboard/themes", "/dashboard/texts")).toBe(false)
+    })
+  })
 })
