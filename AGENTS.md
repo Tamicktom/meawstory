@@ -53,8 +53,8 @@ Playwright projects are declared in `playwright.config.ts`:
 
 Bun and PostgreSQL 18 are already installed. Docker is not available; do not use `docker-compose.yml` to start the database.
 
-- Dependencies: `bun install --frozen-lockfile`, then `bunx playwright install --with-deps chromium`. The environment install already does both. The Bun binary is `/home/ubuntu/.bun/bin/bun`.
-- Database: `sudo pg_ctlcluster 18 main start`, then wait until `pg_isready -h 127.0.0.1 -p 5432` succeeds. The local URL is `postgresql://postgres:postgres@localhost:5432/postgres`, matching `example.env`.
-- Env file: copy `example.env` to `.env` and set `BETTER_AUTH_SECRET` before `bun run db:migrate` or the dev server. `.env` is gitignored.
-- Dev server: the database client is `pg` through `drizzle-orm/node-postgres`, so Next must run on Node. Keep `/opt/meawstory/bin` first on `PATH` (it strips `NODE_OPTIONS=--bun`). Start with `bun run dev --hostname 0.0.0.0 --port 3000`. Do not pass `--bun`; Turbopack then fails to resolve `pg` and sign-up returns 500.
+- Dependencies: `bun install --frozen-lockfile`, then `bunx playwright install --with-deps chromium`. The environment install already does both on the default branch (`main`). When the checked-out lockfile differs, run `bun install --frozen-lockfile` again. The Bun binary is `/home/ubuntu/.bun/bin/bun`.
+- Database: `sudo pg_ctlcluster 18 main start`, then wait until `pg_isready -h 127.0.0.1 -p 5432` succeeds. The local URL is `postgresql://postgres:postgres@localhost:5432/postgres`, matching `example.env`. The boot script migrates, then seeds the narrative catalog and the test user.
+- Env file: copy `example.env` to `.env`. Generate `BETTER_AUTH_SECRET` when it is empty. When `env/server.ts` requires `OPENAI_API_KEY`, add that Cloud Agent secret under the same name; `scripts/cloud-agent-start.sh` writes it into `.env`. `.env` is gitignored.
+- Dev server: the database client is `pg` through `drizzle-orm/node-postgres`, so Next must run on Node. Keep `/opt/meawstory/bin` first on `PATH` (it strips `NODE_OPTIONS=--bun`). `package.json`'s `dev` script starts Docker Compose and runs Next with `--bun`. Docker is unavailable here, and `--bun` makes Turbopack fail to resolve `pg`. Start with `/opt/meawstory/bin/node ./node_modules/next/dist/bin/next dev --hostname 0.0.0.0 --port 3000`.
 - Checks: `bun run test` runs the unit tests and Playwright. `bun run typecheck` type-checks the project. `bun run lint` exits because `typescript-eslint` does not support the pinned TypeScript 7.
