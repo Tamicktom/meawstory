@@ -1,0 +1,67 @@
+# Fallow — blocks a pull request that introduces dead code, complexity,
+# duplication, or architecture findings.
+#
+# Docs: https://docs.fallow.tools/integrations/ci
+# Action: https://github.com/fallow-rs/fallow/blob/v3.34.1/action.yml
+
+name: Fallow
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+# Cancels the in-flight scan for the same PR when a new commit arrives.
+concurrency:
+  group: fallow-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  fallow:
+    # `ready_for_review` is in the trigger list so a draft is scanned once,
+    # when it leaves draft. Skip the opened and synchronize events until then.
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # fetch-depth: 0 gives Fallow the history it needs to compare this PR
+      # with its base. A shallow checkout has no merge base, so the audit
+      # cannot tell introduced findings from inherited ones.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - id: fallow
+        uses: fallow-rs/fallow@6605f96806787f85124bfc144124ff7e44733b06 # v3.34.1
+        with:
+          # Audit combines dead code, complexity, and duplication on the
+          # changed files and returns pass, warn, or fail. `new-only` fails
+          # the job only for error-severity findings this PR introduced.
+          # Warn-severity findings and findings already on the base stay
+          # visible in the PR comment and do not fail the check.
+          command: audit
+          gate: new-only
+          fail-on-issues: true
+          version: "3.34.1"
+          comment: true
+          comment-layout: gate-only
+          summary-scope: diff
+          review-comments: true
+          review-guidance: true
+          # Post as github-actions[bot]. Skip the Fallow Cloud app token.
+          branded-token: false
+
+      # `new-only` needs the changed-file list. When that lookup fails, the
+      # action still exits 0 and analyzes the whole tree, so a green check
+      # would not mean this pull request introduced nothing.
+      - name: Fail when the pull request could not be scoped
+        if: steps.fallow.outputs.changed-files-unavailable == 'true'
+        run: echo "::error::Fallow could not list the changed files, so the new-only gate did not run." && exit 1
+
+      - name: Warn when review comments may be duplicated
+        if: always() && (steps.fallow.outputs.dedup-lookup-failed == 'true' || steps.fallow.outputs.post-skipped-reason == 'pagination_failure')
+        run: echo "::warning::Fallow could not reconcile existing review comments. Re-run this job if the pull request shows duplicates or is missing inline comments."
