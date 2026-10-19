@@ -101,7 +101,9 @@ fi
 sudo -u postgres psql -v ON_ERROR_STOP=1 -c "ALTER USER postgres WITH PASSWORD 'postgres';" >/dev/null
 
 bun run db:migrate
-bun run db:seed
+if grep -Eq '"db:seed"[[:space:]]*:' package.json; then
+  bun run db:seed
+fi
 
 # package.json "dev" starts Docker and runs Next with --bun. Docker is not
 # available here, and --bun makes Turbopack fail to resolve pg.
