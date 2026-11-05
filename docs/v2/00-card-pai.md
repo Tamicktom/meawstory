@@ -67,8 +67,12 @@ Total: 86 cards.
 
 ### E. Preparação para pessoas reais
 
-- [ ] [0E-1](fase-0-base/0E-1-publicar-termos-privacidade-e-aviso-openai.md) — Publicar termos, privacidade e aviso sobre a OpenAI
-- [ ] [0E-2](fase-0-base/0E-2-atualizar-readme-do-produto.md) — Atualizar o README do produto
+- [x] [0E-1](fase-0-base/0E-1-publicar-termos-privacidade-e-aviso-openai.md) — Publicar termos, privacidade e aviso sobre a OpenAI
+- [x] [0E-2](fase-0-base/0E-2-atualizar-readme-do-produto.md) — Atualizar o README do produto
+
+**Validação da etapa E (2026-11-05):** termos e privacidade disponíveis nas rotas públicas `/termos` e `/privacidade`, com links na landing, no cadastro, no editor e nas ações de iniciar ou repetir a leitura. No cadastro e na escrita, abrir os documentos em outra aba preserva os dados preenchidos e o destino de retorno. O compartilhamento de entradas e saídas para melhoria dos modelos foi confirmado como desativado pela pessoa responsável pelo projeto e registrado em 0A-3. O README descreve o produto atual, instalação, ambiente, banco, e-mails, testes e referências de negócio. Passaram 222 testes unitários, 42 testes dos componentes afetados e 21 testes E2E direcionados, além de `bun run typecheck`, `bun run build` e React Doctor nas alterações (100/100). A varredura completa incluiu os arquivos novos e apontou somente um aviso no handler gerado pelo Workflow em `app/.well-known/workflow/v1/webhook/[token]/route.js`, ignorado pelo Git e fora das alterações desta etapa (65/100 na varredura completa). As jornadas cobrem 320, 390 e 1280 px. O build usou uma chave Resend fictícia apenas para validação do ambiente, sem envio de e-mail. Sem mudança de tabelas ou migrações.
+
+**Operação do teste por convite:** público de 18 anos ou mais, com declaração no cadastro; pedidos sobre dados e avisos de mudanças usam o canal do convite, sem prometer uma caixa de e-mail que ainda não existe. A política explicita a ausência de prazo confirmado para retenção do Workflow em produção e não promete exclusão imediata. Confirmar esse prazo e revisar juridicamente os documentos antes do teste com pessoas reais, conforme 0A-3. A fase 0 permanece sem marcação na visão geral até a condição de saída ser validada com uma pessoa real; os testes automatizados acima não substituem essa validação.
 
 ## Fase 1 — Ciclo de revisão
 

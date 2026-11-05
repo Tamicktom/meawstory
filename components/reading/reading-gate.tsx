@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 //* Components imports
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
+import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 
 //* Hooks imports
 import {
@@ -103,6 +104,7 @@ function StartReading(props: StartReadingProps) {
       <p className="font-medium">
         Sua cena está salva e pronta para a leitura.
       </p>
+      <ReadingDataNotice />
       <Button
         className="min-h-11 w-full sm:w-fit"
         id="start-reading"

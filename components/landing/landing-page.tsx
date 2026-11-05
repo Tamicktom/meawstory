@@ -3,6 +3,7 @@ import Link from "next/link"
 
 //* Components imports
 import { buttonVariants } from "@/components/ui/button/button-variants"
+import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 
 //* Local imports
 import { exampleReading } from "@/components/landing/example-reading"
@@ -176,12 +177,9 @@ function LandingPage() {
         </section>
       </main>
       <footer className="border-t">
-        <p className="mx-auto w-full max-w-5xl px-6 py-8 text-xs leading-relaxed text-muted-foreground">
-          Para gerar a leitura, sua cena é enviada à OpenAI. Pelos termos da
-          API, ela não é usada para treinar modelos. A OpenAI pode mantê-la por
-          até 30 dias para monitorar abuso, ou por mais tempo quando a lei ou a
-          proteção contra danos exigir.
-        </p>
+        <div className="mx-auto w-full max-w-5xl px-6 py-8">
+          <ReadingDataNotice />
+        </div>
       </footer>
     </div>
   )
