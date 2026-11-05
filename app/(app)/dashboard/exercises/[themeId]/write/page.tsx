@@ -40,16 +40,34 @@ export default async function WritePage(props: WritePageProps) {
   const parsedDescription = parseMarkdown(thisTheme.description)
 
   return (
-    <div className="grid w-full grid-cols-3 flex-row items-start justify-center gap-2">
-      <div className="col-span-1 prose dark:prose-invert">
-        <Markdown>{parsedDescription}</Markdown>
+    <div className="flex w-full max-w-6xl min-w-0 flex-col gap-6 p-4">
+      <header className="flex flex-col gap-2 [overflow-wrap:anywhere]">
+        <p className="text-sm text-muted-foreground">Escrita</p>
+        <h1 className="font-heading text-2xl font-medium">{thisTheme.title}</h1>
+        <a
+          href="#exercise-information"
+          className="w-fit py-2 underline lg:hidden"
+        >
+          Consultar exercício
+        </a>
+      </header>
+      <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <aside
+          id="exercise-information"
+          className="order-2 min-w-0 scroll-mt-4 [overflow-wrap:anywhere] lg:order-1"
+          aria-label="Informações do exercício"
+        >
+          <h2 className="mb-3 font-heading text-lg font-medium">Exercício</h2>
+          <div className="prose max-w-none min-w-0 dark:prose-invert">
+            <Markdown>{parsedDescription}</Markdown>
+          </div>
+        </aside>
+        <Editor
+          themeId={params.themeId}
+          textId={draft?.id}
+          initialContent={draft?.content}
+        />
       </div>
-
-      <Editor
-        themeId={params.themeId}
-        textId={draft?.id}
-        initialContent={draft?.content}
-      />
     </div>
   )
 }

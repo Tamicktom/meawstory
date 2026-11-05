@@ -24,10 +24,14 @@ function useResendVerification(props: ResendVerificationProps) {
 
   return useMutation({
     mutationFn: async () => {
-      const { error } = await authClient.sendVerificationEmail({
-        email: props.email,
-        callbackURL: props.callbackURL,
-      })
+      const { error } = await authClient
+        .sendVerificationEmail({
+          email: props.email,
+          callbackURL: props.callbackURL,
+        })
+        .catch(() => {
+          throw new Error(resendErrorMessage(0))
+        })
 
       if (error?.code === "EMAIL_ALREADY_VERIFIED") {
         router.refresh()

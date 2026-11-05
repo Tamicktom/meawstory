@@ -5,8 +5,8 @@ import { type Locator, type Page } from "@playwright/test"
 import { expect } from "../../playwright/component"
 
 async function expectInvalidEmail(component: Locator) {
-  await expect(component.getByText("Enter a valid email address")).toBeVisible()
-  await expect(component.getByLabel("Email")).toHaveAttribute(
+  await expect(component.getByText("Informe um e-mail válido")).toBeVisible()
+  await expect(component.getByLabel("E-mail")).toHaveAttribute(
     "aria-invalid",
     "true"
   )

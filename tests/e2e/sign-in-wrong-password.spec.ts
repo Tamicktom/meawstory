@@ -12,19 +12,19 @@ test.describe("sign in page", () => {
     const account = await registerAccount(request)
 
     await page.goto("/sign-in")
-    await page.getByLabel("Email").fill(account.email)
-    await page.getByLabel("Password").fill("wrong-password")
-    await page.getByRole("button", { name: "Sign in" }).click()
+    await page.getByLabel("E-mail").fill(account.email)
+    await page.getByLabel("Senha").fill("wrong-password")
+    await page.getByRole("button", { name: "Entrar" }).click()
 
     await expect(
-      page.getByText("Invalid email or password", { exact: true })
+      page.getByText("E-mail ou senha incorretos.", { exact: true })
     ).toBeVisible()
     await expect(
-      page.getByText("Could not sign in", { exact: true })
+      page.getByText("Não foi possível entrar", { exact: true })
     ).toBeVisible()
     await expect(page).toHaveURL("/sign-in")
     await expect(page.locator("#sign-in-form")).toBeVisible()
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeEnabled()
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Entrar" })).toBeEnabled()
+    await expect(page.getByRole("heading", { name: "Início" })).toHaveCount(0)
   })
 })

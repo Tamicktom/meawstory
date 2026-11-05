@@ -1,48 +1,47 @@
 //* Libraries imports
-import Link from "next/link";
+import Link from "next/link"
 
 //* Services imports
-import { themeService } from "@/services/theme";
+import { themeService } from "@/services/theme"
 
 //* Components imports
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type ThemeCardTheme = {
-  id: string;
-  title: string;
-  description: string;
-  image: string | null;
-};
+  id: string
+  title: string
+  description: string
+  image: string | null
+}
 
 type ThemeCardProps = {
-  theme: ThemeCardTheme;
-};
+  theme: ThemeCardTheme
+}
 
 export function themeExcerpt(description: string): string {
-  const situation = description.match(/## Situação\s+([\s\S]*?)(?:\n## |$)/);
-  const excerpt = situation?.[1]?.trim();
+  const situation = description.match(/## Situação\s+([\s\S]*?)(?:\n## |$)/)
+  const excerpt = situation?.[1]?.trim()
 
   if (!excerpt || excerpt.startsWith("## ")) {
-    return description.trim();
+    return description.trim()
   }
 
-  return excerpt;
+  return excerpt
 }
 
 function ThemeCard(props: ThemeCardProps) {
   return (
     <Link
       href={`/dashboard/themes/${props.theme.id}`}
-      className="block h-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="block h-full rounded-lg [overflow-wrap:anywhere] outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card className="h-full transition-colors hover:bg-accent">
         {props.theme.image ? (
-          <img src={props.theme.image} alt="" className="aspect-video w-full object-cover" />
+          <img
+            src={props.theme.image}
+            alt=""
+            className="aspect-video w-full object-cover"
+          />
         ) : null}
         <CardHeader>
           <CardTitle>{props.theme.title}</CardTitle>
@@ -54,17 +53,19 @@ function ThemeCard(props: ThemeCardProps) {
         </CardContent>
       </Card>
     </Link>
-  );
+  )
 }
 
 export default async function ThemesPage() {
-  const themes = await themeService.listActiveThemes();
+  const themes = await themeService.listActiveThemes()
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <h1 className="font-heading text-lg font-medium">Themes</h1>
+    <div className="flex w-full min-w-0 flex-col gap-4 p-4">
+      <h1 className="font-heading text-lg font-medium">Exercícios</h1>
       {themes.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No themes yet.</p>
+        <p className="text-sm text-muted-foreground">
+          Ainda não há exercícios disponíveis. Volte em breve.
+        </p>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {themes.map((theme) => (
@@ -75,5 +76,5 @@ export default async function ThemesPage() {
         </ul>
       )}
     </div>
-  );
+  )
 }

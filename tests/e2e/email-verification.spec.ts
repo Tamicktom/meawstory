@@ -80,11 +80,13 @@ test.describe("email verification", () => {
     await expect(page.getByText(savedCorrection.content)).toBeVisible({
       timeout: 45_000,
     })
-    await expect(page.getByText("Nota 640 de 1000")).toBeVisible()
+    await expect(page.getByText("Pontuação: 640 de 1000")).toBeVisible()
     await expect(page.getByText(scene)).toBeVisible()
   })
 
-  test("reopens a saved draft, edits it and sends the same scene", async ({ page }) => {
+  test("reopens a saved draft, edits it and sends the same scene", async ({
+    page,
+  }) => {
     test.setTimeout(60_000)
     await signIn(page)
     await writeAndSubmit(page)
@@ -98,14 +100,16 @@ test.describe("email verification", () => {
     await expect(page).toHaveURL(sceneUrl)
     await expect(page.getByText(revised)).toBeVisible()
     await page.goto("/dashboard/texts")
-    await expect(page.locator(`a[href="${new URL(sceneUrl).pathname}"]`)).toHaveCount(1)
+    await expect(
+      page.locator(`a[href="${new URL(sceneUrl).pathname}"]`)
+    ).toHaveCount(1)
   })
 
   test("signing in stays open to an unverified account", async ({ page }) => {
     await signIn(page)
     await page.goto("/dashboard")
 
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   })
 
   test("a bad link returns to the scene and offers a new email", async ({

@@ -20,7 +20,9 @@ test.describe("protected routes", () => {
   test("keep the query string of the destination", async ({ page }) => {
     await page.goto("/dashboard/themes?page=2")
 
-    await expect(page).toHaveURL("/sign-in?next=%2Fdashboard%2Fthemes%3Fpage%3D2")
+    await expect(page).toHaveURL(
+      "/sign-in?next=%2Fdashboard%2Fthemes%3Fpage%3D2"
+    )
   })
 
   test("use the real session when the cookie is stale", async ({
@@ -47,17 +49,19 @@ test.describe("signing in", () => {
     const account = await registerAccount(request)
 
     await page.goto(protectedPath)
-    await page.getByLabel("Email").fill(account.email)
-    await page.getByLabel("Password").fill(account.password)
-    await page.getByRole("button", { name: "Sign in" }).click()
+    await page.getByLabel("E-mail").fill(account.email)
+    await page.getByLabel("Senha").fill(account.password)
+    await page.getByRole("button", { name: "Entrar" }).click()
 
     await expect(page).toHaveURL(protectedPath)
-    await expect(page.getByRole("heading", { name: "Themes" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Exercícios" })
+    ).toBeVisible()
   })
 
   test("keeps the destination through sign up", async ({ page }) => {
     await page.goto(protectedPath)
-    await page.getByRole("link", { name: "Create an account" }).click()
+    await page.getByRole("link", { name: "Criar uma conta" }).click()
 
     await expect(page).toHaveURL("/sign-up?next=%2Fdashboard%2Fthemes")
 
@@ -80,9 +84,9 @@ test.describe("signing in", () => {
       const account = await registerAccount(request)
 
       await page.goto(`/sign-in?next=${encodeURIComponent(unsafe)}`)
-      await page.getByLabel("Email").fill(account.email)
-      await page.getByLabel("Password").fill(account.password)
-      await page.getByRole("button", { name: "Sign in" }).click()
+      await page.getByLabel("E-mail").fill(account.email)
+      await page.getByLabel("Senha").fill(account.password)
+      await page.getByRole("button", { name: "Entrar" }).click()
 
       await expect(page).toHaveURL("/dashboard")
     })

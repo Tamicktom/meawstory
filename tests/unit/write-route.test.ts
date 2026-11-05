@@ -93,7 +93,8 @@ describe("POST /api/write/:themeId", () => {
 
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
-      message: "Unauthorized",
+      message:
+        "Sua sessão expirou. Entre na sua conta para enviar a cena. Seu texto continua aqui.",
     })
     expect(started).toEqual([])
   })
@@ -204,5 +205,4 @@ describe("POST /api/write/:themeId", () => {
     expect(await textsForUser(session.userId)).toEqual([])
     expect(started).toEqual([])
   })
-
 })

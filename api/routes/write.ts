@@ -24,7 +24,10 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
 
     if (!session) {
       request.set.status = 401
-      return { message: "Unauthorized" }
+      return {
+        message:
+          "Sua sessão expirou. Entre na sua conta para enviar a cena. Seu texto continua aqui.",
+      }
     }
 
     if (sceneSizeError(content)) {
@@ -36,7 +39,10 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
 
     if (!activeTheme) {
       request.set.status = 404
-      return { message: "Theme not found" }
+      return {
+        message:
+          "Este exercício não está mais disponível. Seu texto continua aqui.",
+      }
     }
 
     let newText

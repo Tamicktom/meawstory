@@ -6,7 +6,13 @@ const passwordMaxLength = 128
 
 const passwordSchema = z
   .string()
-  .min(passwordMinLength, `Password must be at least ${passwordMinLength} characters`)
-  .max(passwordMaxLength, `Password must be at most ${passwordMaxLength} characters`)
+  .min(
+    passwordMinLength,
+    `A senha precisa ter pelo menos ${passwordMinLength} caracteres`
+  )
+  .max(
+    passwordMaxLength,
+    `A senha pode ter no máximo ${passwordMaxLength} caracteres`
+  )
 
 export { passwordMaxLength, passwordMinLength, passwordSchema }

@@ -22,13 +22,25 @@ function useSignInForm(destination: string) {
   const signInMutation = useMutation({
     mutationFn: async (values: SignInValues) => {
       const parsed = signInSchema.parse(values)
-      const { data, error } = await authClient.signIn.email({
-        email: parsed.email,
-        password: parsed.password,
-      })
+      const { data, error } = await authClient.signIn
+        .email({
+          email: parsed.email,
+          password: parsed.password,
+        })
+        .catch(() => {
+          throw new Error(
+            "Não foi possível entrar agora. Tente de novo em instantes."
+          )
+        })
 
       if (error) {
-        throw new Error(error.message ?? "Could not sign in.")
+        throw new Error(
+          error.status === 429
+            ? "Foram muitas tentativas. Aguarde um minuto e tente de novo."
+            : error.status === 401 || error.code === "INVALID_EMAIL_OR_PASSWORD"
+              ? "E-mail ou senha incorretos."
+              : "Não foi possível entrar agora. Tente de novo em instantes."
+        )
       }
 
       return data

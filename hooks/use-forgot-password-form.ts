@@ -29,10 +29,14 @@ function useForgotPasswordForm() {
   const forgotPasswordMutation = useMutation({
     mutationFn: async (values: ForgotPasswordValues) => {
       const parsed = forgotPasswordSchema.parse(values)
-      const { error } = await authClient.requestPasswordReset({
-        email: parsed.email,
-        redirectTo: "/reset-password",
-      })
+      const { error } = await authClient
+        .requestPasswordReset({
+          email: parsed.email,
+          redirectTo: "/reset-password",
+        })
+        .catch(() => {
+          throw new Error(forgotPasswordErrorMessage(0))
+        })
 
       if (error) {
         throw new Error(forgotPasswordErrorMessage(error.status))

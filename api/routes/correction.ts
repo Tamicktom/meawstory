@@ -17,7 +17,10 @@ const correctionRoutes = new Elysia({ prefix: "/correction" })
   .resolve(async ({ params, status }) => {
     const session = await auth.api.getSession({ headers: await headers() })
     if (!session) {
-      return status(401, { message: "Unauthorized" })
+      return status(401, {
+        message:
+          "Sua sessão expirou. Entre na sua conta para consultar a leitura.",
+      })
     }
 
     const ownedText = await textService.findOwnedText(
@@ -25,7 +28,9 @@ const correctionRoutes = new Elysia({ prefix: "/correction" })
       session.user.id
     )
     if (!ownedText) {
-      return status(404, { message: "Text not found" })
+      return status(404, {
+        message: "Esta cena não está disponível para sua conta.",
+      })
     }
 
     return { session, ownedText }
@@ -43,7 +48,10 @@ const correctionRoutes = new Elysia({ prefix: "/correction" })
   .post("/start/:textId", async ({ session, ownedText, set }) => {
     if (!session.user.emailVerified) {
       set.status = 403
-      return { message: "Email not verified" }
+      return {
+        message:
+          "Confirme seu e-mail para receber a leitura. Sua cena está salva.",
+      }
     }
 
     try {

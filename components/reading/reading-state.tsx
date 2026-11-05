@@ -30,7 +30,7 @@ export function ReadingState(props: Props) {
   }, [props.status, router])
   const delayed = now - Date.parse(props.createdAt) >= READING_DELAY_MS
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-4 p-4">
+    <div className="flex w-full max-w-3xl min-w-0 flex-col gap-4 p-4 [overflow-wrap:anywhere]">
       <h1 className="font-heading text-lg font-medium">{props.themeTitle}</h1>
       {props.status === "FAILED" ? (
         <>
@@ -39,6 +39,7 @@ export function ReadingState(props: Props) {
             não conta nas suas leituras.
           </p>
           <Button
+            className="min-h-11 w-full sm:w-fit"
             disabled={retry.isPending}
             onClick={() =>
               retry.mutate(props.textId, {
@@ -64,9 +65,11 @@ export function ReadingState(props: Props) {
               : "Sua cena está sendo lida. Pode sair desta página: ela vai ficar em Minhas cenas."}
         </p>
       )}
-      <Link href="/dashboard/texts">Minhas cenas</Link>
+      <Link href="/dashboard/texts" className="w-fit py-3 underline">
+        Minhas cenas
+      </Link>
       <h2>Sua cena</h2>
-      <p className="whitespace-pre-wrap">{props.textContent}</p>
+      <p className="leading-relaxed whitespace-pre-wrap">{props.textContent}</p>
     </div>
   )
 }

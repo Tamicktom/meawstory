@@ -45,15 +45,15 @@ test.describe("password reset", () => {
     await expect(page.getByText("Senha redefinida")).toBeVisible()
 
     await page.getByRole("link", { name: "Entrar" }).click()
-    await page.getByLabel("Email").fill(account.email)
-    await page.getByLabel("Password").fill(account.password)
-    await page.getByRole("button", { name: "Sign in" }).click()
+    await page.getByLabel("E-mail").fill(account.email)
+    await page.getByLabel("Senha").fill(account.password)
+    await page.getByRole("button", { name: "Entrar" }).click()
     await expect(
-      page.getByText("Could not sign in", { exact: true })
+      page.getByText("Não foi possível entrar", { exact: true })
     ).toBeVisible()
 
-    await page.getByLabel("Password").fill(newPassword)
-    await page.getByRole("button", { name: "Sign in" }).click()
+    await page.getByLabel("Senha").fill(newPassword)
+    await page.getByRole("button", { name: "Entrar" }).click()
     await expect(page).toHaveURL("/dashboard")
   })
 
@@ -102,7 +102,11 @@ test.describe("password reset", () => {
     expect(await emailsTo(unknownEmail)).toEqual([])
   })
 
-  test("ends the sessions that were open", async ({ page, browser, request }) => {
+  test("ends the sessions that were open", async ({
+    page,
+    browser,
+    request,
+  }) => {
     const account = await registerAccount(request)
     const otherDevice = await browser.newContext({
       baseURL: "http://localhost:3000",
@@ -110,9 +114,9 @@ test.describe("password reset", () => {
     const otherPage = await otherDevice.newPage()
 
     await otherPage.goto("/sign-in")
-    await otherPage.getByLabel("Email").fill(account.email)
-    await otherPage.getByLabel("Password").fill(account.password)
-    await otherPage.getByRole("button", { name: "Sign in" }).click()
+    await otherPage.getByLabel("E-mail").fill(account.email)
+    await otherPage.getByLabel("Senha").fill(account.password)
+    await otherPage.getByRole("button", { name: "Entrar" }).click()
     await expect(otherPage).toHaveURL("/dashboard")
 
     await requestReset(page, account.email)

@@ -50,6 +50,7 @@ describe("ThemePage", () => {
   it("renders the theme description as markdown", async () => {
     const rubricId = await rows.insertRubric()
     const themeId = await rows.insertTheme(rubricId, {
+      title: "Uma praça vazia",
       description: "## Situação\n\nA praça está vazia ao meio-dia.",
     })
     const markup = renderToStaticMarkup(await loadPage(themeId))
@@ -57,14 +58,17 @@ describe("ThemePage", () => {
     expect(markup).toContain("<h2")
     expect(markup).toContain("Situação")
     expect(markup).toContain("A praça está vazia ao meio-dia.")
+    expect(markup).toContain("Uma praça vazia")
+    expect(markup).not.toContain("Theme Page")
+    expect(markup).not.toContain("Theme ID")
   })
 
-  it("links Escrever exercício to the write screen", async () => {
+  it("links Começar a escrever to the write screen", async () => {
     const rubricId = await rows.insertRubric()
     const themeId = await rows.insertTheme(rubricId)
     const markup = renderToStaticMarkup(await loadPage(themeId))
 
-    expect(markup).toContain("Escrever exercício")
+    expect(markup).toContain("Começar a escrever")
     expect(markup).toContain(`href="/dashboard/exercises/${themeId}/write"`)
   })
 })

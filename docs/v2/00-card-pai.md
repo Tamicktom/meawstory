@@ -57,11 +57,13 @@ Total: 86 cards.
 
 ### D. Português, celular e páginas de sistema
 
-- [ ] [0D-1](fase-0-base/0D-1-localizar-interface-em-portugues.md) — Localizar toda a interface em português
-- [ ] [0D-2](fase-0-base/0D-2-limpar-pagina-atual-do-exercicio.md) — Limpar a página atual do exercício
-- [ ] [0D-3](fase-0-base/0D-3-adaptar-escrita-ao-celular.md) — Adaptar a escrita ao celular
-- [ ] [0D-4](fase-0-base/0D-4-adaptar-leitura-ao-celular.md) — Adaptar a leitura ao celular
-- [ ] [0D-5](fase-0-base/0D-5-criar-paginas-de-sistema.md) — Criar páginas de carregamento, erro e não encontrado
+- [x] [0D-1](fase-0-base/0D-1-localizar-interface-em-portugues.md) — Localizar toda a interface em português
+- [x] [0D-2](fase-0-base/0D-2-limpar-pagina-atual-do-exercicio.md) — Limpar a página atual do exercício
+- [x] [0D-3](fase-0-base/0D-3-adaptar-escrita-ao-celular.md) — Adaptar a escrita ao celular
+- [x] [0D-4](fase-0-base/0D-4-adaptar-leitura-ao-celular.md) — Adaptar a leitura ao celular
+- [x] [0D-5](fase-0-base/0D-5-criar-paginas-de-sistema.md) — Criar páginas de carregamento, erro e não encontrado
+
+**Validação da etapa D (2026-11-05):** 212 testes unitários, 69 testes de componentes e 56 testes E2E passaram, além de `bun run typecheck`, `bun run build` e React Doctor (100/100). Ciclo completo de exercício, escrita, envio, leitura e histórico validado em 320, 390 e 1280 px; componentes móveis também cobrem rascunho, espera, falha e conteúdo longo sem rolagem horizontal. Páginas não encontradas verificadas em rotas públicas e autenticadas; carregamento e recuperação de erro cobertos nos testes de componentes. O build usou `RESEND_API_KEY` fictícia apenas para satisfazer a validação do ambiente de produção, sem envio de e-mail. Sem mudança de tabelas ou migrações.
 
 ### E. Preparação para pessoas reais
 

@@ -23,10 +23,16 @@ function useResetPasswordForm(token: string) {
   const resetPasswordMutation = useMutation({
     mutationFn: async (values: ResetPasswordValues) => {
       const parsed = resetPasswordSchema.parse(values)
-      const { error } = await authClient.resetPassword({
-        newPassword: parsed.password,
-        token,
-      })
+      const { error } = await authClient
+        .resetPassword({
+          newPassword: parsed.password,
+          token,
+        })
+        .catch(() => {
+          throw new Error(
+            "Não foi possível redefinir a senha agora. Tente de novo em instantes."
+          )
+        })
 
       if (error?.code === "INVALID_TOKEN") {
         throw new InvalidResetLinkError()

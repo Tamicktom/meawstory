@@ -22,16 +22,29 @@ function useSignUpForm(destination: string) {
   const signUpMutation = useMutation({
     mutationFn: async (values: SignUpValues) => {
       const parsed = signUpSchema.parse(values)
-      const { data, error } = await authClient.signUp.email({
-        name: parsed.name,
-        email: parsed.email,
-        password: parsed.password,
-        //* Where the link in the verification email returns to.
-        callbackURL: destination,
-      })
+      const { data, error } = await authClient.signUp
+        .email({
+          name: parsed.name,
+          email: parsed.email,
+          password: parsed.password,
+          //* Where the link in the verification email returns to.
+          callbackURL: destination,
+        })
+        .catch(() => {
+          throw new Error(
+            "Não foi possível criar sua conta agora. Tente de novo em instantes."
+          )
+        })
 
       if (error) {
-        throw new Error(error.message ?? "Could not create your account.")
+        throw new Error(
+          error.status === 429
+            ? "Foram muitas tentativas. Aguarde um minuto e tente de novo."
+            : error.code === "USER_ALREADY_EXISTS" ||
+                error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
+              ? "Já existe uma conta com esse e-mail. Entre na sua conta ou recupere a senha."
+              : "Não foi possível criar sua conta agora. Tente de novo em instantes."
+        )
       }
 
       return data

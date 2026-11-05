@@ -1,6 +1,11 @@
 //* Libraries imports
 import { afterEach, describe, expect, it } from "bun:test"
-import { Children, isValidElement, type ReactElement, type ReactNode } from "react"
+import {
+  Children,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 
 //* Components imports
@@ -67,17 +72,17 @@ describe("WritePage", () => {
       description: "## Situação\n\nA praça está vazia ao meio-dia.",
     })
     const page = await loadPage(themeId)
-    const [prose, editor] = childElements(page) as [
+    const [, grid] = childElements(page)
+    const [information, editor] = childElements(grid) as [
       ReactElement<{ className?: string; children?: ReactNode }>,
       ReactElement<{ themeId?: string }>,
     ]
 
     expect(childElements(page)).toHaveLength(2)
-    expect(prose.props.className).toContain("prose")
     expect(editor.type).toBe(Editor)
     expect(editor.props.themeId).toBe(themeId)
 
-    const markup = renderToStaticMarkup(prose)
+    const markup = renderToStaticMarkup(information)
 
     expect(markup).toContain("<h2")
     expect(markup).toContain("Situação")

@@ -37,7 +37,7 @@ function SignInFields(props: SignInFieldsProps) {
         children={(field) => (
           <field.TextField
             id="sign-in-email"
-            label="Email"
+            label="E-mail"
             type="email"
             autoComplete="email"
             disabled={props.disabled}
@@ -49,7 +49,7 @@ function SignInFields(props: SignInFieldsProps) {
         children={(field) => (
           <field.TextField
             id="sign-in-password"
-            label="Password"
+            label="Senha"
             type="password"
             autoComplete="current-password"
             disabled={props.disabled}
@@ -73,9 +73,9 @@ export function SignInForm({
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Sign in to your account</CardTitle>
+        <CardTitle>Entre na sua conta</CardTitle>
         <CardDescription>
-          Use your email and password to continue.
+          Use seu e-mail e sua senha para continuar.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -87,7 +87,7 @@ export function SignInForm({
         >
           {signInMutation.isError ? (
             <Alert variant="destructive">
-              <AlertTitle>Could not sign in</AlertTitle>
+              <AlertTitle>Não foi possível entrar</AlertTitle>
               <AlertDescription>
                 {signInMutation.error.message}
               </AlertDescription>
@@ -105,14 +105,14 @@ export function SignInForm({
           disabled={isBusy}
         >
           {isBusy ? <Spinner data-icon="inline-start" /> : null}
-          {isBusy ? "Signing in..." : "Sign in"}
+          {isBusy ? "Entrando…" : "Entrar"}
         </Button>
         <Link
           id="sign-in-create-account"
           href={authHref("/sign-up", destination)}
           className="text-center text-sm text-muted-foreground underline"
         >
-          Create an account
+          Criar uma conta
         </Link>
         <Link
           id="sign-in-forgot-password"

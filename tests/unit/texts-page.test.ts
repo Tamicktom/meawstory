@@ -132,7 +132,7 @@ describe("TextsPage", () => {
     expect(markup).toContain("The older draft stays on the desk.")
     expect(markup).toContain('dateTime="2024-06-01T00:00:00.000Z"')
     expect(markup).toContain("31 de mai. de 2024")
-    expect(markup).toContain("640 / 1000")
+    expect(markup).toContain("Pontuação: 640 de 1000")
     expect(markup).toContain("Rascunho salvo")
     expect(markup).not.toContain("This draft belongs to someone else.")
     expect(markup).not.toContain("Você ainda não tem cenas.")

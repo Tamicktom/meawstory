@@ -47,6 +47,7 @@ function UnverifiedNotice(props: UnverifiedNoticeProps) {
         </p>
       ) : null}
       <Button
+        className="min-h-11 w-full sm:w-fit"
         id="resend-verification"
         type="button"
         variant="outline"
@@ -103,6 +104,7 @@ function StartReading(props: StartReadingProps) {
         Sua cena está salva e pronta para a leitura.
       </p>
       <Button
+        className="min-h-11 w-full sm:w-fit"
         id="start-reading"
         type="button"
         disabled={startReading.isPending}
@@ -123,7 +125,10 @@ function StartReading(props: StartReadingProps) {
 
 function ReadingGate(props: ReadingGateProps) {
   return (
-    <div lang="pt-BR" className="flex w-full max-w-3xl flex-col gap-4 p-4">
+    <div
+      lang="pt-BR"
+      className="flex w-full max-w-3xl min-w-0 flex-col gap-4 p-4 [overflow-wrap:anywhere]"
+    >
       <h1 className="font-heading text-lg font-medium">{props.themeTitle}</h1>
       {props.emailVerified ? (
         <StartReading textId={props.textId} />
@@ -136,6 +141,7 @@ function ReadingGate(props: ReadingGateProps) {
       )}
       {props.themeId ? (
         <Link
+          className="w-fit py-3 underline"
           href={`/dashboard/exercises/${props.themeId}/write?textId=${props.textId}`}
         >
           Continuar escrevendo
@@ -143,7 +149,9 @@ function ReadingGate(props: ReadingGateProps) {
       ) : null}
       <section className="flex flex-col gap-2">
         <h2 className="font-heading text-sm font-medium">Sua cena</h2>
-        <p className="whitespace-pre-wrap">{props.textContent}</p>
+        <p className="leading-relaxed whitespace-pre-wrap">
+          {props.textContent}
+        </p>
       </section>
     </div>
   )

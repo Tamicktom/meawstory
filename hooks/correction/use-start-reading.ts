@@ -14,7 +14,14 @@ function errorMessage(value: unknown) {
 }
 
 async function startReading(textId: string) {
-  const response = await client.api.correction.start({ textId }).post()
+  const response = await client.api.correction
+    .start({ textId })
+    .post()
+    .catch(() => {
+      throw new Error(
+        "Não conseguimos iniciar a leitura. Sua cena continua salva. Tente de novo."
+      )
+    })
 
   const message = errorMessage(response.error?.value)
 
