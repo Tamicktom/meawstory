@@ -21,7 +21,8 @@ async function expectTheme(page: Page, theme: "light" | "dark") {
 
 async function openHome(page: Page, colorScheme: "light" | "dark") {
   await page.emulateMedia({ colorScheme })
-  await page.goto("/")
+  //* The hotkey listener only exists after hydration.
+  await page.goto("/", { waitUntil: "networkidle" })
   await expectTheme(page, colorScheme)
 }
 
@@ -65,17 +66,70 @@ async function mountTypingTargets(page: Page) {
 }
 
 test.describe("home page", () => {
-  test("shows the project heading, the hello message, and the dark mode hint", async ({
+  test("shows the promise, the example reading, and the three steps", async ({
     page,
   }) => {
     await page.goto("/")
 
     await expect(
-      page.getByRole("heading", { name: "Project ready!" })
+      page.getByRole("heading", {
+        level: 1,
+        name: "Escreva uma cena. Receba uma leitura honesta. Reescreva melhor.",
+      })
     ).toBeVisible()
-    await expect(page.getByText("Hello World", { exact: true })).toBeVisible()
-    await expect(page.getByText("(Press d to toggle dark mode)")).toBeVisible()
-    await expect(page.locator("kbd")).toHaveText("d")
+    await expect(page.getByText("Revisão sugerida")).toBeVisible()
+    await expect(page.getByText("Final da cena")).toBeVisible()
+
+    for (const step of ["Escreva", "Leia", "Revise"]) {
+      await expect(
+        page.getByRole("heading", { level: 3, name: step, exact: true })
+      ).toBeVisible()
+    }
+
+    await expect(
+      page.getByRole("heading", {
+        name: "A IA não escreve por você. Seu texto continua seu.",
+      })
+    ).toBeVisible()
+    await expect(
+      page.getByText("sua cena é enviada à OpenAI", { exact: false })
+    ).toBeVisible()
+  })
+
+  test("no longer shows the starter template", async ({ page }) => {
+    await page.goto("/")
+
+    await expect(page.getByText("Project ready!")).toHaveCount(0)
+    await expect(page.getByText("Hello World")).toHaveCount(0)
+  })
+
+  test("sends the first action to sign up", async ({ page }) => {
+    await page.goto("/")
+    await page.locator("#landing-start").click()
+
+    await expect(page).toHaveURL("/sign-up")
+    await expect(page.locator("#sign-up-form")).toBeVisible()
+  })
+
+  test("sends the second action to sign in", async ({ page }) => {
+    await page.goto("/")
+    await page.locator("#landing-sign-in").click()
+
+    await expect(page).toHaveURL("/sign-in")
+    await expect(page.locator("#sign-in-form")).toBeVisible()
+  })
+
+  test("fits a phone screen without horizontal scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 })
+    await page.goto("/")
+
+    const overflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth
+    )
+
+    expect(overflow).toBe(0)
   })
 })
 

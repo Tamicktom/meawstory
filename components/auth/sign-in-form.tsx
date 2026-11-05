@@ -19,6 +19,9 @@ import { Spinner } from "@/components/ui/spinner"
 //* Hooks imports
 import { useSignInForm } from "@/hooks/use-sign-in-form"
 
+//* Local imports
+import { authHref, defaultDestination } from "@/lib/auth-destination"
+
 type SignInFieldsProps = {
   appForm: ReturnType<typeof useSignInForm>["appForm"]
   disabled: boolean
@@ -57,8 +60,15 @@ function SignInFields(props: SignInFieldsProps) {
   )
 }
 
-export function SignInForm() {
-  const { appForm, signInMutation, isBusy, handleSubmit } = useSignInForm()
+type SignInFormProps = {
+  destination?: string
+}
+
+export function SignInForm({
+  destination = defaultDestination,
+}: SignInFormProps) {
+  const { appForm, signInMutation, isBusy, handleSubmit } =
+    useSignInForm(destination)
 
   return (
     <Card className="w-full max-w-md">
@@ -99,10 +109,17 @@ export function SignInForm() {
         </Button>
         <Link
           id="sign-in-create-account"
-          href="/sign-up"
+          href={authHref("/sign-up", destination)}
           className="text-center text-sm text-muted-foreground underline"
         >
           Create an account
+        </Link>
+        <Link
+          id="sign-in-forgot-password"
+          href="/forgot-password"
+          className="text-center text-sm text-muted-foreground underline"
+        >
+          Esqueci minha senha
         </Link>
       </CardFooter>
     </Card>

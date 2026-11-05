@@ -118,6 +118,49 @@ async function showsTheAccountFields({ mount }: ComponentFixtures) {
   await expect(
     component.getByRole("button", { name: "Create account" })
   ).toBeEnabled()
+  await expect(
+    component.getByRole("link", { name: "Já tenho conta" })
+  ).toHaveAttribute("href", "/sign-in")
+}
+
+async function keepsTheDestinationInTheLinkToSignIn({
+  mount,
+}: ComponentFixtures) {
+  const component = await mount(
+    "components/auth/sign-up-form/WithDestination"
+  )
+
+  await expect(
+    component.getByRole("link", { name: "Já tenho conta" })
+  ).toHaveAttribute("href", "/sign-in?next=%2Fdashboard%2Fthemes")
+}
+
+async function sendsTheDestinationAsTheVerificationCallback({
+  mount,
+  page,
+}: ComponentFixtures) {
+  await page.route(signUpEndpoint, async (route) => {
+    await fulfillSignUp(route, {
+      status: 200,
+      body: { token: "token", user: { id: "user-1" } },
+    })
+  })
+
+  const component = await mount(
+    "components/auth/sign-up-form/WithDestination"
+  )
+  const requestPromise = page.waitForRequest(signUpEndpoint)
+
+  await fillAccount(component, validAccount())
+  await submit(component)
+
+  expect((await requestPromise).postDataJSON()).toMatchObject({
+    callbackURL: "/dashboard/themes",
+  })
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-navigated-to",
+    "/dashboard/themes"
+  )
 }
 
 async function showsFieldErrorsWhenTheFormIsSubmittedEmpty({
@@ -377,6 +420,10 @@ test.describe("SignUpForm", () => {
       "shows the account fields and an enabled submit button",
       showsTheAccountFields
     )
+    test(
+      "keeps the destination in the link to sign in",
+      keepsTheDestinationInTheLinkToSignIn
+    )
   })
 
   test.describe("validation", () => {
@@ -426,6 +473,10 @@ test.describe("SignUpForm", () => {
     test(
       "sends the trimmed name and navigates home when sign up succeeds",
       sendsTheTrimmedNameAndNavigatesHome
+    )
+    test(
+      "sends the destination as the verification callback",
+      sendsTheDestinationAsTheVerificationCallback
     )
   })
 })

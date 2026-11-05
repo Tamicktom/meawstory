@@ -3,6 +3,7 @@
   "entry": [
     "playwright/gallery/main.tsx",
     "playwright/vite.config.ts",
+    "tests/e2e-global-setup.ts",
     "components/**/*.story.tsx"
   ],
   "ignorePatterns": ["**/*.css"],

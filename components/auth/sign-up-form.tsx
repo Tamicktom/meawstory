@@ -1,4 +1,6 @@
 "use client"
+//* Libraries imports
+import Link from "next/link"
 
 //* Components imports
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -16,6 +18,9 @@ import { Spinner } from "@/components/ui/spinner"
 
 //* Hooks imports
 import { useSignUpForm } from "@/hooks/use-sign-up-form"
+
+//* Local imports
+import { authHref, defaultDestination } from "@/lib/auth-destination"
 
 type SignUpFieldsProps = {
   appForm: ReturnType<typeof useSignUpForm>["appForm"]
@@ -79,8 +84,15 @@ function SignUpFields(props: SignUpFieldsProps) {
   )
 }
 
-export function SignUpForm() {
-  const { appForm, signUpMutation, isBusy, handleSubmit } = useSignUpForm()
+type SignUpFormProps = {
+  destination?: string
+}
+
+export function SignUpForm({
+  destination = defaultDestination,
+}: SignUpFormProps) {
+  const { appForm, signUpMutation, isBusy, handleSubmit } =
+    useSignUpForm(destination)
 
   return (
     <Card className="w-full max-w-md">
@@ -106,7 +118,7 @@ export function SignUpForm() {
           <SignUpFields appForm={appForm} disabled={isBusy} />
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col items-stretch gap-4">
         <Button
           id="sign-up-submit"
           type="submit"
@@ -117,6 +129,13 @@ export function SignUpForm() {
           {isBusy ? <Spinner data-icon="inline-start" /> : null}
           {isBusy ? "Creating account..." : "Create account"}
         </Button>
+        <Link
+          id="sign-up-sign-in"
+          href={authHref("/sign-in", destination)}
+          className="text-center text-sm text-muted-foreground underline"
+        >
+          Já tenho conta
+        </Link>
       </CardFooter>
     </Card>
   )

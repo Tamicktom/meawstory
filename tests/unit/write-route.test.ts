@@ -56,8 +56,8 @@ afterEach(async () => {
   await rows.cleanup()
 })
 
-async function signIn() {
-  const session = await openSession()
+async function signIn(emailVerified = true) {
+  const session = await openSession({ emailVerified })
   sessions.push(session)
   headerBox.current = session.headers
   return session
@@ -134,6 +134,30 @@ describe("POST /api/write/:themeId", () => {
       },
     ])
     expect(started).toEqual([[correctText, [textId]]])
+  })
+
+  it("saves the scene and starts no reading when the email is not verified", async () => {
+    const session = await signIn(false)
+    const graph = await rows.insertActiveText()
+    const content = "She measured the gap and stayed."
+    const response = await app.handle(writeRequest(graph.themeId, content))
+    const payload = (await response.json()) as {
+      textId: string
+      readingBlocked?: string
+    }
+
+    rows.trackText(payload.textId)
+
+    expect(response.status).toBe(200)
+    expect(payload.readingBlocked).toBe("EMAIL_NOT_VERIFIED")
+    expect(started).toEqual([])
+
+    const stored = await db
+      .select({ content: text.content, userId: text.userId })
+      .from(text)
+      .where(eq(text.id, payload.textId))
+
+    expect(stored).toEqual([{ content, userId: session.userId }])
   })
 
   it("rejects an empty body and inserts no text", async () => {

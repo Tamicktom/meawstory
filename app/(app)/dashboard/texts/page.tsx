@@ -1,7 +1,5 @@
 //* Libraries imports
-import { headers } from "next/headers"
 import Link from "next/link"
-import { notFound } from "next/navigation"
 
 //* Components imports
 import { buttonVariants } from "@/components/ui/button/button-variants"
@@ -11,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { textService, type OwnedTextListItem } from "@/services/text"
 
 //* Local imports
-import { auth } from "@/lib/auth"
+import { requireSession } from "@/lib/session"
 
 type TextHistoryCardProps = {
   text: OwnedTextListItem
@@ -81,14 +79,7 @@ function TextHistoryCard(props: TextHistoryCardProps) {
 }
 
 export default async function TextsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) {
-    notFound()
-  }
-
+  const session = await requireSession()
   const texts = await textService.listOwnedTexts(session.user.id)
 
   return (

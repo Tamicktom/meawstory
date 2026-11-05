@@ -53,7 +53,7 @@ async function loadPage() {
   return renderToStaticMarkup(await TextsPage())
 }
 
-async function expectNotFound() {
+async function expectRedirectToSignIn() {
   let thrown: unknown
 
   try {
@@ -62,15 +62,14 @@ async function expectNotFound() {
     thrown = error
   }
 
-  expect(thrown).toBeInstanceOf(Error)
-  expect((thrown as Error).message).toBe("NEXT_HTTP_ERROR_FALLBACK;404")
+  expect((thrown as { digest?: string }).digest).toContain("/sign-in")
 }
 
 describe("TextsPage", () => {
-  it("renders not found when there is no session", async () => {
+  it("redirects to sign in when there is no session", async () => {
     await rows.insertActiveText()
 
-    await expectNotFound()
+    await expectRedirectToSignIn()
   })
 
   it("shows an empty history with a link to the themes", async () => {

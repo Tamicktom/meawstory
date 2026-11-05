@@ -5,24 +5,17 @@ import { expect, test } from "@playwright/test"
 import { signIn } from "../helpers/sign-in"
 
 test.describe("dashboard session gate", () => {
-  test("shows Unauthorized and hides the shell when there is no session", async ({
+  test("sends a visitor with no session to sign in, without the shell", async ({
     page,
   }) => {
     await page.goto("/dashboard")
 
-    await expect(
-      page.getByRole("heading", { name: "Unauthorized" })
-    ).toBeVisible()
+    await expect(page).toHaveURL("/sign-in")
+    await expect(page.getByText("Unauthorized")).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Meawstory" })).toHaveCount(0)
-    await expect(page.getByRole("link", { name: "Dashboard" })).toHaveCount(0)
-    await expect(page.getByRole("link", { name: "Themes" })).toHaveCount(0)
-    await expect(page.getByRole("link", { name: "Texts" })).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: "Toggle Sidebar" })
     ).toHaveCount(0)
-    await expect(page.getByRole("link", { name: "Browse themes" })).toHaveCount(
-      0
-    )
     await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0)
   })
 
@@ -79,9 +72,7 @@ test.describe("dashboard session gate", () => {
     await expect(page.getByRole("heading", { name: "Texts" })).toBeVisible()
   })
 
-  test("signs out and shows Unauthorized on the dashboard", async ({
-    page,
-  }) => {
+  test("signs out and opens sign in", async ({ page }) => {
     await signIn(page)
     await page.goto("/dashboard")
 
@@ -92,10 +83,7 @@ test.describe("dashboard session gate", () => {
 
     await signOut.click()
 
-    await expect(page).toHaveURL("/dashboard")
-    await expect(
-      page.getByRole("heading", { name: "Unauthorized" })
-    ).toBeVisible()
+    await expect(page).toHaveURL("/sign-in")
     await expect(page.getByRole("link", { name: "Meawstory" })).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: "Toggle Sidebar" })

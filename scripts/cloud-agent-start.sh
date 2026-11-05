@@ -105,6 +105,6 @@ if grep -Eq '"db:seed"[[:space:]]*:' package.json; then
   bun run db:seed
 fi
 
-# package.json "dev" starts Docker and runs Next with --bun. Docker is not
-# available here, and --bun makes Turbopack fail to resolve pg.
+# package.json "dev" starts Docker, which is not available here. Next runs on
+# Node because Turbopack fails to resolve pg under --bun.
 exec /opt/meawstory/bin/node ./node_modules/next/dist/bin/next dev --hostname 0.0.0.0 --port 3000

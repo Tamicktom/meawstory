@@ -11,7 +11,7 @@ import {
 import { registerAccount } from "../helpers/register-account"
 
 test.describe("sign in", () => {
-  test("clears cached queries before opening the home page", async ({
+  test("clears cached queries before opening the dashboard", async ({
     page,
     request,
   }) => {
@@ -26,16 +26,14 @@ test.describe("sign in", () => {
     await page.getByLabel("Password").fill(account.password)
     await page.getByRole("button", { name: "Sign in" }).click()
 
-    await expect(page).toHaveURL("/")
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toBeVisible()
+    await expect(page).toHaveURL("/dashboard")
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
     await expectCachedQueriesCleared(page)
   })
 })
 
 test.describe("sign up", () => {
-  test("clears cached queries before opening the home page", async ({
+  test("clears cached queries before opening the dashboard", async ({
     page,
   }) => {
     const account = createSignUpAccount()
@@ -51,10 +49,8 @@ test.describe("sign up", () => {
     await page.getByLabel("Confirm password").fill(account.confirmPassword)
     await page.getByRole("button", { name: "Create account" }).click()
 
-    await expect(page).toHaveURL("/")
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toBeVisible()
+    await expect(page).toHaveURL("/dashboard")
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
     await expectCachedQueriesCleared(page)
   })
 })

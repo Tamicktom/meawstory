@@ -96,6 +96,45 @@ async function showsTheSignInFields({ mount }: ComponentFixtures) {
   await expect(
     component.getByRole("link", { name: "Create an account" })
   ).toHaveAttribute("href", "/sign-up")
+  await expect(
+    component.getByRole("link", { name: "Esqueci minha senha" })
+  ).toHaveAttribute("href", "/forgot-password")
+}
+
+async function keepsTheDestinationInTheLinkToSignUp({
+  mount,
+}: ComponentFixtures) {
+  const component = await mount(
+    "components/auth/sign-in-form/WithDestination"
+  )
+
+  await expect(
+    component.getByRole("link", { name: "Create an account" })
+  ).toHaveAttribute("href", "/sign-up?next=%2Fdashboard%2Fthemes")
+}
+
+async function navigatesToTheDestinationAfterSigningIn({
+  mount,
+  page,
+}: ComponentFixtures) {
+  await page.route(signInEndpoint, async (route) => {
+    await fulfillSignIn(route, {
+      status: 200,
+      body: { token: "token", user: { id: "user-1" } },
+    })
+  })
+
+  const component = await mount(
+    "components/auth/sign-in-form/WithDestination"
+  )
+
+  await fillCredentials(component, validCredentials())
+  await submit(component)
+
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-navigated-to",
+    "/dashboard/themes"
+  )
 }
 
 async function showsFieldErrorsWhenTheFormIsSubmittedEmpty({
@@ -311,6 +350,10 @@ test.describe("SignInForm", () => {
       "shows the sign in fields and an enabled submit button",
       showsTheSignInFields
     )
+    test(
+      "keeps the destination in the link to sign up",
+      keepsTheDestinationInTheLinkToSignUp
+    )
   })
 
   test.describe("validation", () => {
@@ -349,6 +392,10 @@ test.describe("SignInForm", () => {
     test(
       "sends the credentials and navigates home when sign in succeeds",
       sendsTheCredentialsAndNavigatesHome
+    )
+    test(
+      "navigates to the destination after signing in",
+      navigatesToTheDestinationAfterSigningIn
     )
   })
 })

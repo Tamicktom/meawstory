@@ -78,6 +78,11 @@ const Editor = (props: EditorProps) => {
             return
           }
 
+          if (response.data && "readingBlocked" in response.data) {
+            router.push(`/dashboard/texts/${nextTextId}`)
+            return
+          }
+
           submittedTextId.current = nextTextId;
           setTextId(nextTextId);
           setIsWaitingForCorrection(true);

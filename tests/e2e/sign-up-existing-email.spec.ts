@@ -31,8 +31,6 @@ test.describe("sign up page", () => {
     await expect(
       page.getByRole("button", { name: "Create account" })
     ).toBeEnabled()
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toHaveCount(0)
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toHaveCount(0)
   })
 })

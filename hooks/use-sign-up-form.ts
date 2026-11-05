@@ -17,7 +17,7 @@ import {
 } from "@/schemas/sign-up"
 import { queryClient } from "@/utils/query-client"
 
-function useSignUpForm() {
+function useSignUpForm(destination: string) {
   const router = useRouter()
   const signUpMutation = useMutation({
     mutationFn: async (values: SignUpValues) => {
@@ -26,6 +26,8 @@ function useSignUpForm() {
         name: parsed.name,
         email: parsed.email,
         password: parsed.password,
+        //* Where the link in the verification email returns to.
+        callbackURL: destination,
       })
 
       if (error) {
@@ -36,7 +38,7 @@ function useSignUpForm() {
     },
     onSuccess: () => {
       queryClient.clear() //* Clear the query client to avoid showing the previous user's data
-      router.push("/")
+      router.push(destination)
     },
   })
   const appForm = useAppForm({

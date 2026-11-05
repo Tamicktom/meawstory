@@ -59,6 +59,7 @@ async function findOwnedText(textId: string, userId: string) {
   const ownedText = await db.query.text.findFirst({
     columns: {
       id: true,
+      content: true,
     },
     where: {
       id: textId,
@@ -144,7 +145,7 @@ async function createText(input: CreateTextInput) {
   const inserted = await db
     .insert(text)
     .values({
-      id: Bun.randomUUIDv7(),
+      id: crypto.randomUUID(),
       userId: input.userId,
       title: `Text for theme ${input.themeId}`,
       content: input.content,

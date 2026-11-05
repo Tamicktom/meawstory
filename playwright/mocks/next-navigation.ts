@@ -3,5 +3,8 @@ export function useRouter() {
     push(path: string) {
       document.documentElement.dataset.navigatedTo = path
     },
+    refresh() {
+      document.documentElement.dataset.refreshed = "true"
+    },
   }
 }

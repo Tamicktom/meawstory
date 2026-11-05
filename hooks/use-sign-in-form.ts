@@ -17,7 +17,7 @@ import {
 } from "@/schemas/sign-in"
 import { queryClient } from "@/utils/query-client"
 
-function useSignInForm() {
+function useSignInForm(destination: string) {
   const router = useRouter()
   const signInMutation = useMutation({
     mutationFn: async (values: SignInValues) => {
@@ -35,7 +35,7 @@ function useSignInForm() {
     },
     onSuccess: () => {
       queryClient.clear() //* Clear the query client to avoid showing the previous user's data
-      router.push("/")
+      router.push(destination)
     },
   })
   const appForm = useAppForm({

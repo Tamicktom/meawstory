@@ -448,7 +448,7 @@ As metas devem ser definidas depois de medir os primeiros usuários, para não p
 **Já tomadas:**
 
 - **Público:** escritores de ficção praticando.
-- **Envio de e-mails:** Resend, com o domínio `meawstory.com` e o remetente `Meawstory <contato@meawstory.com>`. Essa caixa precisa receber respostas.
+- **Envio de e-mails:** Resend, com o domínio `meawstory.com` e o remetente `Meawstory <nao-responda@meawstory.com>`. Uma caixa de contato fica para depois do MVP.
 - **Avaliação:** faixa em destaque, com a pontuação em segundo plano.
 
 **Em aberto:**

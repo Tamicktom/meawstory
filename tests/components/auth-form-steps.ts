@@ -17,7 +17,10 @@ async function expectNavigatedHome(
   component: Locator,
   busyButtonName: string
 ) {
-  await expect(page.locator("html")).toHaveAttribute("data-navigated-to", "/")
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-navigated-to",
+    "/dashboard"
+  )
   await expect(
     component.getByRole("button", { name: busyButtonName })
   ).toBeDisabled()

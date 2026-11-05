@@ -27,6 +27,14 @@ Deleting a `user` cascades to `session`, `account`, `text`, and, through the tex
 
 Themes and rubrics are a shared catalog. Deleting a user does not touch them.
 
+### Email verification
+
+`user.email_verified` decides who can start a `correction`. It does not decide who can sign in or write.
+
+- A `text` can be saved whatever the value is. It stays without a `correction` until its author confirms the email and asks for the reading.
+- The server checks the value before each reading starts, ahead of any submission limit. A blocked attempt creates no `correction`, so it uses no reading.
+- A `text` with no `correction` means that no reading was recorded. It does not mean a reading failed.
+
 ## Domain
 
 `rubric` is the criteria the AI uses to grade a text.

@@ -25,8 +25,6 @@ test.describe("sign in page", () => {
     await expect(page).toHaveURL("/sign-in")
     await expect(page.locator("#sign-in-form")).toBeVisible()
     await expect(page.getByRole("button", { name: "Sign in" })).toBeEnabled()
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toHaveCount(0)
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toHaveCount(0)
   })
 })

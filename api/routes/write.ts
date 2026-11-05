@@ -47,6 +47,14 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
       content,
     })
 
+    //* The scene stays saved. A blocked attempt starts nothing, so it uses no reading.
+    if (!session.user.emailVerified) {
+      return {
+        textId: newText.id,
+        readingBlocked: "EMAIL_NOT_VERIFIED" as const,
+      }
+    }
+
     await start(correctText, [newText.id])
 
     return { textId: newText.id }

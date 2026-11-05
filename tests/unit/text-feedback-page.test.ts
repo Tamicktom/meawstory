@@ -3,10 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test"
 import { eq } from "drizzle-orm"
 import * as nextHeaders from "next/headers"
 import { isValidElement } from "react"
-import { renderToStaticMarkup } from "react-dom/server"
 
 //* Components imports
 import { FeedbackView } from "@/components/feedback/feedback-view"
+import { ReadingGate } from "@/components/reading/reading-gate"
 
 //* Local imports
 import TextFeedbackPage from "@/app/(app)/dashboard/texts/[textId]/page"
@@ -46,18 +46,19 @@ afterEach(async () => {
   await rows.cleanup()
 })
 
-async function signIn() {
-  const session = await openSession()
+async function signIn(emailVerified = false) {
+  const session = await openSession({ emailVerified })
   sessions.push(session)
   headerBox.current = session.headers
   return session
 }
 
-function loadPage(textId: string) {
+function loadPage(textId: string, searchParams: { error?: string } = {}) {
   return TextFeedbackPage({
     params: Promise.resolve({
       textId,
     }),
+    searchParams: Promise.resolve(searchParams),
   })
 }
 
@@ -72,6 +73,33 @@ async function expectNotFound(textId: string) {
 
   expect(thrown).toBeInstanceOf(Error)
   expect((thrown as Error).message).toBe("NEXT_HTTP_ERROR_FALLBACK;404")
+}
+
+async function expectRedirectToSignIn(textId: string) {
+  let thrown: unknown
+
+  try {
+    await loadPage(textId)
+  } catch (error) {
+    thrown = error
+  }
+
+  expect((thrown as { digest?: string }).digest).toContain("/sign-in")
+}
+
+function gateProps(element: unknown) {
+  if (!isValidElement(element) || element.type !== ReadingGate) {
+    throw new Error("Expected the page to render ReadingGate.")
+  }
+
+  return element.props as {
+    textId: string
+    themeTitle: string
+    textContent: string
+    email: string
+    emailVerified: boolean
+    verificationLinkFailed: boolean
+  }
 }
 
 function feedbackProps(element: unknown) {
@@ -90,10 +118,10 @@ function feedbackProps(element: unknown) {
 }
 
 describe("TextFeedbackPage", () => {
-  it("renders not found when there is no session", async () => {
+  it("redirects to sign in when there is no session", async () => {
     const graph = await rows.insertActiveText()
 
-    await expectNotFound(graph.textId)
+    await expectRedirectToSignIn(graph.textId)
   })
 
   it("renders not found when another user owns the text", async () => {
@@ -186,20 +214,43 @@ describe("TextFeedbackPage", () => {
     })
   })
 
-  it("stays on the pending copy when the correction is missing", async () => {
-    const session = await signIn()
+  async function insertSceneWithoutCorrection(userId: string) {
     const rubricId = await rows.insertRubric()
     const themeId = await rows.insertTheme(rubricId, {
       title: "A letter that arrives late",
     })
-    const textId = await rows.insertText({
-      userId: session.userId,
+
+    return rows.insertText({
+      userId,
       themeId,
     })
-    const markup = renderToStaticMarkup(await loadPage(textId))
+  }
 
-    expect(markup).toContain("A letter that arrives late")
-    expect(markup).toContain("A correção ainda está sendo preparada.")
-    expect(markup).not.toContain("de 1000")
+  it("keeps the scene and asks for the email when an unverified account has no correction", async () => {
+    const session = await signIn(false)
+    const textId = await insertSceneWithoutCorrection(session.userId)
+    const props = gateProps(await loadPage(textId))
+
+    expect(props.textId).toBe(textId)
+    expect(props.themeTitle).toBe("A letter that arrives late")
+    expect(props.emailVerified).toBe(false)
+    expect(props.verificationLinkFailed).toBe(false)
+    expect(props.email).toContain("@example.com")
+  })
+
+  it("offers the reading when a verified account has no correction", async () => {
+    const session = await signIn(true)
+    const textId = await insertSceneWithoutCorrection(session.userId)
+    const props = gateProps(await loadPage(textId))
+
+    expect(props.emailVerified).toBe(true)
+  })
+
+  it("flags a verification link that came back with an error", async () => {
+    const session = await signIn(false)
+    const textId = await insertSceneWithoutCorrection(session.userId)
+    const props = gateProps(await loadPage(textId, { error: "TOKEN_EXPIRED" }))
+
+    expect(props.verificationLinkFailed).toBe(true)
   })
 })

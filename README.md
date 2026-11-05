@@ -13,6 +13,8 @@ cp example.env .env
 
 No `.env`, preencha `BETTER_AUTH_SECRET` com um segredo aleatório (por exemplo, gere com `openssl rand -hex 32`) e `OPENAI_API_KEY` com sua chave. A chave OpenAI é necessária para gerar correções reais. Os valores de URL e banco do exemplo já apontam para o ambiente local.
 
+Em desenvolvimento, os e-mails não passam pelo Resend: cada um fica em `.email-outbox/`, e o terminal mostra o caminho do arquivo. Em produção, `RESEND_API_KEY` é obrigatória. Para testar um envio real, preencha a chave no `.env` e execute `bun run email:test seu@email.com`.
+
 Prepare o PostgreSQL 18 e os dados iniciais:
 
 ```bash

@@ -118,6 +118,7 @@ describe("textService.findOwnedText", () => {
     expect(await textService.findOwnedText(graph.textId, graph.userId)).toEqual(
       {
         id: graph.textId,
+        content: `Text body ${graph.textId}`,
         theme: {
           title: "Owned theme",
         },

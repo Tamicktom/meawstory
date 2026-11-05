@@ -14,7 +14,13 @@ type OpenSession = {
   close: () => Promise<void>
 }
 
-export async function openSession(): Promise<OpenSession> {
+type OpenSessionOptions = {
+  emailVerified?: boolean
+}
+
+export async function openSession(
+  options: OpenSessionOptions = {}
+): Promise<OpenSession> {
   const account = createSignUpAccount()
   const response = await auth.api.signUpEmail({
     body: {
@@ -39,6 +45,14 @@ export async function openSession(): Promise<OpenSession> {
       id: string
     }
   }
+
+  if (options.emailVerified) {
+    await db
+      .update(user)
+      .set({ emailVerified: true })
+      .where(eq(user.id, body.user.id))
+  }
+
   const cookie = response.headers
     .getSetCookie()
     .map((entry) => entry.split(";")[0])

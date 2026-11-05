@@ -94,7 +94,7 @@ export function AppSidebar() {
             void authClient.signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  window.location.assign("/dashboard")
+                  window.location.assign("/sign-in")
                 },
               },
             })

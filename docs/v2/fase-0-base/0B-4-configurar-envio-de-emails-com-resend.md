@@ -7,9 +7,11 @@ Disponibilizar a infraestrutura necessária para recuperação de senha e futura
 
 ## Escopo
 - Integrar o Resend usando o domínio `meawstory.com`.
-- Usar `Meawstory <contato@meawstory.com>` como remetente.
-- Garantir que a caixa de contato receba respostas.
+- Usar `Meawstory <nao-responda@meawstory.com>` como remetente.
 - Tratar falha de envio sem expor detalhes técnicos na interface.
 
 ## Critérios de conclusão
-- Um e-mail transacional de teste é entregue pelo domínio configurado e respostas chegam à caixa definida.
+- Um e-mail transacional de teste é entregue pelo domínio configurado.
+
+## Observação
+**Decisão de 2026-11-05:** a caixa de contato sai do escopo e fica para depois do MVP, que será testado apenas com pessoas convidadas. Por isso, o remetente deixou de ser `contato@meawstory.com` e os e-mails não têm endereço de resposta.

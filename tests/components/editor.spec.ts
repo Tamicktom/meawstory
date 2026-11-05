@@ -100,6 +100,31 @@ test.describe("Editor", () => {
     expect(posted?.content).not.toContain("<")
   })
 
+  test("opens the saved scene when the reading is blocked by the email", async ({
+    mount,
+    page,
+  }) => {
+    const id = themeId()
+    const savedTextId = textId()
+
+    await page.route(writeRoute(id), async (route) => {
+      await fulfillJson(route, 200, {
+        textId: savedTextId,
+        readingBlocked: "EMAIL_NOT_VERIFIED",
+      })
+    })
+
+    const component = await mountEditor(mount, id)
+
+    await replaceEditorText(page, component, plainText)
+    await submitButton(component).click()
+
+    await expect
+      .poll(() => navigatedPath(page))
+      .toBe(`/dashboard/texts/${savedTextId}`)
+    await expect(component.getByText(preparingCopy)).toHaveCount(0)
+  })
+
   test("keeps the button disabled while the request is in flight", async ({
     mount,
     page,

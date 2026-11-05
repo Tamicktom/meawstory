@@ -19,7 +19,7 @@ test.describe("sign in page", () => {
     ).toHaveAttribute("href", "/sign-up")
   })
 
-  test("signs in with an existing account and opens the home page", async ({
+  test("signs in with an existing account and opens the dashboard", async ({
     page,
     request,
   }) => {
@@ -42,10 +42,8 @@ test.describe("sign in page", () => {
     await page.getByLabel("Password").fill(account.password)
     await page.getByRole("button", { name: "Sign in" }).click()
 
-    await expect(page).toHaveURL("/")
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toBeVisible()
+    await expect(page).toHaveURL("/dashboard")
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
   })
 })
 
@@ -67,9 +65,7 @@ test.describe("signIn helper", () => {
       },
     })
 
-    await page.goto("/")
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toBeVisible()
+    await page.goto("/dashboard")
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
   })
 })

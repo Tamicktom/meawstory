@@ -2,11 +2,8 @@
 import { expect, test } from "@playwright/test"
 
 //* Local imports
-import {
-  removeSavedCorrection,
-  savedCorrection,
-  writeSavedCorrection,
-} from "../helpers/saved-correction"
+import { savedCorrection } from "../helpers/saved-correction"
+import { confirmEmail } from "../helpers/email-outbox"
 import { signIn } from "../helpers/sign-in"
 
 const themeTitle = "A chave na mesa"
@@ -14,20 +11,14 @@ const themeId = "theme_key_on_the_table"
 const submittedText = "A chave ficou na mesa entre as duas."
 
 test.describe("product loop", () => {
-  test.beforeEach(async () => {
-    await writeSavedCorrection()
-  })
-
-  test.afterEach(async () => {
-    await removeSavedCorrection()
-  })
-
   test("walks from the theme list to the saved correction", async ({
     page,
   }) => {
     test.setTimeout(60_000)
 
-    await signIn(page)
+    const account = await signIn(page)
+
+    await confirmEmail(page, account.email)
     await page.goto("/dashboard/themes")
 
     await page.getByRole("link", { name: themeTitle }).click()

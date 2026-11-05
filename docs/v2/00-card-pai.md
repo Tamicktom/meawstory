@@ -35,12 +35,12 @@ Total: 86 cards.
 
 ### B. Entrada e conta
 
-- [ ] [0B-1](fase-0-base/0B-1-criar-landing-do-produto.md) — Criar a landing do produto
-- [ ] [0B-2](fase-0-base/0B-2-redirecionar-acesso-e-retomar-destino.md) — Redirecionar acesso e retomar o destino
-- [ ] [0B-3](fase-0-base/0B-3-conectar-login-e-cadastro.md) — Conectar as telas de login e cadastro *(parcial: o link do login para o cadastro já existe)*
-- [ ] [0B-4](fase-0-base/0B-4-configurar-envio-de-emails-com-resend.md) — Configurar o envio de e-mails com Resend
-- [ ] [0B-5](fase-0-base/0B-5-implementar-recuperacao-de-senha.md) — Implementar recuperação de senha por e-mail
-- [ ] [0B-6](fase-0-base/0B-6-implementar-verificacao-de-email.md) — Implementar a verificação de e-mail
+- [x] [0B-1](fase-0-base/0B-1-criar-landing-do-produto.md) — Criar a landing do produto
+- [x] [0B-2](fase-0-base/0B-2-redirecionar-acesso-e-retomar-destino.md) — Redirecionar acesso e retomar o destino
+- [x] [0B-3](fase-0-base/0B-3-conectar-login-e-cadastro.md) — Conectar as telas de login e cadastro
+- [x] [0B-4](fase-0-base/0B-4-configurar-envio-de-emails-com-resend.md) — Configurar o envio de e-mails com Resend
+- [x] [0B-5](fase-0-base/0B-5-implementar-recuperacao-de-senha.md) — Implementar recuperação de senha por e-mail
+- [x] [0B-6](fase-0-base/0B-6-implementar-verificacao-de-email.md) — Implementar a verificação de e-mail
 
 ### C. Ciclo atual confiável
 
