@@ -10,6 +10,7 @@ import { useAppForm } from "@/components/auth/form-hook"
 
 //* Local imports
 import { authClient } from "@/lib/auth-client"
+import { signUpErrorMessage } from "@/lib/auth-error-message"
 import {
   signUpDefaultValues,
   signUpSchema,
@@ -37,14 +38,7 @@ function useSignUpForm(destination: string) {
         })
 
       if (error) {
-        throw new Error(
-          error.status === 429
-            ? "Foram muitas tentativas. Aguarde um minuto e tente de novo."
-            : error.code === "USER_ALREADY_EXISTS" ||
-                error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
-              ? "Já existe uma conta com esse e-mail. Entre na sua conta ou recupere a senha."
-              : "Não foi possível criar sua conta agora. Tente de novo em instantes."
-        )
+        throw new Error(signUpErrorMessage(error))
       }
 
       return data
