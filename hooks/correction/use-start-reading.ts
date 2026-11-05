@@ -8,30 +8,28 @@ import { client } from "@/lib/eden"
 //* The page was out of date: the email is no longer confirmed, or a reading already exists.
 class StaleReadingStateError extends Error {}
 
+function errorMessage(value: unknown) {
+  if (!value || typeof value !== "object" || !("message" in value)) return null
+  return String(value.message)
+}
+
 async function startReading(textId: string) {
   const response = await client.api.correction.start({ textId }).post()
+
+  const message = errorMessage(response.error?.value)
 
   if (
     response.status === 403 ||
     (response.status === 409 &&
-      response.error?.value &&
-      typeof response.error.value === "object" &&
-      "message" in response.error.value &&
-      String(response.error.value.message).startsWith(
-        "A leitura já foi iniciada"
-      ))
+      message?.startsWith("A leitura já foi iniciada"))
   ) {
     throw new StaleReadingStateError()
   }
 
   if (response.error) {
     throw new Error(
-      response.status < 500 &&
-        response.error.value &&
-        typeof response.error.value === "object" &&
-        "message" in response.error.value
-        ? String(response.error.value.message)
-        : "Não conseguimos iniciar a leitura. Sua cena continua salva. Tente de novo."
+      (response.status < 500 ? message : null) ??
+        "Não conseguimos iniciar a leitura. Sua cena continua salva. Tente de novo."
     )
   }
 }

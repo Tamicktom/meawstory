@@ -74,6 +74,32 @@ export async function saveScene(
   })
 }
 
+// A retry must still match both frozen bodies before another attempt is reserved.
+function assertRetrySnapshot(
+  scene: {
+    scene: { content: string }
+    rubric: { id: string; content: string }
+  },
+  previous:
+    | Pick<
+        typeof correction.$inferSelect,
+        "rubricId" | "rubricContent" | "textContent"
+      >
+    | undefined
+) {
+  if (!previous) return
+  if (
+    previous.rubricId !== scene.rubric.id ||
+    previous.rubricContent !== scene.rubric.content ||
+    previous.textContent !== scene.scene.content
+  ) {
+    throw new ReadingError(
+      409,
+      "O exercício mudou desde a tentativa anterior. Sua cena está salva; não foi iniciada outra leitura."
+    )
+  }
+}
+
 export async function reserveReading(userId: string, textId: string) {
   await expireReadings()
   return db.transaction(async (tx) => {
@@ -109,17 +135,7 @@ export async function reserveReading(userId: string, textId: string) {
     const content = previous?.textContent ?? scene.scene.content
     const sizeError = sceneSizeError(content)
     if (sizeError) throw new ReadingError(400, sizeError)
-    if (
-      previous &&
-      (previous.rubricId !== scene.rubric.id ||
-        previous.rubricContent !== scene.rubric.content ||
-        content !== scene.scene.content)
-    ) {
-      throw new ReadingError(
-        409,
-        "O exercício mudou desde a tentativa anterior. Sua cena está salva; não foi iniciada outra leitura."
-      )
-    }
+    assertRetrySnapshot(scene, previous)
     const attempts = await tx
       .select({ createdAt: correction.createdAt })
       .from(correction)
@@ -142,18 +158,16 @@ export async function reserveReading(userId: string, textId: string) {
         reset.toISOString()
       )
     const id = crypto.randomUUID()
-    await tx
-      .insert(correction)
-      .values({
-        id,
-        textId,
-        textContent: content,
-        rubricId: scene.rubric.id,
-        rubricContent: scene.rubric.content,
-        content: "",
-        score: "0.00",
-        status: "PENDING",
-      })
+    await tx.insert(correction).values({
+      id,
+      textId,
+      textContent: content,
+      rubricId: scene.rubric.id,
+      rubricContent: scene.rubric.content,
+      content: "",
+      score: "0.00",
+      status: "PENDING",
+    })
     return id
   })
 }

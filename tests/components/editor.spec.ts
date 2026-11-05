@@ -53,3 +53,37 @@ test("preserves paragraphs, opens saved scenes and keeps the text on rate limiti
   )
   expect(bodies).toEqual([{ content }, { content, textId: "saved" }])
 })
+
+test("server errors keep the scene without exposing details or adopting an error ID", async ({
+  mount,
+  page,
+}) => {
+  const bodies: { content: string; textId?: string }[] = []
+  await page.route("**/api/write/**", async (route) => {
+    bodies.push(route.request().postDataJSON())
+    await route.fulfill({
+      status: bodies.length === 1 ? 500 : 200,
+      json:
+        bodies.length === 1
+          ? {
+              textId: "untrusted-error-id",
+              message: "Internal database details",
+            }
+          : { textId: "saved" },
+    })
+  })
+  const view = await mount(story)
+  await view.getByRole("textbox").fill(content)
+  await view.getByRole("button").click()
+  await expect(view.getByRole("alert")).toContainText("Seu texto continua aqui")
+  await expect(view.getByRole("alert")).not.toContainText(
+    "Internal database details"
+  )
+  await expect(view.getByRole("textbox")).toHaveValue(content)
+  await view.getByRole("button").click()
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-navigated-to",
+    "/dashboard/texts/saved"
+  )
+  expect(bodies).toEqual([{ content }, { content }])
+})

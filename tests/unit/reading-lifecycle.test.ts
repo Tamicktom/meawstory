@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from "bun:test"
 import { eq } from "drizzle-orm"
 import { db } from "@/database"
-import { correction, text } from "@/database/schema"
+import { correction, text, rubric, theme } from "@/database/schema"
 import { reserveReading, saveScene, expireReadings } from "@/services/reading"
 import { correctionService } from "@/services/correction"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
@@ -100,3 +100,73 @@ test("daily capacity includes soft-deleted attempts and rejects before reserving
     "limite de leituras"
   )
 })
+
+test("reservation rejects missing scenes and other authors without creating attempts", async () => {
+  const g = await scene()
+  await expect(reserveReading(g.userId, "missing-scene")).rejects.toThrow(
+    "Cena ou exercício indisponível"
+  )
+  const otherUserId = await rows.insertUser()
+  await expect(reserveReading(otherUserId, g.textId)).rejects.toThrow(
+    "Cena ou exercício indisponível"
+  )
+  expect(
+    await correctionService.findLatestActiveCorrection(g.textId)
+  ).toBeNull()
+})
+
+for (const words of [99, 2001]) {
+  test(`reservation rejects ${words} words without creating an attempt`, async () => {
+    const g = await rows.insertActiveText({ content: "cena ".repeat(words) })
+    await expect(reserveReading(g.userId, g.textId)).rejects.toThrow(
+      "precisa ter entre 100 e 2.000"
+    )
+    expect(
+      await correctionService.findLatestActiveCorrection(g.textId)
+    ).toBeNull()
+  })
+}
+
+for (const status of ["PENDING", "IN_PROGRESS", "COMPLETED"] as const) {
+  test(`reservation rejects an existing ${status} reading`, async () => {
+    const g = await scene()
+    await rows.insertCorrection({
+      textId: g.textId,
+      rubricId: g.rubricId,
+      status,
+    })
+    await expect(reserveReading(g.userId, g.textId)).rejects.toThrow(
+      "A leitura já foi iniciada"
+    )
+  })
+}
+
+for (const change of ["scene", "rubric body", "rubric id"] as const) {
+  test(`retry rejects a changed ${change} and preserves the failed snapshot`, async () => {
+    const g = await scene()
+    const id = rows.trackCorrection(await reserveReading(g.userId, g.textId))
+    await correctionService.updateCorrectionStatus(id, "FAILED")
+    const before = await correctionService.findAttemptSnapshot(id)
+    if (change === "scene") {
+      await db
+        .update(text)
+        .set({ content: content + " Outra frase." })
+        .where(eq(text.id, g.textId))
+    } else if (change === "rubric body") {
+      await db
+        .update(rubric)
+        .set({ content: "New rubric body" })
+        .where(eq(rubric.id, g.rubricId))
+    } else {
+      const rubricId = await rows.insertRubric()
+      await db.update(theme).set({ rubricId }).where(eq(theme.id, g.themeId))
+    }
+    await expect(reserveReading(g.userId, g.textId)).rejects.toThrow(
+      "O exercício mudou"
+    )
+    expect(await correctionService.findAttemptSnapshot(id)).toEqual(before)
+    expect(
+      await db.select().from(correction).where(eq(correction.textId, g.textId))
+    ).toHaveLength(1)
+  })
+}
