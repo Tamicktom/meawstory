@@ -183,7 +183,7 @@ describe("TextFeedbackPage", () => {
       content: "Newer note",
       score: "20.00",
       textContent: "Newer text",
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
       createdAt: new Date("2024-06-01T00:00:00.000Z"),
     })
 

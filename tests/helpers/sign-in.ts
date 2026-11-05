@@ -7,7 +7,7 @@ import {
   type SignUpAccount,
 } from "../factories/sign-up-account"
 
-const baseURL = "http://localhost:3000"
+const baseURL = process.env.NEXT_PUBLIC_VERCEL_URL ?? "http://localhost:3000"
 
 export async function signIn(
   page: Page,

@@ -107,7 +107,7 @@ describe("GET /api/correction/check-correction-status/:textId", () => {
     })
   })
 
-  it("returns PENDING when the text has no active correction", async () => {
+  it("returns DRAFT when the text has no active correction", async () => {
     const session = await signIn()
     const graph = await rows.insertActiveText()
     const textId = await rows.insertText({
@@ -118,11 +118,11 @@ describe("GET /api/correction/check-correction-status/:textId", () => {
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
-      status: "PENDING",
+      status: "DRAFT",
     })
   })
 
-  it("returns PENDING when the only correction is soft-deleted", async () => {
+  it("returns DRAFT when the only correction is soft-deleted", async () => {
     const session = await signIn()
     const graph = await rows.insertActiveText()
     const textId = await rows.insertText({
@@ -142,7 +142,7 @@ describe("GET /api/correction/check-correction-status/:textId", () => {
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
-      status: "PENDING",
+      status: "DRAFT",
     })
   })
 

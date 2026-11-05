@@ -15,9 +15,9 @@ type TextHistoryCardProps = {
   text: OwnedTextListItem
 }
 
-const textCreatedAtFormatter = new Intl.DateTimeFormat("en-US", {
+const textCreatedAtFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "medium",
-  timeZone: "UTC",
+  timeZone: "America/Sao_Paulo",
 })
 
 function formatTextCreatedAt(createdAt: Date) {
@@ -40,18 +40,20 @@ function textCorrectionLabel(text: OwnedTextListItem) {
   const correction = text.correction
 
   if (!correction) {
-    return "Waiting for correction"
+    return "Rascunho salvo"
   }
 
   if (correction.status === "FAILED") {
-    return "Correction failed"
+    return "Leitura com falha"
   }
 
   if (correction.status === "COMPLETED" && correction.score) {
     return formatCompletedScore(correction.score)
   }
 
-  return "Correction in progress"
+  return correction.status === "PENDING"
+    ? "Leitura aguardando"
+    : "Leitura em andamento"
 }
 
 function TextHistoryCard(props: TextHistoryCardProps) {
@@ -86,16 +88,18 @@ export default async function TextsPage() {
 
   return (
     <div className="flex w-full flex-col gap-4 p-4">
-      <h1 className="font-heading text-lg font-medium">Texts</h1>
+      <h1 className="font-heading text-lg font-medium">Minhas cenas</h1>
       {texts.length === 0 ? (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">No texts yet.</p>
+          <p className="text-sm text-muted-foreground">
+            Você ainda não tem cenas.
+          </p>
           <Link
             id="texts-browse-themes"
             href="/dashboard/themes"
             className={buttonVariants({ className: "w-fit" })}
           >
-            Browse themes
+            Explorar exercícios
           </Link>
         </div>
       ) : (

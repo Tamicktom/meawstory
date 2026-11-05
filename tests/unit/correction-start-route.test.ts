@@ -7,6 +7,7 @@ import * as workflowApi from "workflow/api"
 import { app } from "@/api"
 import { openSession } from "@/tests/helpers/open-session"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
+import { correctionService } from "@/services/correction"
 import { correctText } from "@/workflows/correction"
 
 const rows = createIsolatedRows()
@@ -60,7 +61,11 @@ async function insertScene(userId: string) {
   const rubricId = await rows.insertRubric()
   const themeId = await rows.insertTheme(rubricId)
 
-  const textId = await rows.insertText({ userId, themeId })
+  const textId = await rows.insertText({
+    userId,
+    themeId,
+    content: "cena ".repeat(100),
+  })
 
   return { textId, rubricId }
 }
@@ -105,7 +110,7 @@ describe("POST /api/correction/start/:textId", () => {
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ textId })
-    expect(started).toEqual([[correctText, [textId]]])
+    expect(started).toEqual([[correctText, [textId, expect.any(String)]]])
   })
 
   it("returns 409 and starts nothing when the scene already has a reading", async () => {
@@ -118,5 +123,21 @@ describe("POST /api/correction/start/:textId", () => {
 
     expect(response.status).toBe(409)
     expect(started).toEqual([])
+  })
+  it("leaves a recoverable failure if workflow dispatch fails", async () => {
+    const session = await signIn(true)
+    const { textId } = await insertScene(session.userId)
+    const failure = spyOn(workflowApi, "start").mockImplementation(async () => {
+      throw new Error("dispatch unavailable")
+    })
+    try {
+      const response = await app.handle(startRequest(textId))
+      expect(response.status).toBe(200)
+      expect(
+        (await correctionService.findLatestActiveCorrection(textId))?.status
+      ).toBe("FAILED")
+    } finally {
+      failure.mockRestore()
+    }
   })
 })

@@ -44,14 +44,16 @@ Total: 86 cards.
 
 ### C. Ciclo atual confiável
 
-- [ ] [0C-1](fase-0-base/0C-1-transformar-lista-de-textos-em-minhas-cenas.md) — Transformar a lista de textos em Minhas cenas
-- [ ] [0C-2](fase-0-base/0C-2-exibir-estados-da-leitura.md) — Exibir cada estado da leitura
-- [ ] [0C-3](fase-0-base/0C-3-iniciar-editor-vazio-e-manter-paragrafos.md) — Iniciar o editor vazio e manter apenas parágrafos
-- [ ] [0C-4](fase-0-base/0C-4-validar-tamanho-da-cena.md) — Validar o tamanho da cena antes da leitura
-- [ ] [0C-5](fase-0-base/0C-5-limitar-envios-por-pessoa.md) — Limitar envios por pessoa
-- [ ] [0C-6](fase-0-base/0C-6-definir-tempo-limite-da-espera.md) — Definir tempo limite para a espera da leitura
-- [ ] [0C-7](fase-0-base/0C-7-tentar-leitura-novamente-sem-duplicar.md) — Tentar a leitura novamente sem duplicar a cena
-- [ ] [0C-8](fase-0-base/0C-8-destravar-cena-sem-leitura-iniciada.md) — Destravar cena salva sem leitura iniciada
+- [x] [0C-1](fase-0-base/0C-1-transformar-lista-de-textos-em-minhas-cenas.md) — Transformar a lista de textos em Minhas cenas
+- [x] [0C-2](fase-0-base/0C-2-exibir-estados-da-leitura.md) — Exibir cada estado da leitura
+- [x] [0C-3](fase-0-base/0C-3-iniciar-editor-vazio-e-manter-paragrafos.md) — Iniciar o editor vazio e manter apenas parágrafos
+- [x] [0C-4](fase-0-base/0C-4-validar-tamanho-da-cena.md) — Validar o tamanho da cena antes da leitura
+- [x] [0C-5](fase-0-base/0C-5-limitar-envios-por-pessoa.md) — Limitar envios por pessoa
+- [x] [0C-6](fase-0-base/0C-6-definir-tempo-limite-da-espera.md) — Definir tempo limite para a espera da leitura
+- [x] [0C-7](fase-0-base/0C-7-tentar-leitura-novamente-sem-duplicar.md) — Tentar a leitura novamente sem duplicar a cena
+- [x] [0C-8](fase-0-base/0C-8-destravar-cena-sem-leitura-iniciada.md) — Destravar cena salva sem leitura iniciada
+
+**Validação da etapa C (2026-11-05):** 200 testes unitários, 15 testes de componentes e 13 testes E2E direcionados passaram, além de `bun run typecheck` e `bun run build`. PostgreSQL 18 isolado na porta 5434 e app de teste na 3002, pois as portas padrão estavam ocupadas. Sem mudança de tabelas ou migração nova. Espera: aviso após 2 minutos, falha recuperável após 10 minutos, reconciliada ao consultar ou iniciar leituras.
 
 ### D. Português, celular e páginas de sistema
 

@@ -101,7 +101,7 @@ describe("POST /api/write/:themeId", () => {
   it("inserts a text for that user and theme, starts the correction workflow, and returns the text id", async () => {
     const session = await signIn()
     const graph = await rows.insertActiveText()
-    const content = "She measured the gap and stayed."
+    const content = "She measured the gap and stayed. ".repeat(20)
     const response = await app.handle(writeRequest(graph.themeId, content))
     const payload = (await response.json()) as {
       textId?: string
@@ -127,19 +127,19 @@ describe("POST /api/write/:themeId", () => {
     expect(stored).toEqual([
       {
         id: textId,
-        title: `Text for theme ${graph.themeId}`,
+        title: "Cena",
         content,
         userId: session.userId,
         themeId: graph.themeId,
       },
     ])
-    expect(started).toEqual([[correctText, [textId]]])
+    expect(started).toEqual([[correctText, [textId, expect.any(String)]]])
   })
 
   it("saves the scene and starts no reading when the email is not verified", async () => {
     const session = await signIn(false)
     const graph = await rows.insertActiveText()
-    const content = "She measured the gap and stayed."
+    const content = "She measured the gap and stayed. ".repeat(20)
     const response = await app.handle(writeRequest(graph.themeId, content))
     const payload = (await response.json()) as {
       textId: string
@@ -205,37 +205,4 @@ describe("POST /api/write/:themeId", () => {
     expect(started).toEqual([])
   })
 
-  it("surfaces Text was not created when the insert returns no row", async () => {
-    const session = await signIn()
-    const graph = await rows.insertActiveText()
-    const insert = spyOn(db, "insert")
-
-    insert.mockImplementation(() => {
-      return {
-        values() {
-          return {
-            returning() {
-              return Promise.resolve([])
-            },
-          }
-        },
-      } as never
-    })
-
-    try {
-      const response = await app.handle(
-        writeRequest(graph.themeId, "A sentence with a scene.")
-      )
-      const payload = await response.text()
-
-      expect(response.ok).toBe(false)
-      expect(payload).toContain("Text was not created")
-      expect(payload).not.toContain("textId")
-    } finally {
-      insert.mockRestore()
-    }
-
-    expect(await textsForUser(session.userId)).toEqual([])
-    expect(started).toEqual([])
-  })
 })

@@ -1,9 +1,12 @@
 //* Libraries imports
-import { eq } from "drizzle-orm"
+import { and, eq, gt, inArray } from "drizzle-orm"
 
 //* Local imports
-import { db } from "@/database";
-import { correction, type CorrectionStatus } from "@/database/schema";
+import { db } from "@/database"
+import { correction, type CorrectionStatus } from "@/database/schema"
+
+import { READING_TIMEOUT_MS } from "@/lib/reading-policy"
+import { expireReadings } from "@/services/reading"
 
 type InsertCorrectionValues = {
   id: string
@@ -50,9 +53,17 @@ async function findCorrectionById(id: string) {
   return result[0] ?? null
 }
 
+async function findAttemptSnapshot(id: string) {
+  await expireReadings()
+  return db.query.correction.findFirst({ where: { id } })
+}
+
 async function findLatestActiveCorrection(textId: string) {
+  await expireReadings()
   const latestCorrection = await db.query.correction.findFirst({
     columns: {
+      id: true,
+      createdAt: true,
       content: true,
       score: true,
       textContent: true,
@@ -76,7 +87,12 @@ async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
   await db
     .update(correction)
     .set({ status })
-    .where(eq(correction.id, id))
+    .where(
+      and(
+        eq(correction.id, id),
+        inArray(correction.status, ["PENDING", "IN_PROGRESS"])
+      )
+    )
 }
 
 async function updateCorrection(
@@ -86,7 +102,13 @@ async function updateCorrection(
   const result = await db
     .update(correction)
     .set(values)
-    .where(eq(correction.id, id))
+    .where(
+      and(
+        eq(correction.id, id),
+        inArray(correction.status, ["PENDING", "IN_PROGRESS"]),
+        gt(correction.createdAt, new Date(Date.now() - READING_TIMEOUT_MS))
+      )
+    )
     .returning({
       id: correction.id,
       score: correction.score,
@@ -97,6 +119,7 @@ async function updateCorrection(
 }
 
 export const correctionService = {
+  findAttemptSnapshot,
   insertCorrection,
   findCorrectionById,
   findLatestActiveCorrection,

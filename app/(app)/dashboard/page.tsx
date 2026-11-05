@@ -25,7 +25,7 @@ export default function DashboardPage() {
           href="/dashboard/texts"
           className={buttonVariants({ variant: "outline", className: "w-fit" })}
         >
-          Your texts
+          Minhas cenas
         </Link>
       </div>
     </div>

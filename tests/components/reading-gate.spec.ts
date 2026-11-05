@@ -145,7 +145,7 @@ test.describe("ReadingGate", () => {
       ).toBeEnabled()
     })
 
-    test("says the scene is safe when the reading fails", async ({
+    test("opens the reading state after dispatch", async ({
       mount,
       page,
     }) => {
@@ -160,14 +160,12 @@ test.describe("ReadingGate", () => {
 
       await component.getByRole("button", { name: "Receber a leitura" }).click()
 
-      await expect(component.getByRole("alert")).toContainText(
-        "Sua cena continua salva"
-      )
+      await expect(page.locator("html")).toHaveAttribute("data-refreshed", "true")
     })
 
     test("refreshes when a reading already exists", async ({ mount, page }) => {
       await page.route(startEndpoint, async (route) => {
-        await fulfill(route, 409, { message: "Reading already started" })
+        await fulfill(route, 409, { message: "A leitura já foi iniciada. Abra a cena em Minhas cenas." })
       })
 
       const component = await mount("components/reading/reading-gate/Verified")

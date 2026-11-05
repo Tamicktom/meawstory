@@ -1,3 +1,4 @@
+import { ReadingState } from "@/components/reading/reading-state"
 //* Libraries imports
 import { notFound } from "next/navigation"
 
@@ -28,17 +29,23 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
     requireSession(),
   ])
 
-  const ownedText = await textService.findOwnedText(params.textId, session.user.id)
+  const ownedText = await textService.findOwnedText(
+    params.textId,
+    session.user.id
+  )
 
   if (!ownedText) {
     notFound()
   }
 
-  const latestCorrection = await correctionService.findLatestActiveCorrection(ownedText.id)
+  const latestCorrection = await correctionService.findLatestActiveCorrection(
+    ownedText.id
+  )
 
   if (!latestCorrection) {
     return (
       <ReadingGate
+        themeId={ownedText.themeId}
         textId={ownedText.id}
         themeTitle={ownedText.theme.title}
         textContent={ownedText.content}
@@ -49,6 +56,17 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
     )
   }
 
+  if (latestCorrection.status !== "COMPLETED") {
+    return (
+      <ReadingState
+        textId={ownedText.id}
+        themeTitle={ownedText.theme.title}
+        textContent={latestCorrection.textContent}
+        status={latestCorrection.status}
+        createdAt={latestCorrection.createdAt.toISOString()}
+      />
+    )
+  }
   return (
     <FeedbackView
       themeTitle={ownedText.theme.title}

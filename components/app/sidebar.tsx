@@ -38,7 +38,7 @@ const navigation = [
   },
   {
     id: "sidebar-texts",
-    title: "Texts",
+    title: "Minhas cenas",
     href: "/dashboard/texts",
     icon: FileTextIcon,
   },

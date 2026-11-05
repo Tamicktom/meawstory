@@ -82,3 +82,29 @@ On insert, `text_content` must equal the current `text.content`, and `rubric_con
 ## Indexes
 
 Domain foreign keys are indexed: `theme.rubric_id`, `text.theme_id`, `text.user_id`, `correction.text_id`, and `correction.rubric_id`.
+
+## Reading lifecycle and limits (Phase 0-C)
+
+A scene without a correction is an editable saved draft. Only that state permits
+updating its content. Starting a reading reserves a PENDING correction synchronously,
+with frozen scene and rubric bodies, before dispatching the workflow. Reservation,
+draft updates and limits serialize per author with a PostgreSQL transaction lock.
+Dispatch failure marks the reservation FAILED; it never leaves a draft pretending
+to be queued. Duplicate starts are rejected while a reading is active or completed.
+
+A failed attempt can be retried on the same scene, using exactly its frozen body.
+Retries add a correction attempt, never a text. They use the rubric frozen on the
+failed attempt; if that rubric has changed, starting is rejected rather than silently
+changing the evaluation. Completed and failed attempts are terminal: late workflow
+results cannot overwrite them.
+
+Only scenes of 100–2,000 whitespace-separated words may start readings. Each author
+may start 10 readings in a rolling 24 hours and 3 in a rolling 10 minutes. Count all
+non-failed attempts, including soft-deleted corrections and scenes. Failed attempts
+consume neither limit. The response includes the time when capacity becomes available.
+Email verification is checked before reading limits; saving drafts remains possible.
+
+After 2 minutes the UI reports a delay. After 10 minutes a PENDING/IN_PROGRESS
+attempt expires to FAILED. Expiration is reconciled on status/history/detail reads
+and before admission, even if the browser was closed. Terminal-write guards also
+reject results past the deadline. Expired attempts release capacity and can be retried.

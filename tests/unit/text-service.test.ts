@@ -118,6 +118,7 @@ describe("textService.findOwnedText", () => {
     expect(await textService.findOwnedText(graph.textId, graph.userId)).toEqual(
       {
         id: graph.textId,
+        themeId: graph.themeId,
         content: `Text body ${graph.textId}`,
         theme: {
           title: "Owned theme",
@@ -245,7 +246,7 @@ describe("textService.listOwnedTexts", () => {
     expect(listed).toHaveLength(1)
     expect(listed[0]?.id).toBe(graph.textId)
     expect(listed[0]?.correction).toEqual({
-      status: "PENDING",
+      status: "FAILED",
       score: null,
     })
   })

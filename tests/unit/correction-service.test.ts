@@ -182,11 +182,11 @@ describe("correctionService.findLatestActiveCorrection", () => {
 
     expect(
       await correctionService.findLatestActiveCorrection(graph.textId)
-    ).toEqual({
+    ).toMatchObject({
       content: "Newer note",
       score: "20.00",
       textContent: "Newer text",
-      status: "IN_PROGRESS",
+      status: "FAILED",
     })
   })
 

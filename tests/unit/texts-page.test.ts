@@ -77,8 +77,8 @@ describe("TextsPage", () => {
 
     const markup = await loadPage()
 
-    expect(markup).toContain("Texts")
-    expect(markup).toContain("No texts yet.")
+    expect(markup).toContain("Minhas cenas")
+    expect(markup).toContain("Você ainda não tem cenas.")
     expect(markup).toContain('id="texts-browse-themes"')
     expect(markup).toContain('href="/dashboard/themes"')
   })
@@ -131,11 +131,11 @@ describe("TextsPage", () => {
     expect(markup).toContain("The newer draft names the missing key.")
     expect(markup).toContain("The older draft stays on the desk.")
     expect(markup).toContain('dateTime="2024-06-01T00:00:00.000Z"')
-    expect(markup).toContain("Jun 1, 2024")
+    expect(markup).toContain("31 de mai. de 2024")
     expect(markup).toContain("640 / 1000")
-    expect(markup).toContain("Waiting for correction")
+    expect(markup).toContain("Rascunho salvo")
     expect(markup).not.toContain("This draft belongs to someone else.")
-    expect(markup).not.toContain("No texts yet.")
+    expect(markup).not.toContain("Você ainda não tem cenas.")
   })
 
   it("hides the placeholder score while a correction is still running", async () => {
@@ -157,7 +157,7 @@ describe("TextsPage", () => {
 
     const markup = await loadPage()
 
-    expect(markup).toContain("Correction in progress")
+    expect(markup).toContain("Leitura em andamento")
     expect(markup).not.toContain("/ 1000")
   })
 
@@ -180,7 +180,7 @@ describe("TextsPage", () => {
 
     const markup = await loadPage()
 
-    expect(markup).toContain("Correction failed")
+    expect(markup).toContain("Leitura com falha")
     expect(markup).not.toContain("/ 1000")
   })
 })

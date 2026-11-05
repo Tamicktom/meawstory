@@ -6,7 +6,8 @@
 Encerrar a espera indefinida e orientar a pessoa quando a leitura demora.
 
 ## Escopo
-- Definir o prazo esperado e o comportamento ao ultrapassá-lo.
+- Prazo esperado: 2 minutos. Depois dele, mostrar atraso e permitir voltar por Minhas cenas.
+- Prazo definitivo: 10 minutos. Tentativas ainda ativas passam a falha ao consultar a cena ou admitir uma leitura; resultados tardios não podem sobrescrever a falha.
 - Exibir “Está levando mais tempo que o normal” sem apagar o texto enviado.
 - Permitir sair e voltar depois por Minhas cenas.
 - Distinguir atraso de falha definitiva para não oferecer a ação errada.
