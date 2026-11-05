@@ -65,6 +65,20 @@ for (const width of [1280, 320, 390]) {
       await editor.click()
       await page.keyboard.press("ControlOrMeta+A")
       await page.keyboard.insertText(submittedText)
+      await expect(
+        page.getByText("sua cena é enviada à OpenAI", { exact: false })
+      ).toBeVisible()
+      const opened = page.waitForEvent("popup")
+      await page.getByRole("link", { name: /Política de privacidade/ }).click()
+      const privacy = await opened
+      await expect(
+        privacy.getByRole("heading", {
+          level: 1,
+          name: "Política de privacidade",
+        })
+      ).toBeVisible()
+      await privacy.close()
+      await expect(editor).toHaveValue(submittedText)
       await page.getByRole("button", { name: "Enviar para leitura" }).click()
 
       await expect(page).toHaveURL(/\/dashboard\/texts\/[^/]+$/, {

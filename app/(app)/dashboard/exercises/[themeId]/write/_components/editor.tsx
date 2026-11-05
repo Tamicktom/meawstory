@@ -2,6 +2,7 @@
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 import { countWords, sceneSizeError } from "@/lib/reading-policy"
 
 type EditorProps = { themeId: string; textId?: string; initialContent?: string }
@@ -72,6 +73,7 @@ const Editor = (props: EditorProps) => {
           {error}
         </p>
       ) : null}
+      <ReadingDataNotice />
       <Button
         id="submit-text"
         className="min-h-11 w-full sm:w-fit"

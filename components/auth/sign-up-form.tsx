@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card"
 import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
+import { LegalLinks } from "@/components/legal/legal-links"
 
 //* Hooks imports
 import { useSignUpForm } from "@/hooks/use-sign-up-form"
@@ -119,6 +120,13 @@ export function SignUpForm({
         </form>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-4">
+        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+          <p>
+            Ao criar sua conta, você declara ter 18 anos ou mais e aceita os
+            Termos de uso. Consulte também a Política de privacidade.
+          </p>
+          <LegalLinks newTab />
+        </div>
         <Button
           id="sign-up-submit"
           type="submit"

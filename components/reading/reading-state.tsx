@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 import { READING_DELAY_MS } from "@/lib/reading-policy"
 import {
   StaleReadingStateError,
@@ -38,6 +39,7 @@ export function ReadingState(props: Props) {
             Não conseguimos ler sua cena. O texto está salvo e esta tentativa
             não conta nas suas leituras.
           </p>
+          <ReadingDataNotice />
           <Button
             className="min-h-11 w-full sm:w-fit"
             disabled={retry.isPending}

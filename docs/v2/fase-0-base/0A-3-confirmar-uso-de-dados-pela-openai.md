@@ -3,14 +3,17 @@
 **Fase 0 · Etapa A — Decisões** · Tipo: Decisão · [Card pai](../00-card-pai.md)
 
 ## Objetivo
+
 Embasar as promessas públicas sobre o tratamento das cenas enviadas para leitura.
 
 ## Escopo
+
 - Confirmar os termos vigentes de retenção e uso dos dados enviados à OpenAI.
 - Registrar o que pode ser afirmado na landing, nos termos e na política de privacidade.
 - Não prometer ausência de retenção ou de uso sem confirmação documental.
 
 ## Critérios de conclusão
+
 - Há uma conclusão registrada e referências para orientar os textos públicos.
 
 ## Resultado
@@ -39,12 +42,17 @@ As respostas geradas antes dessa mudança continuam sujeitas ao padrão.
 - Que os dados ficam no Brasil. O país não aparece nas regiões de residência de dados.
 - Que o tratamento está em conformidade com a LGPD, sem revisão jurídica. O DPA trata expressamente de EEE, Suíça, Reino Unido e EUA, e não cita Brasil nem LGPD.
 
-### Pendências para 0E-1
+### Confirmação operacional para 0E-1
 
-- **Compartilhamento de dados:** confirmar no painel da OpenAI que o compartilhamento de entradas e saídas está desligado. A afirmação sobre treino depende disso, e o repositório não permite verificar.
-- **Menores de idade:** o contrato proíbe permitir o uso por menores sem o consentimento do responsável (seção 3.3). Os termos precisam definir a regra de idade.
-- **Consentimento:** o contrato atribui ao Meawstory obter os consentimentos necessários de quem usa o produto (seção 3.2) e o DPA atribui a ele as decisões de configuração, como retenção (seção 3.3).
-- **Outros lugares com a cena:** a política de privacidade precisa cobrir também o banco e o Workflow, que persiste as entradas dos passos e seus resultados. O texto da cena passa por esses passos. A retenção do Workflow em produção ainda não foi confirmada.
+**2026-11-05:** a pessoa responsável pelo projeto confirmou que o compartilhamento de entradas e saídas para melhoria dos modelos está desativado no projeto da OpenAI usado em produção. Essa confirmação foi fornecida na implementação da etapa E; não foi inferida do código. A documentação oficial de controles de dados foi consultada novamente nessa data e mantém a regra de não treinamento por padrão, a exceção de adesão explícita e a retenção para monitoramento de abuso.
+
+Na etapa E, os termos passam a destinar o teste a pessoas com 18 anos ou mais e descrevem a autorização de processamento ao pedir a leitura. A política cobre banco, Workflow, autenticação e e-mails; explicita que o prazo do Workflow em produção ainda não foi confirmado e não promete exclusão imediata. Os links ficam disponíveis antes do cadastro e dos envios.
+
+### Cuidados operacionais mantidos
+
+- **Compartilhamento de dados:** manter desativado. Conferir novamente ao trocar de organização ou projeto; a afirmação pública sobre treino depende disso.
+- **Idade e autorização:** o teste foi limitado a maiores de 18 anos, com declaração ao criar a conta e autorização ao pedir a leitura. Não há verificação documental de idade nem registro versionado de aceite. O contrato atribui ao Meawstory obter os consentimentos necessários (seção 3.2), e o DPA atribui a ele as decisões de configuração, como retenção (seção 3.3).
+- **Outros lugares com a cena:** a política de privacidade cobre o banco e o Workflow, que persiste as entradas dos passos e seus resultados. O texto da cena passa por esses passos. A retenção do Workflow em produção ainda precisa ser confirmada; não há promessa pública de prazo ou de exclusão imediata desses registros.
 - **Revisão jurídica:** este registro resume documentos públicos e não substitui uma revisão dos termos antes do teste com pessoas reais.
 - **Validade:** a OpenAI pode atualizar os termos (seção 16.13). Conferir de novo antes de publicar e ao trocar de modelo ou de endpoint.
 
