@@ -11,20 +11,20 @@ import { savedCorrection } from "../helpers/saved-correction"
 import { signIn } from "../helpers/sign-in"
 
 const themeId = "theme_key_on_the_table"
-const scene = "A chave ficou na mesa entre as duas."
+const scene = "A chave ficou na mesa entre as duas. ".repeat(15).trim()
 const blockedCopy =
   "Confirme seu e-mail para receber a leitura. Sua cena está salva."
 
 async function writeAndSubmit(page: Page) {
   await page.goto(`/dashboard/exercises/${themeId}/write`)
 
-  const editor = page.locator(".ProseMirror")
+  const editor = page.locator("#scene-content")
 
   await expect(editor).toBeVisible()
   await editor.click()
   await page.keyboard.press("ControlOrMeta+A")
   await page.keyboard.insertText(scene)
-  await page.getByRole("button", { name: "Enviar texto" }).click()
+  await page.getByRole("button", { name: "Enviar para leitura" }).click()
   //* The first request after a server start also compiles the route.
   await expect(page).toHaveURL(/\/dashboard\/texts\/[^/]+$/, {
     timeout: 30_000,
@@ -82,6 +82,23 @@ test.describe("email verification", () => {
     })
     await expect(page.getByText("Nota 640 de 1000")).toBeVisible()
     await expect(page.getByText(scene)).toBeVisible()
+  })
+
+  test("reopens a saved draft, edits it and sends the same scene", async ({ page }) => {
+    test.setTimeout(60_000)
+    await signIn(page)
+    await writeAndSubmit(page)
+    const sceneUrl = page.url()
+    await page.getByRole("link", { name: "Continuar escrevendo" }).click()
+    const editor = page.getByRole("textbox", { name: "Sua cena" })
+    await expect(editor).toHaveValue(scene)
+    const revised = scene + "\n\nA porta fechou."
+    await editor.fill(revised)
+    await page.getByRole("button", { name: "Enviar para leitura" }).click()
+    await expect(page).toHaveURL(sceneUrl)
+    await expect(page.getByText(revised)).toBeVisible()
+    await page.goto("/dashboard/texts")
+    await expect(page.locator(`a[href="${new URL(sceneUrl).pathname}"]`)).toHaveCount(1)
   })
 
   test("signing in stays open to an unverified account", async ({ page }) => {

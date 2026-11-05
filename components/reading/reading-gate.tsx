@@ -1,6 +1,6 @@
 "use client"
 //* Libraries imports
-import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 //* Components imports
@@ -8,17 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
 //* Hooks imports
-import { useCheckCorrectionStatus } from "@/hooks/correction/use-check-correction-status"
 import {
   StaleReadingStateError,
   useStartReading,
 } from "@/hooks/correction/use-start-reading"
 import { useResendVerification } from "@/hooks/use-resend-verification"
-import { useInterval } from "@/hooks/utils/use-interval"
-
-const statusCheckInterval = 3_000
 
 type ReadingGateProps = {
+  themeId?: string
   textId: string
   themeTitle: string
   textContent: string
@@ -82,33 +79,11 @@ type StartReadingProps = {
 
 function StartReading(props: StartReadingProps) {
   const router = useRouter()
-  const [pollingTextId, setPollingTextId] = useState<string | null>(null)
-  const [readingFailed, setReadingFailed] = useState(false)
   const startReading = useStartReading()
-  const correctionStatus = useCheckCorrectionStatus({
-    textId: pollingTextId,
-    onCompleted: () => {
-      setPollingTextId(null)
-      router.refresh()
-    },
-    onFailed: () => {
-      setPollingTextId(null)
-      setReadingFailed(true)
-    },
-  })
-
-  useInterval(
-    () => {
-      void correctionStatus.refetch()
-    },
-    pollingTextId ? statusCheckInterval : null
-  )
-
   function handleStart() {
-    setReadingFailed(false)
     startReading.mutate(props.textId, {
       onSuccess: () => {
-        setPollingTextId(props.textId)
+        router.refresh()
       },
       onError: (error) => {
         if (error instanceof StaleReadingStateError) {
@@ -118,23 +93,15 @@ function StartReading(props: StartReadingProps) {
     })
   }
 
-  if (pollingTextId) {
-    return (
-      <p role="status" className="flex items-center gap-2 font-medium">
-        <Spinner />
-        <span>Sua cena está sendo lida.</span>
-      </p>
-    )
-  }
-
   const showError =
-    readingFailed ||
-    (startReading.isError &&
-      !(startReading.error instanceof StaleReadingStateError))
+    startReading.isError &&
+    !(startReading.error instanceof StaleReadingStateError)
 
   return (
     <div className="flex flex-col items-start gap-3">
-      <p className="font-medium">Sua cena está salva e pronta para a leitura.</p>
+      <p className="font-medium">
+        Sua cena está salva e pronta para a leitura.
+      </p>
       <Button
         id="start-reading"
         type="button"
@@ -146,8 +113,8 @@ function StartReading(props: StartReadingProps) {
       </Button>
       {showError ? (
         <p role="alert" className="text-sm text-destructive">
-          Não conseguimos iniciar a leitura. Sua cena continua salva. Tente de
-          novo em instantes.
+          {startReading.error?.message ??
+            "Não conseguimos iniciar a leitura. Sua cena continua salva. Tente de novo em instantes."}
         </p>
       ) : null}
     </div>
@@ -167,6 +134,13 @@ function ReadingGate(props: ReadingGateProps) {
           verificationLinkFailed={props.verificationLinkFailed}
         />
       )}
+      {props.themeId ? (
+        <Link
+          href={`/dashboard/exercises/${props.themeId}/write?textId=${props.textId}`}
+        >
+          Continuar escrevendo
+        </Link>
+      ) : null}
       <section className="flex flex-col gap-2">
         <h2 className="font-heading text-sm font-medium">Sua cena</h2>
         <p className="whitespace-pre-wrap">{props.textContent}</p>

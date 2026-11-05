@@ -24,7 +24,9 @@ test.describe("ReadingGate", () => {
     test("shows the message and the scene, and offers no reading", async ({
       mount,
     }) => {
-      const component = await mount("components/reading/reading-gate/Unverified")
+      const component = await mount(
+        "components/reading/reading-gate/Unverified"
+      )
 
       await expect(component.getByText(blockedCopy)).toBeVisible()
       await expect(component.getByText(scene)).toBeVisible()
@@ -41,7 +43,9 @@ test.describe("ReadingGate", () => {
         await fulfill(route, 200, { status: true })
       })
 
-      const component = await mount("components/reading/reading-gate/Unverified")
+      const component = await mount(
+        "components/reading/reading-gate/Unverified"
+      )
       const request = page.waitForRequest(resendEndpoint)
 
       await component.getByRole("button", { name: "Reenviar e-mail" }).click()
@@ -63,7 +67,9 @@ test.describe("ReadingGate", () => {
         await fulfill(route, 400, { code: "EMAIL_ALREADY_VERIFIED" })
       })
 
-      const component = await mount("components/reading/reading-gate/Unverified")
+      const component = await mount(
+        "components/reading/reading-gate/Unverified"
+      )
 
       await component.getByRole("button", { name: "Reenviar e-mail" }).click()
 
@@ -81,7 +87,9 @@ test.describe("ReadingGate", () => {
         await fulfill(route, 500, { message: "Resend API key is invalid" })
       })
 
-      const component = await mount("components/reading/reading-gate/Unverified")
+      const component = await mount(
+        "components/reading/reading-gate/Unverified"
+      )
 
       await component.getByRole("button", { name: "Reenviar e-mail" }).click()
 
@@ -145,10 +153,7 @@ test.describe("ReadingGate", () => {
       ).toBeEnabled()
     })
 
-    test("says the scene is safe when the reading fails", async ({
-      mount,
-      page,
-    }) => {
+    test("opens the reading state after dispatch", async ({ mount, page }) => {
       await page.route(startEndpoint, async (route) => {
         await fulfill(route, 200, { textId: "text-1" })
       })
@@ -160,14 +165,42 @@ test.describe("ReadingGate", () => {
 
       await component.getByRole("button", { name: "Receber a leitura" }).click()
 
-      await expect(component.getByRole("alert")).toContainText(
-        "Sua cena continua salva"
+      await expect(page.locator("html")).toHaveAttribute(
+        "data-refreshed",
+        "true"
       )
     })
 
+    for (const [status, message] of [
+      [429, "Tente de novo em 10 minutos."],
+      [409, "O exercício mudou desde a tentativa anterior."],
+    ] as const) {
+      test(`shows the recoverable ${status} error without refreshing`, async ({
+        mount,
+        page,
+      }) => {
+        await page.route(startEndpoint, (route) =>
+          fulfill(route, status, { message })
+        )
+        const component = await mount(
+          "components/reading/reading-gate/Verified"
+        )
+        await component
+          .getByRole("button", { name: "Receber a leitura" })
+          .click()
+        await expect(component.getByRole("alert")).toContainText(message)
+        await expect(page.locator("html")).not.toHaveAttribute(
+          "data-refreshed",
+          "true"
+        )
+      })
+    }
+
     test("refreshes when a reading already exists", async ({ mount, page }) => {
       await page.route(startEndpoint, async (route) => {
-        await fulfill(route, 409, { message: "Reading already started" })
+        await fulfill(route, 409, {
+          message: "A leitura já foi iniciada. Abra a cena em Minhas cenas.",
+        })
       })
 
       const component = await mount("components/reading/reading-gate/Verified")

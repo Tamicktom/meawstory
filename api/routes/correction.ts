@@ -1,5 +1,6 @@
 //* Libraries imports
-import { start } from "workflow/api"
+import { startReading } from "@/services/start-reading"
+import { ReadingError } from "@/services/reading"
 import { Elysia } from "elysia"
 import { headers } from "next/headers"
 import z from "zod"
@@ -10,9 +11,6 @@ import { auth } from "@/lib/auth"
 //* Services imports
 import { correctionService } from "@/services/correction"
 import { textService } from "@/services/text"
-
-//* Workflow import
-import { correctText } from "@/workflows/correction"
 
 const correctionRoutes = new Elysia({ prefix: "/correction" })
   .guard({ params: z.object({ textId: z.string() }) })
@@ -38,7 +36,7 @@ const correctionRoutes = new Elysia({ prefix: "/correction" })
     )
 
     return {
-      status: correction?.status ?? "PENDING",
+      status: correction?.status ?? "DRAFT",
     }
   })
   //* Starts the reading of a scene saved before its author confirmed the email.
@@ -48,16 +46,13 @@ const correctionRoutes = new Elysia({ prefix: "/correction" })
       return { message: "Email not verified" }
     }
 
-    const correction = await correctionService.findLatestActiveCorrection(
-      ownedText.id
-    )
-
-    if (correction) {
-      set.status = 409
-      return { message: "Reading already started" }
+    try {
+      await startReading(session.user.id, ownedText.id)
+    } catch (error) {
+      if (!(error instanceof ReadingError)) throw error
+      set.status = error.status
+      return { message: error.message, retryAt: error.retryAt }
     }
-
-    await start(correctText, [ownedText.id])
 
     return { textId: ownedText.id }
   })

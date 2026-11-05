@@ -7,7 +7,7 @@ import {
   type SignUpAccount,
 } from "../factories/sign-up-account"
 
-const origin = "http://localhost:3000"
+const origin = process.env.NEXT_PUBLIC_VERCEL_URL ?? "http://localhost:3000"
 
 export async function registerAccount(
   request: APIRequestContext,

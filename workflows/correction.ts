@@ -29,22 +29,27 @@ type GradedCorrection = {
   status: CorrectionStatus
 }
 
-export async function correctText(textId: string) {
+export async function correctText(textId: string, reservedId?: string) {
   "use workflow"
 
-  const textToCorrect = await getText(textId)
-  const themeRubric = await getRubric(textToCorrect.themeId)
-
-  const correctionId = await createEmptyCorrection({
-    textId: textToCorrect.id,
-    rubricId: themeRubric.id,
-  })
-
-  if (!correctionId) {
-    throw new FatalError("Correction not created")
-  }
-
+  let correctionId = reservedId
   try {
+    const textToCorrect = await getText(textId)
+    const themeRubric = await getRubric(textToCorrect.themeId)
+    const createdId =
+      correctionId ??
+      (await createEmptyCorrection({
+        textId: textToCorrect.id,
+        rubricId: themeRubric.id,
+      }))
+    if (!createdId) throw new FatalError("Correction not created")
+    correctionId = createdId
+    await assertActiveAttempt(
+      correctionId,
+      textToCorrect.content,
+      themeRubric.id,
+      themeRubric.content
+    )
     await updateCorrectionStatus(correctionId, "IN_PROGRESS")
 
     const graded = await gradeText({
@@ -65,8 +70,27 @@ export async function correctText(textId: string) {
       status: "COMPLETED",
     })
   } catch (error) {
-    await updateCorrectionStatus(correctionId, "FAILED")
+    if (correctionId) await updateCorrectionStatus(correctionId, "FAILED")
     throw error
+  }
+}
+
+async function assertActiveAttempt(
+  id: string,
+  textContent: string,
+  rubricId: string,
+  rubricContent: string
+) {
+  "use step"
+  const attempt = await correctionService.findAttemptSnapshot(id)
+  if (
+    !attempt ||
+    !["PENDING", "IN_PROGRESS"].includes(attempt.status) ||
+    attempt.textContent !== textContent ||
+    attempt.rubricId !== rubricId ||
+    attempt.rubricContent !== rubricContent
+  ) {
+    throw new FatalError("Reading is no longer active")
   }
 }
 

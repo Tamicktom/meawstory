@@ -8,7 +8,7 @@ import { signIn } from "../helpers/sign-in"
 
 const themeTitle = "A chave na mesa"
 const themeId = "theme_key_on_the_table"
-const submittedText = "A chave ficou na mesa entre as duas."
+const submittedText = "A chave ficou na mesa entre as duas. ".repeat(15).trim()
 
 test.describe("product loop", () => {
   test("walks from the theme list to the saved correction", async ({
@@ -29,13 +29,13 @@ test.describe("product loop", () => {
 
     await expect(page).toHaveURL(`/dashboard/exercises/${themeId}/write`)
 
-    const editor = page.locator(".ProseMirror")
+    const editor = page.locator("#scene-content")
 
     await expect(editor).toBeVisible()
     await editor.click()
     await page.keyboard.press("ControlOrMeta+A")
     await page.keyboard.insertText(submittedText)
-    await page.getByRole("button", { name: "Enviar texto" }).click()
+    await page.getByRole("button", { name: "Enviar para leitura" }).click()
 
     await expect(page).toHaveURL(/\/dashboard\/texts\/[^/]+$/, {
       timeout: 45_000,

@@ -63,13 +63,13 @@ test.describe("dashboard session gate", () => {
 
     const yourTexts = page.locator("#dashboard-your-texts")
 
-    await expect(yourTexts).toHaveText("Your texts")
+    await expect(yourTexts).toHaveText("Minhas cenas")
     await expect(yourTexts).toHaveAttribute("href", "/dashboard/texts")
 
     await yourTexts.click()
 
     await expect(page).toHaveURL("/dashboard/texts")
-    await expect(page.getByRole("heading", { name: "Texts" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Minhas cenas" })).toBeVisible()
   })
 
   test("signs out and opens sign in", async ({ page }) => {
@@ -174,7 +174,7 @@ test.describe("dashboard sidebar", () => {
     await expect(page.locator("#sidebar-themes")).not.toHaveAttribute(
       "data-active"
     )
-    await expect(page.getByRole("heading", { name: "Texts" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Minhas cenas" })).toBeVisible()
 
     await page.goto("/dashboard/texts/missing-text")
 

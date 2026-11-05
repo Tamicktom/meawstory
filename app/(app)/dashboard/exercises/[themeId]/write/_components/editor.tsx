@@ -1,120 +1,72 @@
 "use client"
-//* Libraries imports
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import StarterKit from "@tiptap/starter-kit"
-import { useEditor, EditorContent } from "@tiptap/react"
-
-//* Components imports
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import { countWords, sceneSizeError } from "@/lib/reading-policy"
 
-//* Hooks imports
-import { useWriteText, writeTextErrorMessage } from "@/hooks/write/use-write-text";
-import { useCheckCorrectionStatus } from "@/hooks/correction/use-check-correction-status";
-import { useInterval } from "@/hooks/utils/use-interval";
-
-const INITIAL_CONTENT = "<p>Hello World! 🌎️</p>";
-const INTERVAL_CHECK_CORRECTION_STATUS = 3_000;
-
-type EditorProps = {
-  themeId: string
-}
-
+type EditorProps = { themeId: string; textId?: string; initialContent?: string }
 const Editor = (props: EditorProps) => {
   const router = useRouter()
-  const [textId, setTextId] = useState<string | null>(null);
-  const [isWaitingForCorrection, setIsWaitingForCorrection] = useState(false);
-  const [correctionFailed, setCorrectionFailed] = useState(false);
-  const submittedTextId = useRef<string | null>(null);
-
-  const writeText = useWriteText();
-  const checkCorrectionStatus = useCheckCorrectionStatus({
-    textId,
-    onCompleted: () => {
-      const completedTextId = submittedTextId.current;
-      setIsWaitingForCorrection(() => false);
-      setTextId(() => null);
-      if (completedTextId) {
-        router.push(`/dashboard/texts/${completedTextId}`);
+  const [content, setContent] = useState(props.initialContent ?? "")
+  const textId = useRef(props.textId)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState("")
+  async function submit() {
+    const invalid = sceneSizeError(content)
+    if (invalid) {
+      setError(invalid)
+      return
+    }
+    setPending(true)
+    setError("")
+    try {
+      const response = await fetch(`/api/write/${props.themeId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, textId: textId.current }),
+      })
+      if (!response.ok) {
+        if (response.status >= 500) throw new Error("Scene submission failed")
+        // A rejected reading may already have saved the scene. Keep its ID for retries.
+        const data = await response.json()
+        if (data.textId) textId.current = data.textId
+        setError(
+          data.message ??
+            "Não foi possível enviar. Seu texto continua aqui. Tente de novo."
+        )
+        return
       }
-    },
-    onFailed: () => {
-      setIsWaitingForCorrection(false);
-      setTextId(null);
-      setCorrectionFailed(true);
-    },
-  });
-
-  useInterval(() => {
-    checkCorrectionStatus.refetch();
-  }, textId ? INTERVAL_CHECK_CORRECTION_STATUS : null);
-
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: INITIAL_CONTENT,
-    // Don't render immediately on the server to avoid SSR issues
-    immediatelyRender: false,
-  })
-
-  const handleSubmit = () => {
-    const content = editor?.getText() || ""
-
-    setCorrectionFailed(false);
-
-    writeText.mutate(
-      {
-        themeId: props.themeId,
-        content,
-      },
-      {
-        onSuccess: (response) => {
-          const nextTextId =
-            response.data && "textId" in response.data
-              ? response.data.textId
-              : undefined
-
-          if (!nextTextId) {
-            return
-          }
-
-          if (response.data && "readingBlocked" in response.data) {
-            router.push(`/dashboard/texts/${nextTextId}`)
-            return
-          }
-
-          submittedTextId.current = nextTextId;
-          setTextId(nextTextId);
-          setIsWaitingForCorrection(true);
-        },
-      }
-    )
+      const data = await response.json()
+      if (!data.textId) throw new Error("Missing saved scene")
+      textId.current = data.textId
+      router.push(`/dashboard/texts/${data.textId}`)
+    } catch {
+      setError(
+        "Não foi possível enviar. Seu texto continua aqui. Tente de novo."
+      )
+    } finally {
+      setPending(false)
+    }
   }
-
-  const showError = writeText.isError || correctionFailed;
-
   return (
-    <div className="col-span-2 flex h-full w-full max-w-5xl flex-col items-start justify-start gap-2">
-      <Button
-        id="submit-text"
-        type="button"
-        disabled={isWaitingForCorrection || writeText.isPending}
-        onClick={handleSubmit}
-      >
-        Enviar texto
+    <div className="col-span-2 flex w-full flex-col gap-4 p-4">
+      <label htmlFor="scene-content" className="font-medium">
+        Sua cena
+      </label>
+      <textarea
+        id="scene-content"
+        placeholder="Comece no meio da cena."
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
+        disabled={pending}
+        className="min-h-96 w-full rounded-md border p-4"
+      />
+      <p>{countWords(content)} palavras · Limites: 100 a 2.000 palavras</p>
+      {error ? <p role="alert">{error}</p> : null}
+      <Button id="submit-text" disabled={pending} onClick={submit}>
+        {pending ? "Enviando…" : "Enviar para leitura"}
       </Button>
-      {isWaitingForCorrection ? (
-        <p className="flex items-center gap-2 p-1 text-sm text-muted-foreground">
-          <Spinner />
-          <span>A correção está sendo preparada.</span>
-        </p>
-      ) : null}
-      {showError ? (
-        <p className="p-1 text-sm text-destructive">{writeTextErrorMessage}</p>
-      ) : null}
-      <EditorContent className="h-full w-full" editor={editor} />
     </div>
   )
 }
-
 export { Editor }

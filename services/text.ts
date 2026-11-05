@@ -5,6 +5,8 @@ import { and, eq, isNull } from "drizzle-orm"
 import { db } from "@/database"
 import { text, theme, type CorrectionStatus } from "@/database/schema"
 
+import { expireReadings } from "@/services/reading"
+
 type OwnedTextCorrection = {
   status: CorrectionStatus
   score: string | null
@@ -59,6 +61,7 @@ async function findOwnedText(textId: string, userId: string) {
   const ownedText = await db.query.text.findFirst({
     columns: {
       id: true,
+      themeId: true,
       content: true,
     },
     where: {
@@ -81,6 +84,7 @@ async function findOwnedText(textId: string, userId: string) {
 }
 
 async function listOwnedTexts(userId: string): Promise<OwnedTextListItem[]> {
+  await expireReadings()
   const ownedTexts = await db.query.text.findMany({
     columns: {
       id: true,
