@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "playwright/gallery/main.tsx",
+    "playwright/vite.config.ts",
+    "tests/e2e-global-setup.ts",
+    "components/**/*.story.tsx"
+  ],
+  "ignorePatterns": ["**/*.css"],
+  "ignoreFindings": ["components/ui/**"],
+  "duplicates": {
+    "ignore": ["components/ui/**"]
+  },
+  "health": {
+    "ignore": ["components/ui/**"]
+  },
+  "ignoreDependencies": [
+    "@tailwindcss/typography",
+    "shadcn",
+    "tailwindcss",
+    "tw-animate-css"
+  ],
+  "ignoreExports": [
+    {
+      "file": "playwright/mocks/next-navigation.ts",
+      "exports": ["useRouter"]
+    }
+  ]
+}

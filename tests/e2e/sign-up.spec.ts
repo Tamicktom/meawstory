@@ -17,7 +17,7 @@ test.describe("sign up page", () => {
     ).toBeEnabled()
   })
 
-  test("creates an account with a generated user and opens the home page", async ({
+  test("creates an account with a generated user and opens the dashboard", async ({
     page,
   }) => {
     const account = createSignUpAccount()
@@ -30,9 +30,7 @@ test.describe("sign up page", () => {
     await page.getByLabel("Confirm password").fill(account.confirmPassword)
     await page.getByRole("button", { name: "Create account" }).click()
 
-    await expect(page).toHaveURL("/")
-    await expect(
-      page.getByRole("heading", { name: "Project ready!" })
-    ).toBeVisible()
+    await expect(page).toHaveURL("/dashboard")
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
   })
 })

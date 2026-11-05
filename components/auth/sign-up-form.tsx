@@ -1,13 +1,10 @@
 "use client"
-
 //* Libraries imports
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
+import Link from "next/link"
 
 //* Components imports
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -15,100 +12,87 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
+} from "@/components/ui/card"
+import { FieldGroup } from "@/components/ui/field"
+import { Spinner } from "@/components/ui/spinner"
+
+//* Hooks imports
+import { useSignUpForm } from "@/hooks/use-sign-up-form"
 
 //* Local imports
-import { authClient } from "@/lib/auth-client";
+import { authHref, defaultDestination } from "@/lib/auth-destination"
 
-const signUpSchema = z
-  .object({
-    name: z.string().trim().min(1, "Name is required"),
-    email: z.email("Enter a valid email address"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must be at most 128 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type SignUpValues = z.infer<typeof signUpSchema>;
-
-type SignUpField = keyof SignUpValues;
-
-type FieldErrors = Partial<Record<SignUpField, string>>;
-
-const emptyValues: SignUpValues = {
-  name: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-};
-
-function fieldErrorsFromIssues(issues: z.core.$ZodIssue[]): FieldErrors {
-  const nextErrors: FieldErrors = {};
-
-  for (const issue of issues) {
-    const field = issue.path[0];
-
-    if (typeof field !== "string" || field in nextErrors) {
-      continue;
-    }
-
-    nextErrors[field as SignUpField] = issue.message;
-  }
-
-  return nextErrors;
+type SignUpFieldsProps = {
+  appForm: ReturnType<typeof useSignUpForm>["appForm"]
+  disabled: boolean
 }
 
-export function SignUpForm() {
-  const router = useRouter();
-  const [values, setValues] = useState<SignUpValues>(emptyValues);
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+function SignUpFields(props: SignUpFieldsProps) {
+  const appForm = props.appForm
 
-  function updateField(field: SignUpField, value: string) {
-    setValues((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
+  return (
+    <FieldGroup>
+      <appForm.AppField
+        name="name"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-name"
+            label="Name"
+            type="text"
+            autoComplete="name"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="email"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="password"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-password"
+            label="Password"
+            type="password"
+            autoComplete="new-password"
+            disabled={props.disabled}
+          />
+        )}
+      />
+      <appForm.AppField
+        name="confirmPassword"
+        children={(field) => (
+          <field.TextField
+            id="sign-up-confirm-password"
+            label="Confirm password"
+            type="password"
+            autoComplete="new-password"
+            disabled={props.disabled}
+          />
+        )}
+      />
+    </FieldGroup>
+  )
+}
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError(null);
+type SignUpFormProps = {
+  destination?: string
+}
 
-    const parsed = signUpSchema.safeParse(values);
-
-    if (!parsed.success) {
-      setFieldErrors(fieldErrorsFromIssues(parsed.error.issues));
-      return;
-    }
-
-    setFieldErrors({});
-    setIsSubmitting(true);
-
-    const { error } = await authClient.signUp.email({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      password: parsed.data.password,
-    });
-
-    if (error) {
-      setFormError(error.message ?? "Could not create your account.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    router.push("/");
-  }
+export function SignUpForm({
+  destination = defaultDestination,
+}: SignUpFormProps) {
+  const { appForm, signUpMutation, isBusy, handleSubmit } =
+    useSignUpForm(destination)
 
   return (
     <Card className="w-full max-w-md">
@@ -123,90 +107,36 @@ export function SignUpForm() {
           noValidate
           onSubmit={handleSubmit}
         >
-          {formError ? (
+          {signUpMutation.isError ? (
             <Alert variant="destructive">
               <AlertTitle>Could not create account</AlertTitle>
-              <AlertDescription>{formError}</AlertDescription>
+              <AlertDescription>
+                {signUpMutation.error.message}
+              </AlertDescription>
             </Alert>
           ) : null}
-          <FieldGroup>
-            <Field data-invalid={Boolean(fieldErrors.name) || undefined} data-disabled={isSubmitting || undefined}>
-              <FieldLabel htmlFor="sign-up-name">Name</FieldLabel>
-              <Input
-                id="sign-up-name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                value={values.name}
-                disabled={isSubmitting}
-                aria-invalid={Boolean(fieldErrors.name) || undefined}
-                onChange={(event) => updateField("name", event.currentTarget.value)}
-              />
-              <FieldError errors={fieldErrors.name ? [{ message: fieldErrors.name }] : undefined} />
-            </Field>
-            <Field data-invalid={Boolean(fieldErrors.email) || undefined} data-disabled={isSubmitting || undefined}>
-              <FieldLabel htmlFor="sign-up-email">Email</FieldLabel>
-              <Input
-                id="sign-up-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={values.email}
-                disabled={isSubmitting}
-                aria-invalid={Boolean(fieldErrors.email) || undefined}
-                onChange={(event) => updateField("email", event.currentTarget.value)}
-              />
-              <FieldError errors={fieldErrors.email ? [{ message: fieldErrors.email }] : undefined} />
-            </Field>
-            <Field data-invalid={Boolean(fieldErrors.password) || undefined} data-disabled={isSubmitting || undefined}>
-              <FieldLabel htmlFor="sign-up-password">Password</FieldLabel>
-              <Input
-                id="sign-up-password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                value={values.password}
-                disabled={isSubmitting}
-                aria-invalid={Boolean(fieldErrors.password) || undefined}
-                onChange={(event) => updateField("password", event.currentTarget.value)}
-              />
-              <FieldError errors={fieldErrors.password ? [{ message: fieldErrors.password }] : undefined} />
-            </Field>
-            <Field data-invalid={Boolean(fieldErrors.confirmPassword) || undefined} data-disabled={isSubmitting || undefined}>
-              <FieldLabel htmlFor="sign-up-confirm-password">Confirm password</FieldLabel>
-              <Input
-                id="sign-up-confirm-password"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={values.confirmPassword}
-                disabled={isSubmitting}
-                aria-invalid={Boolean(fieldErrors.confirmPassword) || undefined}
-                onChange={(event) => updateField("confirmPassword", event.currentTarget.value)}
-              />
-              <FieldError
-                errors={
-                  fieldErrors.confirmPassword
-                    ? [{ message: fieldErrors.confirmPassword }]
-                    : undefined
-                }
-              />
-            </Field>
-          </FieldGroup>
+          <SignUpFields appForm={appForm} disabled={isBusy} />
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col items-stretch gap-4">
         <Button
           id="sign-up-submit"
           type="submit"
           form="sign-up-form"
           className="w-full"
-          disabled={isSubmitting}
+          disabled={isBusy}
         >
-          {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-          {isSubmitting ? "Creating account..." : "Create account"}
+          {isBusy ? <Spinner data-icon="inline-start" /> : null}
+          {isBusy ? "Creating account..." : "Create account"}
         </Button>
+        <Link
+          id="sign-up-sign-in"
+          href={authHref("/sign-in", destination)}
+          className="text-center text-sm text-muted-foreground underline"
+        >
+          Já tenho conta
+        </Link>
       </CardFooter>
     </Card>
-  );
+  )
 }

@@ -1,7 +1,9 @@
 import { Geist, Geist_Mono, Outfit, Roboto_Slab } from "next/font/google";
 
 // * Providers imports
-import { ThemeProvider } from "@/components/theme-provider"
+import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 //* Utils imports
 import { cn } from "@/lib/utils";
@@ -29,7 +31,13 @@ export default async function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", outfit.variable, robotoSlabHeading.variable)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
