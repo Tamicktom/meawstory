@@ -6,7 +6,7 @@ import { after } from "next/server";
 //* Local imports
 import * as schema from "@/database/schema";
 import { clientEnv } from "@/env/client";
-import { toAbsoluteUrl } from "@/utils/absolute-url";
+import { productionSiteUrl, publicBaseUrl } from "@/utils/absolute-url";
 
 //* Libraries imports
 import { db } from "@/database";
@@ -29,9 +29,9 @@ function runAfterResponse(task: Promise<unknown>) {
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
-  baseURL: toAbsoluteUrl(clientEnv.NEXT_PUBLIC_VERCEL_URL),
-  //* The public site is not the host in NEXT_PUBLIC_VERCEL_URL, so sign-in from the custom domain fails the origin check.
-  trustedOrigins: ["https://meawstory.com"],
+  baseURL: publicBaseUrl(process.env.VERCEL_ENV, clientEnv.NEXT_PUBLIC_VERCEL_URL),
+  //* Sign-in from the public site stays valid when the configured host is a Vercel deployment URL.
+  trustedOrigins: [productionSiteUrl],
   advanced: {
     backgroundTasks: { handler: runAfterResponse },
   },
