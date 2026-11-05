@@ -359,6 +359,16 @@ describe("correctText", () => {
     })
   })
 
+  it("asks OpenAI not to store the response", async () => {
+    const graph = await insertOpenText()
+
+    await withStep(nextStepId(), () => correctText(graph.textId))
+
+    expect(generateTextSpy.mock.calls[0]?.[0]).toMatchObject({
+      providerOptions: { openai: { store: false } },
+    })
+  })
+
   it("fails with FatalError before save when the score is invalid", async () => {
     const graph = await insertOpenText()
     const stepId = nextStepId()

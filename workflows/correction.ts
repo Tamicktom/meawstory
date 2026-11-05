@@ -152,6 +152,8 @@ async function gradeText(source: CorrectionSource) {
       name: "correction",
       description: "Rubric-based correction of one student text.",
     }),
+    //* Our public privacy text relies on this: see docs/v2/fase-0-base/0A-3.
+    providerOptions: { openai: { store: false } },
   })
 
   return gradedResult(result.output.content, result.output.score)
