@@ -18,6 +18,8 @@ import {
 class InvalidResetLinkError extends Error {}
 
 function useResetPasswordForm(token: string) {
+  //* No cached query depends on the password, and the success screen only links to sign-in.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   const resetPasswordMutation = useMutation({
     mutationFn: async (values: ResetPasswordValues) => {
       const parsed = resetPasswordSchema.parse(values)

@@ -21,6 +21,9 @@ async function startReading(textId: string) {
 }
 
 function useStartReading() {
+  //* correction-status has no staleTime and its data is never rendered, so polling always reads fresh.
+  //* Invalidate it here if that query ever gets a staleTime.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   return useMutation({ mutationFn: startReading })
 }
 

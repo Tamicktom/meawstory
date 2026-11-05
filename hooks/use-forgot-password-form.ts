@@ -24,6 +24,8 @@ function forgotPasswordErrorMessage(status: number) {
 }
 
 function useForgotPasswordForm() {
+  //* This only requests an email: no cached query depends on it.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   const forgotPasswordMutation = useMutation({
     mutationFn: async (values: ForgotPasswordValues) => {
       const parsed = forgotPasswordSchema.parse(values)
