@@ -6,13 +6,13 @@ import { passwordSchema } from "@/schemas/password"
 
 const signUpSchema = z
   .object({
-    name: z.string().trim().min(1, "Name is required"),
-    email: z.email("Enter a valid email address"),
+    name: z.string().trim().min(1, "Informe seu nome"),
+    email: z.email("Informe um e-mail válido"),
     password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match",
+    message: "As senhas não são iguais",
     path: ["confirmPassword"],
   })
 

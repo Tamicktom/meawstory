@@ -1,19 +1,22 @@
-import { Geist, Geist_Mono, Outfit, Roboto_Slab } from "next/font/google";
+import { Geist_Mono, Outfit, Roboto_Slab } from "next/font/google"
 
 // * Providers imports
-import { QueryProvider } from "@/components/providers/query-provider";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryProvider } from "@/components/providers/query-provider"
+import { ThemeProvider } from "@/components/providers/theme-provider"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 //* Utils imports
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 //* Styles imports
-import "./globals.css";
+import "./globals.css"
 
 //* Fonts
-const robotoSlabHeading = Roboto_Slab({ subsets: ['latin'], variable: '--font-heading' });
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-sans' })
+const robotoSlabHeading = Roboto_Slab({
+  subsets: ["latin"],
+  variable: "--font-heading",
+})
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" })
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -26,16 +29,20 @@ export default async function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", outfit.variable, robotoSlabHeading.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        outfit.variable,
+        robotoSlabHeading.variable
+      )}
     >
       <body>
         <ThemeProvider>
           <QueryProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
+            <TooltipProvider>{children}</TooltipProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

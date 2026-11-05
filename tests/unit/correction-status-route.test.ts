@@ -58,7 +58,8 @@ describe("GET /api/correction/check-correction-status/:textId", () => {
 
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
-      message: "Unauthorized",
+      message:
+        "Sua sessão expirou. Entre na sua conta para consultar a leitura.",
     })
   })
 

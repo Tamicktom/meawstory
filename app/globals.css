@@ -135,3 +135,18 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .prose {
+    overflow-wrap: anywhere;
+  }
+
+  .prose pre {
+    white-space: pre-wrap;
+  }
+
+  .prose table {
+    width: 100%;
+    table-layout: fixed;
+  }
+}

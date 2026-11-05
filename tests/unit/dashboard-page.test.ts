@@ -9,17 +9,19 @@ describe("DashboardPage", () => {
   it("explains that the user picks a theme, writes a text, and receives a correction", () => {
     const markup = renderToStaticMarkup(DashboardPage())
 
-    expect(markup).toContain("Start by choosing a theme.")
-    expect(markup).toContain("Write a text for it and receive a correction")
-    expect(markup).toContain("rubric.")
+    expect(markup).toContain(
+      "Escolha um exercício, escreva uma cena e receba uma leitura com base"
+    )
+    expect(markup).toContain("no que será observado nesse exercício.")
+    expect(markup).toContain("será observado")
   })
 
-  it("links Browse themes to the theme catalog", () => {
+  it("links Explorar exercícios to the theme catalog", () => {
     const markup = renderToStaticMarkup(DashboardPage())
 
     expect(markup).toContain('id="dashboard-browse-themes"')
     expect(markup).toContain('href="/dashboard/themes"')
-    expect(markup).toContain("Browse themes")
+    expect(markup).toContain("Explorar exercícios")
   })
 
   it("links Minhas cenas to the text history", () => {

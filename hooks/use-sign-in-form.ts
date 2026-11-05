@@ -10,6 +10,7 @@ import { useAppForm } from "@/components/auth/form-hook"
 
 //* Local imports
 import { authClient } from "@/lib/auth-client"
+import { signInErrorMessage } from "@/lib/auth-error-message"
 import {
   signInDefaultValues,
   signInSchema,
@@ -22,13 +23,19 @@ function useSignInForm(destination: string) {
   const signInMutation = useMutation({
     mutationFn: async (values: SignInValues) => {
       const parsed = signInSchema.parse(values)
-      const { data, error } = await authClient.signIn.email({
-        email: parsed.email,
-        password: parsed.password,
-      })
+      const { data, error } = await authClient.signIn
+        .email({
+          email: parsed.email,
+          password: parsed.password,
+        })
+        .catch(() => {
+          throw new Error(
+            "Não foi possível entrar agora. Tente de novo em instantes."
+          )
+        })
 
       if (error) {
-        throw new Error(error.message ?? "Could not sign in.")
+        throw new Error(signInErrorMessage(error))
       }
 
       return data

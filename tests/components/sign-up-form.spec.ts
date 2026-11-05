@@ -33,14 +33,14 @@ function validAccount(overrides: Partial<Account> = {}): Account {
 }
 
 async function fillAccount(component: Locator, account: Account) {
-  await component.getByLabel("Name").fill(account.name)
-  await component.getByLabel("Email").fill(account.email)
-  await component.getByLabel("Password", { exact: true }).fill(account.password)
-  await component.getByLabel("Confirm password").fill(account.confirmPassword)
+  await component.getByLabel("Nome").fill(account.name)
+  await component.getByLabel("E-mail").fill(account.email)
+  await component.getByLabel("Senha", { exact: true }).fill(account.password)
+  await component.getByLabel("Confirme a senha").fill(account.confirmPassword)
 }
 
 async function submit(component: Locator) {
-  await component.getByRole("button", { name: "Create account" }).click()
+  await component.getByRole("button", { name: "Criar conta" }).click()
 }
 
 async function captureSignUpRequests(page: Page) {
@@ -63,9 +63,10 @@ async function fulfillSignUp(route: Route, response: JsonResponse) {
 }
 
 async function expectPasswordAriaInvalid(component: Locator) {
-  await expect(
-    component.getByLabel("Password", { exact: true })
-  ).toHaveAttribute("aria-invalid", "true")
+  await expect(component.getByLabel("Senha", { exact: true })).toHaveAttribute(
+    "aria-invalid",
+    "true"
+  )
 }
 
 async function expectPasswordInvalidWithConfirmUntouched(
@@ -73,7 +74,7 @@ async function expectPasswordInvalidWithConfirmUntouched(
   requests: string[]
 ) {
   await expectPasswordAriaInvalid(component)
-  await expect(component.getByLabel("Confirm password")).not.toHaveAttribute(
+  await expect(component.getByLabel("Confirme a senha")).not.toHaveAttribute(
     "aria-invalid"
   )
   expect(requests).toHaveLength(0)
@@ -94,7 +95,9 @@ async function mountFailedSignUp(
 
   await fillAccount(component, validAccount())
   await submit(component)
-  await expect(component.getByText("Could not create account")).toBeVisible()
+  await expect(
+    component.getByText("Não foi possível criar a conta")
+  ).toBeVisible()
 
   return component
 }
@@ -107,16 +110,16 @@ type ComponentFixtures = {
 async function showsTheAccountFields({ mount }: ComponentFixtures) {
   const component = await mount(story)
 
-  await expect(component.getByText("Create your account")).toBeVisible()
+  await expect(component.getByText("Crie sua conta")).toBeVisible()
   await expect(
-    component.getByText("Enter your details to get started.")
+    component.getByText("Preencha seus dados para começar.")
   ).toBeVisible()
-  await expect(component.getByLabel("Name")).toBeVisible()
-  await expect(component.getByLabel("Email")).toBeVisible()
-  await expect(component.getByLabel("Password", { exact: true })).toBeVisible()
-  await expect(component.getByLabel("Confirm password")).toBeVisible()
+  await expect(component.getByLabel("Nome")).toBeVisible()
+  await expect(component.getByLabel("E-mail")).toBeVisible()
+  await expect(component.getByLabel("Senha", { exact: true })).toBeVisible()
+  await expect(component.getByLabel("Confirme a senha")).toBeVisible()
   await expect(
-    component.getByRole("button", { name: "Create account" })
+    component.getByRole("button", { name: "Criar conta" })
   ).toBeEnabled()
   await expect(
     component.getByRole("link", { name: "Já tenho conta" })
@@ -126,9 +129,7 @@ async function showsTheAccountFields({ mount }: ComponentFixtures) {
 async function keepsTheDestinationInTheLinkToSignIn({
   mount,
 }: ComponentFixtures) {
-  const component = await mount(
-    "components/auth/sign-up-form/WithDestination"
-  )
+  const component = await mount("components/auth/sign-up-form/WithDestination")
 
   await expect(
     component.getByRole("link", { name: "Já tenho conta" })
@@ -146,9 +147,7 @@ async function sendsTheDestinationAsTheVerificationCallback({
     })
   })
 
-  const component = await mount(
-    "components/auth/sign-up-form/WithDestination"
-  )
+  const component = await mount("components/auth/sign-up-form/WithDestination")
   const requestPromise = page.waitForRequest(signUpEndpoint)
 
   await fillAccount(component, validAccount())
@@ -172,17 +171,19 @@ async function showsFieldErrorsWhenTheFormIsSubmittedEmpty({
 
   await submit(component)
 
-  await expect(component.getByText("Name is required")).toBeVisible()
-  await expect(component.getByText("Enter a valid email address")).toBeVisible()
+  await expect(component.getByText("Informe seu nome")).toBeVisible()
+  await expect(component.getByText("Informe um e-mail válido")).toBeVisible()
   await expect(
-    component.getByText("Password must be at least 8 characters")
+    component.getByText("A senha precisa ter pelo menos 8 caracteres")
   ).toBeVisible()
-  await expect(component.getByText("Passwords do not match")).not.toBeVisible()
-  await expect(component.getByLabel("Name")).toHaveAttribute(
+  await expect(
+    component.getByText("As senhas não são iguais")
+  ).not.toBeVisible()
+  await expect(component.getByLabel("Nome")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
-  await expect(component.getByLabel("Email")).toHaveAttribute(
+  await expect(component.getByLabel("E-mail")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
@@ -216,7 +217,7 @@ async function showsAnErrorWhenThePasswordIsShorterThan8Characters({
   await submit(component)
 
   await expect(
-    component.getByText("Password must be at least 8 characters")
+    component.getByText("A senha precisa ter pelo menos 8 caracteres")
   ).toBeVisible()
   await expectPasswordInvalidWithConfirmUntouched(component, requests)
 }
@@ -236,7 +237,7 @@ async function showsAnErrorWhenThePasswordIsLongerThan128Characters({
   await submit(component)
 
   await expect(
-    component.getByText("Password must be at most 128 characters")
+    component.getByText("A senha pode ter no máximo 128 caracteres")
   ).toBeVisible()
   await expectPasswordAriaInvalid(component)
   expect(requests).toHaveLength(0)
@@ -252,11 +253,11 @@ async function showsAnErrorWhenThePasswordsDoNotMatch({
   await fillAccount(component, validAccount({ confirmPassword: "password124" }))
   await submit(component)
 
-  await expect(component.getByText("Passwords do not match")).toBeVisible()
+  await expect(component.getByText("As senhas não são iguais")).toBeVisible()
   await expect(
-    component.getByLabel("Password", { exact: true })
+    component.getByLabel("Senha", { exact: true })
   ).not.toHaveAttribute("aria-invalid")
-  await expect(component.getByLabel("Confirm password")).toHaveAttribute(
+  await expect(component.getByLabel("Confirme a senha")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
@@ -273,8 +274,8 @@ async function showsAnErrorWhenTheNameIsOnlyWhitespace({
   await fillAccount(component, validAccount({ name: "   " }))
   await submit(component)
 
-  await expect(component.getByText("Name is required")).toBeVisible()
-  await expect(component.getByLabel("Name")).toHaveAttribute(
+  await expect(component.getByText("Informe seu nome")).toBeVisible()
+  await expect(component.getByLabel("Nome")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
@@ -305,14 +306,14 @@ async function disablesTheFormWhileTheAccountIsBeingCreated({
   await submit(component)
 
   const submitButton = component.getByRole("button", {
-    name: /Creating account\.\.\./,
+    name: /Criando conta…/,
   })
 
   await expect(submitButton).toBeDisabled()
-  await expect(component.getByLabel("Name")).toBeDisabled()
-  await expect(component.getByLabel("Email")).toBeDisabled()
-  await expect(component.getByLabel("Password", { exact: true })).toBeDisabled()
-  await expect(component.getByLabel("Confirm password")).toBeDisabled()
+  await expect(component.getByLabel("Nome")).toBeDisabled()
+  await expect(component.getByLabel("E-mail")).toBeDisabled()
+  await expect(component.getByLabel("Senha", { exact: true })).toBeDisabled()
+  await expect(component.getByLabel("Confirme a senha")).toBeDisabled()
 
   continueRequest()
   await response
@@ -324,17 +325,21 @@ async function showsTheServerErrorWhenSignUpFails({
 }: ComponentFixtures) {
   const component = await mountFailedSignUp(page, mount, {
     status: 422,
-    body: { message: "User already exists." },
+    body: { code: "USER_ALREADY_EXISTS", message: "User already exists." },
   })
 
-  await expect(component.getByText("User already exists.")).toBeVisible()
   await expect(
-    component.getByRole("button", { name: "Create account" })
+    component.getByText(
+      "Já existe uma conta com esse e-mail. Entre na sua conta ou recupere a senha."
+    )
+  ).toBeVisible()
+  await expect(
+    component.getByRole("button", { name: "Criar conta" })
   ).toBeEnabled()
-  await expect(component.getByLabel("Name")).toBeEnabled()
-  await expect(component.getByLabel("Email")).toBeEnabled()
-  await expect(component.getByLabel("Password", { exact: true })).toBeEnabled()
-  await expect(component.getByLabel("Confirm password")).toBeEnabled()
+  await expect(component.getByLabel("Nome")).toBeEnabled()
+  await expect(component.getByLabel("E-mail")).toBeEnabled()
+  await expect(component.getByLabel("Senha", { exact: true })).toBeEnabled()
+  await expect(component.getByLabel("Confirme a senha")).toBeEnabled()
 }
 
 async function showsAFallbackErrorWhenTheServerResponseHasNoMessage({
@@ -347,10 +352,12 @@ async function showsAFallbackErrorWhenTheServerResponseHasNoMessage({
   })
 
   await expect(
-    component.getByText("Could not create your account.")
+    component.getByText(
+      "Não foi possível criar sua conta agora. Tente de novo em instantes."
+    )
   ).toBeVisible()
   await expect(
-    component.getByRole("button", { name: "Create account" })
+    component.getByRole("button", { name: "Criar conta" })
   ).toBeEnabled()
 }
 
@@ -364,18 +371,18 @@ async function clearsTheServerErrorWhenTheFormIsSubmittedAgain({
     mount,
     {
       status: 422,
-      body: { message: "User already exists." },
+      body: { code: "USER_ALREADY_EXISTS", message: "User already exists." },
     },
     requests
   )
 
-  await component.getByLabel("Name").fill("")
+  await component.getByLabel("Nome").fill("")
   await submit(component)
 
   await expect(
-    component.getByText("Could not create account")
+    component.getByText("Não foi possível criar a conta")
   ).not.toBeVisible()
-  await expect(component.getByText("Name is required")).toBeVisible()
+  await expect(component.getByText("Informe seu nome")).toBeVisible()
   expect(requests).toHaveLength(1)
 }
 
@@ -411,7 +418,7 @@ async function sendsTheTrimmedNameAndNavigatesHome({
     password: "password123",
   })
   expect(body.confirmPassword).toBeUndefined()
-  await expectNavigatedHome(page, component, "Creating account...")
+  await expectNavigatedHome(page, component, "Criando conta…")
 }
 
 test.describe("SignUpForm", () => {

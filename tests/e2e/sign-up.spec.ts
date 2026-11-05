@@ -8,12 +8,12 @@ test.describe("sign up page", () => {
   test("shows the create account form", { tag: "@smoke" }, async ({ page }) => {
     await page.goto("/sign-up")
 
-    await expect(page.getByText("Create your account")).toBeVisible()
+    await expect(page.getByText("Crie sua conta")).toBeVisible()
     await expect(
-      page.getByRole("button", { name: "Create account" })
+      page.getByRole("button", { name: "Criar conta" })
     ).toBeVisible()
     await expect(
-      page.getByRole("button", { name: "Create account" })
+      page.getByRole("button", { name: "Criar conta" })
     ).toBeEnabled()
   })
 
@@ -24,13 +24,13 @@ test.describe("sign up page", () => {
 
     await page.goto("/sign-up")
 
-    await page.getByLabel("Name").fill(account.name)
-    await page.getByLabel("Email").fill(account.email)
-    await page.getByLabel("Password", { exact: true }).fill(account.password)
-    await page.getByLabel("Confirm password").fill(account.confirmPassword)
-    await page.getByRole("button", { name: "Create account" }).click()
+    await page.getByLabel("Nome").fill(account.name)
+    await page.getByLabel("E-mail").fill(account.email)
+    await page.getByLabel("Senha", { exact: true }).fill(account.password)
+    await page.getByLabel("Confirme a senha").fill(account.confirmPassword)
+    await page.getByRole("button", { name: "Criar conta" }).click()
 
     await expect(page).toHaveURL("/dashboard")
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   })
 })

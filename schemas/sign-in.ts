@@ -5,7 +5,7 @@ import { z } from "zod"
 import { passwordSchema } from "@/schemas/password"
 
 const signInSchema = z.object({
-  email: z.email("Enter a valid email address"),
+  email: z.email("Informe um e-mail válido"),
   password: passwordSchema,
 })
 

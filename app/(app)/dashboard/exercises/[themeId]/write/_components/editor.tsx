@@ -49,7 +49,7 @@ const Editor = (props: EditorProps) => {
     }
   }
   return (
-    <div className="col-span-2 flex w-full flex-col gap-4 p-4">
+    <div className="order-1 flex w-full min-w-0 flex-col gap-4 [overflow-wrap:anywhere] lg:order-2">
       <label htmlFor="scene-content" className="font-medium">
         Sua cena
       </label>
@@ -59,11 +59,25 @@ const Editor = (props: EditorProps) => {
         value={content}
         onChange={(event) => setContent(event.target.value)}
         disabled={pending}
-        className="min-h-96 w-full rounded-md border p-4"
+        aria-describedby={error ? "scene-limits scene-error" : "scene-limits"}
+        aria-invalid={Boolean(error)}
+        className="min-h-96 w-full resize-y rounded-md border bg-background p-4 text-base leading-relaxed"
       />
-      <p>{countWords(content)} palavras · Limites: 100 a 2.000 palavras</p>
-      {error ? <p role="alert">{error}</p> : null}
-      <Button id="submit-text" disabled={pending} onClick={submit}>
+      <p id="scene-limits">
+        {countWords(content).toLocaleString("pt-BR")} palavras · Limites: 100 a
+        2.000 palavras
+      </p>
+      {error ? (
+        <p id="scene-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button
+        id="submit-text"
+        className="min-h-11 w-full sm:w-fit"
+        disabled={pending}
+        onClick={submit}
+      >
         {pending ? "Enviando…" : "Enviar para leitura"}
       </Button>
     </div>

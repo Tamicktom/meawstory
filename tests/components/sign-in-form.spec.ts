@@ -29,12 +29,12 @@ function validCredentials(overrides: Partial<Credentials> = {}): Credentials {
 }
 
 async function fillCredentials(component: Locator, credentials: Credentials) {
-  await component.getByLabel("Email").fill(credentials.email)
-  await component.getByLabel("Password").fill(credentials.password)
+  await component.getByLabel("E-mail").fill(credentials.email)
+  await component.getByLabel("Senha").fill(credentials.password)
 }
 
 async function submit(component: Locator) {
-  await component.getByRole("button", { name: "Sign in" }).click()
+  await component.getByRole("button", { name: "Entrar" }).click()
 }
 
 async function captureSignInRequests(page: Page) {
@@ -72,7 +72,7 @@ async function mountFailedSignIn(
   await fillCredentials(component, validCredentials())
   await submit(component)
   await expect(
-    component.getByText("Could not sign in", { exact: true })
+    component.getByText("Não foi possível entrar", { exact: true })
   ).toBeVisible()
 
   return component
@@ -86,15 +86,15 @@ type ComponentFixtures = {
 async function showsTheSignInFields({ mount }: ComponentFixtures) {
   const component = await mount(story)
 
-  await expect(component.getByText("Sign in to your account")).toBeVisible()
+  await expect(component.getByText("Entre na sua conta")).toBeVisible()
   await expect(
-    component.getByText("Use your email and password to continue.")
+    component.getByText("Use seu e-mail e sua senha para continuar.")
   ).toBeVisible()
-  await expect(component.getByLabel("Email")).toBeVisible()
-  await expect(component.getByLabel("Password")).toBeVisible()
-  await expect(component.getByRole("button", { name: "Sign in" })).toBeEnabled()
+  await expect(component.getByLabel("E-mail")).toBeVisible()
+  await expect(component.getByLabel("Senha")).toBeVisible()
+  await expect(component.getByRole("button", { name: "Entrar" })).toBeEnabled()
   await expect(
-    component.getByRole("link", { name: "Create an account" })
+    component.getByRole("link", { name: "Criar uma conta" })
   ).toHaveAttribute("href", "/sign-up")
   await expect(
     component.getByRole("link", { name: "Esqueci minha senha" })
@@ -104,12 +104,10 @@ async function showsTheSignInFields({ mount }: ComponentFixtures) {
 async function keepsTheDestinationInTheLinkToSignUp({
   mount,
 }: ComponentFixtures) {
-  const component = await mount(
-    "components/auth/sign-in-form/WithDestination"
-  )
+  const component = await mount("components/auth/sign-in-form/WithDestination")
 
   await expect(
-    component.getByRole("link", { name: "Create an account" })
+    component.getByRole("link", { name: "Criar uma conta" })
   ).toHaveAttribute("href", "/sign-up?next=%2Fdashboard%2Fthemes")
 }
 
@@ -124,9 +122,7 @@ async function navigatesToTheDestinationAfterSigningIn({
     })
   })
 
-  const component = await mount(
-    "components/auth/sign-in-form/WithDestination"
-  )
+  const component = await mount("components/auth/sign-in-form/WithDestination")
 
   await fillCredentials(component, validCredentials())
   await submit(component)
@@ -146,15 +142,15 @@ async function showsFieldErrorsWhenTheFormIsSubmittedEmpty({
 
   await submit(component)
 
-  await expect(component.getByText("Enter a valid email address")).toBeVisible()
+  await expect(component.getByText("Informe um e-mail válido")).toBeVisible()
   await expect(
-    component.getByText("Password must be at least 8 characters")
+    component.getByText("A senha precisa ter pelo menos 8 caracteres")
   ).toBeVisible()
-  await expect(component.getByLabel("Email")).toHaveAttribute(
+  await expect(component.getByLabel("E-mail")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
-  await expect(component.getByLabel("Password")).toHaveAttribute(
+  await expect(component.getByLabel("Senha")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
@@ -171,7 +167,7 @@ async function showsAnErrorWhenTheEmailIsInvalid({
   await fillCredentials(component, validCredentials({ email: "ada@" }))
   await submit(component)
   await expectInvalidEmail(component)
-  await expect(component.getByLabel("Password")).not.toHaveAttribute(
+  await expect(component.getByLabel("Senha")).not.toHaveAttribute(
     "aria-invalid"
   )
   expect(requests).toHaveLength(0)
@@ -188,13 +184,13 @@ async function showsAnErrorWhenThePasswordIsShorterThan8Characters({
   await submit(component)
 
   await expect(
-    component.getByText("Password must be at least 8 characters")
+    component.getByText("A senha precisa ter pelo menos 8 caracteres")
   ).toBeVisible()
-  await expect(component.getByLabel("Password")).toHaveAttribute(
+  await expect(component.getByLabel("Senha")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
-  await expect(component.getByLabel("Email")).not.toHaveAttribute(
+  await expect(component.getByLabel("E-mail")).not.toHaveAttribute(
     "aria-invalid"
   )
   expect(requests).toHaveLength(0)
@@ -214,9 +210,9 @@ async function showsAnErrorWhenThePasswordIsLongerThan128Characters({
   await submit(component)
 
   await expect(
-    component.getByText("Password must be at most 128 characters")
+    component.getByText("A senha pode ter no máximo 128 caracteres")
   ).toBeVisible()
-  await expect(component.getByLabel("Password")).toHaveAttribute(
+  await expect(component.getByLabel("Senha")).toHaveAttribute(
     "aria-invalid",
     "true"
   )
@@ -247,12 +243,12 @@ async function disablesTheFormWhileSigningIn({
   await submit(component)
 
   const submitButton = component.getByRole("button", {
-    name: /Signing in\.\.\./,
+    name: /Entrando…/,
   })
 
   await expect(submitButton).toBeDisabled()
-  await expect(component.getByLabel("Email")).toBeDisabled()
-  await expect(component.getByLabel("Password")).toBeDisabled()
+  await expect(component.getByLabel("E-mail")).toBeDisabled()
+  await expect(component.getByLabel("Senha")).toBeDisabled()
 
   continueRequest()
   await response
@@ -267,10 +263,10 @@ async function showsTheServerErrorWhenSignInFails({
     body: { message: "Invalid email or password." },
   })
 
-  await expect(component.getByText("Invalid email or password.")).toBeVisible()
-  await expect(component.getByRole("button", { name: "Sign in" })).toBeEnabled()
-  await expect(component.getByLabel("Email")).toBeEnabled()
-  await expect(component.getByLabel("Password")).toBeEnabled()
+  await expect(component.getByText("E-mail ou senha incorretos.")).toBeVisible()
+  await expect(component.getByRole("button", { name: "Entrar" })).toBeEnabled()
+  await expect(component.getByLabel("E-mail")).toBeEnabled()
+  await expect(component.getByLabel("Senha")).toBeEnabled()
 }
 
 async function showsAFallbackErrorWhenTheServerResponseHasNoMessage({
@@ -283,9 +279,12 @@ async function showsAFallbackErrorWhenTheServerResponseHasNoMessage({
   })
 
   await expect(
-    component.getByText("Could not sign in.", { exact: true })
+    component.getByText(
+      "Não foi possível entrar agora. Tente de novo em instantes.",
+      { exact: true }
+    )
   ).toBeVisible()
-  await expect(component.getByRole("button", { name: "Sign in" })).toBeEnabled()
+  await expect(component.getByRole("button", { name: "Entrar" })).toBeEnabled()
 }
 
 async function clearsTheServerErrorWhenTheFormIsSubmittedAgain({
@@ -303,11 +302,11 @@ async function clearsTheServerErrorWhenTheFormIsSubmittedAgain({
     requests
   )
 
-  await component.getByLabel("Email").fill("")
+  await component.getByLabel("E-mail").fill("")
   await submit(component)
 
-  await expect(component.getByText("Could not sign in")).not.toBeVisible()
-  await expect(component.getByText("Enter a valid email address")).toBeVisible()
+  await expect(component.getByText("Não foi possível entrar")).not.toBeVisible()
+  await expect(component.getByText("Informe um e-mail válido")).toBeVisible()
   expect(requests).toHaveLength(1)
 }
 
@@ -341,7 +340,7 @@ async function sendsTheCredentialsAndNavigatesHome({
     email: "ada@example.com",
     password: "password123",
   })
-  await expectNavigatedHome(page, component, "Signing in...")
+  await expectNavigatedHome(page, component, "Entrando…")
 }
 
 test.describe("SignInForm", () => {

@@ -14,9 +14,9 @@ test.describe("dashboard session gate", () => {
     await expect(page.getByText("Unauthorized")).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Meawstory" })).toHaveCount(0)
     await expect(
-      page.getByRole("button", { name: "Toggle Sidebar" })
+      page.getByRole("button", { name: "Alternar menu" })
     ).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Sair" })).toHaveCount(0)
   })
 
   test("shows the sidebar, the trigger, and the page when the visitor is signed in", async ({
@@ -30,31 +30,37 @@ test.describe("dashboard session gate", () => {
     await expect(page.locator("#sidebar-themes")).toBeVisible()
     await expect(page.locator("#sidebar-texts")).toBeVisible()
     await expect(
-      page.getByRole("button", { name: "Toggle Sidebar" })
+      page.getByRole("button", { name: "Alternar menu" })
     ).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
-    await expect(page.getByText("Start by choosing a theme.")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
     await expect(
-      page.getByText("Write a text for it and receive a correction", {
+      page.getByText(
+        "Escolha um exercício, escreva uma cena e receba uma leitura com base"
+      )
+    ).toBeVisible()
+    await expect(
+      page.getByText("no que será observado nesse exercício.", {
         exact: false,
       })
     ).toBeVisible()
-    await expect(page.getByText(/rubric/)).toBeVisible()
+    await expect(page.getByText(/será observado/)).toBeVisible()
   })
 
-  test("links Browse themes to the theme catalog", async ({ page }) => {
+  test("links Explorar exercícios to the theme catalog", async ({ page }) => {
     await signIn(page)
     await page.goto("/dashboard")
 
     const browseThemes = page.locator("#dashboard-browse-themes")
 
-    await expect(browseThemes).toHaveText("Browse themes")
+    await expect(browseThemes).toHaveText("Explorar exercícios")
     await expect(browseThemes).toHaveAttribute("href", "/dashboard/themes")
 
     await browseThemes.click()
 
     await expect(page).toHaveURL("/dashboard/themes")
-    await expect(page.getByRole("heading", { name: "Themes" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Exercícios" })
+    ).toBeVisible()
   })
 
   test("links Your texts to the text history", async ({ page }) => {
@@ -69,14 +75,16 @@ test.describe("dashboard session gate", () => {
     await yourTexts.click()
 
     await expect(page).toHaveURL("/dashboard/texts")
-    await expect(page.getByRole("heading", { name: "Minhas cenas" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Minhas cenas" })
+    ).toBeVisible()
   })
 
   test("signs out and opens sign in", async ({ page }) => {
     await signIn(page)
     await page.goto("/dashboard")
 
-    const signOut = page.getByRole("button", { name: "Sign out" })
+    const signOut = page.getByRole("button", { name: "Sair" })
 
     await expect(signOut).toHaveAttribute("id", "sidebar-sign-out")
     await expect(signOut).toHaveAttribute("type", "button")
@@ -86,7 +94,7 @@ test.describe("dashboard session gate", () => {
     await expect(page).toHaveURL("/sign-in")
     await expect(page.getByRole("link", { name: "Meawstory" })).toHaveCount(0)
     await expect(
-      page.getByRole("button", { name: "Toggle Sidebar" })
+      page.getByRole("button", { name: "Alternar menu" })
     ).toHaveCount(0)
 
     const session = await page.request.get("/api/auth/get-session")
@@ -122,7 +130,7 @@ test.describe("dashboard sidebar", () => {
     await page.locator("#sidebar-dashboard").click()
 
     await expect(page).toHaveURL("/dashboard")
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   })
 
   test("marks Dashboard active only on that path and keeps Themes active on nested paths", async ({
@@ -174,7 +182,9 @@ test.describe("dashboard sidebar", () => {
     await expect(page.locator("#sidebar-themes")).not.toHaveAttribute(
       "data-active"
     )
-    await expect(page.getByRole("heading", { name: "Minhas cenas" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Minhas cenas" })
+    ).toBeVisible()
 
     await page.goto("/dashboard/texts/missing-text")
 

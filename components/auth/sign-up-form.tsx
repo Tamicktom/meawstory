@@ -37,7 +37,7 @@ function SignUpFields(props: SignUpFieldsProps) {
         children={(field) => (
           <field.TextField
             id="sign-up-name"
-            label="Name"
+            label="Nome"
             type="text"
             autoComplete="name"
             disabled={props.disabled}
@@ -49,7 +49,7 @@ function SignUpFields(props: SignUpFieldsProps) {
         children={(field) => (
           <field.TextField
             id="sign-up-email"
-            label="Email"
+            label="E-mail"
             type="email"
             autoComplete="email"
             disabled={props.disabled}
@@ -61,7 +61,7 @@ function SignUpFields(props: SignUpFieldsProps) {
         children={(field) => (
           <field.TextField
             id="sign-up-password"
-            label="Password"
+            label="Senha"
             type="password"
             autoComplete="new-password"
             disabled={props.disabled}
@@ -73,7 +73,7 @@ function SignUpFields(props: SignUpFieldsProps) {
         children={(field) => (
           <field.TextField
             id="sign-up-confirm-password"
-            label="Confirm password"
+            label="Confirme a senha"
             type="password"
             autoComplete="new-password"
             disabled={props.disabled}
@@ -97,8 +97,8 @@ export function SignUpForm({
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>Enter your details to get started.</CardDescription>
+        <CardTitle>Crie sua conta</CardTitle>
+        <CardDescription>Preencha seus dados para começar.</CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -109,7 +109,7 @@ export function SignUpForm({
         >
           {signUpMutation.isError ? (
             <Alert variant="destructive">
-              <AlertTitle>Could not create account</AlertTitle>
+              <AlertTitle>Não foi possível criar a conta</AlertTitle>
               <AlertDescription>
                 {signUpMutation.error.message}
               </AlertDescription>
@@ -127,7 +127,7 @@ export function SignUpForm({
           disabled={isBusy}
         >
           {isBusy ? <Spinner data-icon="inline-start" /> : null}
-          {isBusy ? "Creating account..." : "Create account"}
+          {isBusy ? "Criando conta…" : "Criar conta"}
         </Button>
         <Link
           id="sign-up-sign-in"

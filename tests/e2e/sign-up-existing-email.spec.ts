@@ -14,23 +14,26 @@ test.describe("sign up page", () => {
     const attempt = createSignUpAccount({ email: existing.email })
 
     await page.goto("/sign-up")
-    await page.getByLabel("Name").fill(attempt.name)
-    await page.getByLabel("Email").fill(attempt.email)
-    await page.getByLabel("Password", { exact: true }).fill(attempt.password)
-    await page.getByLabel("Confirm password").fill(attempt.confirmPassword)
-    await page.getByRole("button", { name: "Create account" }).click()
+    await page.getByLabel("Nome").fill(attempt.name)
+    await page.getByLabel("E-mail").fill(attempt.email)
+    await page.getByLabel("Senha", { exact: true }).fill(attempt.password)
+    await page.getByLabel("Confirme a senha").fill(attempt.confirmPassword)
+    await page.getByRole("button", { name: "Criar conta" }).click()
 
     await expect(
-      page.getByText("User already exists. Use another email.", { exact: true })
+      page.getByText(
+        "Já existe uma conta com esse e-mail. Entre na sua conta ou recupere a senha.",
+        { exact: true }
+      )
     ).toBeVisible()
     await expect(
-      page.getByText("Could not create account", { exact: true })
+      page.getByText("Não foi possível criar a conta", { exact: true })
     ).toBeVisible()
     await expect(page).toHaveURL("/sign-up")
     await expect(page.locator("#sign-up-form")).toBeVisible()
     await expect(
-      page.getByRole("button", { name: "Create account" })
+      page.getByRole("button", { name: "Criar conta" })
     ).toBeEnabled()
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toHaveCount(0)
+    await expect(page.getByRole("heading", { name: "Início" })).toHaveCount(0)
   })
 })

@@ -17,6 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 //* Local imports
@@ -26,13 +27,13 @@ import { authClient } from "@/lib/auth-client"
 const navigation = [
   {
     id: "sidebar-dashboard",
-    title: "Dashboard",
+    title: "Início",
     href: "/dashboard",
     icon: HouseIcon,
   },
   {
     id: "sidebar-themes",
-    title: "Themes",
+    title: "Exercícios",
     href: "/dashboard/themes",
     icon: BookOpenIcon,
   },
@@ -46,6 +47,7 @@ const navigation = [
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { setOpenMobile } = useSidebar()
 
   return (
     <Sidebar>
@@ -56,6 +58,7 @@ export function AppSidebar() {
               id="sidebar-brand"
               size="lg"
               render={<Link href="/dashboard" />}
+              onClick={() => setOpenMobile(false)}
             >
               <span className="font-heading text-sm font-medium">
                 Meawstory
@@ -74,6 +77,7 @@ export function AppSidebar() {
                     id={item.id}
                     isActive={isActivePath(pathname, item.href)}
                     render={<Link href={item.href} />}
+                    onClick={() => setOpenMobile(false)}
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -100,7 +104,7 @@ export function AppSidebar() {
             })
           }}
         >
-          Sign out
+          Sair
         </Button>
       </SidebarFooter>
     </Sidebar>

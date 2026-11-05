@@ -10,6 +10,7 @@ import { useAppForm } from "@/components/auth/form-hook"
 
 //* Local imports
 import { authClient } from "@/lib/auth-client"
+import { signUpErrorMessage } from "@/lib/auth-error-message"
 import {
   signUpDefaultValues,
   signUpSchema,
@@ -22,16 +23,22 @@ function useSignUpForm(destination: string) {
   const signUpMutation = useMutation({
     mutationFn: async (values: SignUpValues) => {
       const parsed = signUpSchema.parse(values)
-      const { data, error } = await authClient.signUp.email({
-        name: parsed.name,
-        email: parsed.email,
-        password: parsed.password,
-        //* Where the link in the verification email returns to.
-        callbackURL: destination,
-      })
+      const { data, error } = await authClient.signUp
+        .email({
+          name: parsed.name,
+          email: parsed.email,
+          password: parsed.password,
+          //* Where the link in the verification email returns to.
+          callbackURL: destination,
+        })
+        .catch(() => {
+          throw new Error(
+            "Não foi possível criar sua conta agora. Tente de novo em instantes."
+          )
+        })
 
       if (error) {
-        throw new Error(error.message ?? "Could not create your account.")
+        throw new Error(signUpErrorMessage(error))
       }
 
       return data

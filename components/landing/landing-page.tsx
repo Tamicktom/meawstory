@@ -90,7 +90,9 @@ function ExampleReading() {
           </figure>
           <div className="flex flex-col gap-6 text-sm leading-relaxed">
             <div className="flex flex-col gap-1">
-              <h3 className="font-medium text-muted-foreground">Leitura geral</h3>
+              <h3 className="font-medium text-muted-foreground">
+                Leitura geral
+              </h3>
               <p>{exampleReading.opening}</p>
             </div>
             <div className="flex flex-col gap-1">
@@ -105,8 +107,8 @@ function ExampleReading() {
               <p>{exampleReading.revision}</p>
             </div>
             <p className="text-muted-foreground">
-              Nota da cena: {exampleReading.totalScore}. Esta é uma leitura de
-              IA. Ela serve para treinar e não define o valor da sua escrita.
+              Pontuação da cena: {exampleReading.totalScore}. Esta é uma leitura
+              de IA. Ela serve para treinar e não define o valor da sua escrita.
             </p>
           </div>
         </div>
@@ -175,10 +177,10 @@ function LandingPage() {
       </main>
       <footer className="border-t">
         <p className="mx-auto w-full max-w-5xl px-6 py-8 text-xs leading-relaxed text-muted-foreground">
-          Para gerar a leitura, sua cena é enviada à OpenAI. Pelos termos da API,
-          ela não é usada para treinar modelos. A OpenAI pode mantê-la por até 30
-          dias para monitorar abuso, ou por mais tempo quando a lei ou a proteção
-          contra danos exigir.
+          Para gerar a leitura, sua cena é enviada à OpenAI. Pelos termos da
+          API, ela não é usada para treinar modelos. A OpenAI pode mantê-la por
+          até 30 dias para monitorar abuso, ou por mais tempo quando a lei ou a
+          proteção contra danos exigir.
         </p>
       </footer>
     </div>

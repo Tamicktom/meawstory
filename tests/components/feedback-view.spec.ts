@@ -13,7 +13,7 @@ test.describe("FeedbackView", () => {
       await expect(
         component.getByRole("heading", { name: themeTitle })
       ).toBeVisible()
-      await expect(component.getByText("Nota 720 de 1000")).toBeVisible()
+      await expect(component.getByText("Pontuação: 720 de 1000")).toBeVisible()
       await expect(
         component.getByText("O texto entrega a carta", { exact: false })
       ).toBeVisible()
@@ -33,9 +33,9 @@ test.describe("FeedbackView", () => {
         component.getByRole("heading", { name: themeTitle })
       ).toBeVisible()
       await expect(
-        component.getByText("A correção ainda está sendo preparada.")
+        component.getByText("A leitura ainda está sendo preparada.")
       ).toBeVisible()
-      await expect(component.getByText("Nota 720 de 1000")).toHaveCount(0)
+      await expect(component.getByText("Pontuação: 720 de 1000")).toHaveCount(0)
       await expect(
         component.getByText("The letter sat on the table.")
       ).toHaveCount(0)
@@ -48,7 +48,9 @@ test.describe("FeedbackView", () => {
         "components/feedback/feedback-view/FractionalScore"
       )
 
-      await expect(component.getByText("Nota 640.50 de 1000")).toBeVisible()
+      await expect(
+        component.getByText("Pontuação: 640,50 de 1000")
+      ).toBeVisible()
     })
   })
 
@@ -58,7 +60,7 @@ test.describe("FeedbackView", () => {
         "components/feedback/feedback-view/NonNumericScore"
       )
 
-      await expect(component.getByText("not-a-number")).toBeVisible()
+      await expect(component.getByText("Pontuação indisponível")).toBeVisible()
       await expect(component.getByText("de 1000")).toHaveCount(0)
     })
   })

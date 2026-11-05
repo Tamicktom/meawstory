@@ -9,13 +9,11 @@ test.describe("sign in page", () => {
   test("shows the sign in form", { tag: "@smoke" }, async ({ page }) => {
     await page.goto("/sign-in")
 
-    await expect(page.getByText("Sign in to your account")).toBeVisible()
+    await expect(page.getByText("Entre na sua conta")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Entrar" })).toBeEnabled()
     await expect(
-      page.getByRole("button", { name: "Sign in" })
-    ).toBeVisible()
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeEnabled()
-    await expect(
-      page.getByRole("link", { name: "Create an account" })
+      page.getByRole("link", { name: "Criar uma conta" })
     ).toHaveAttribute("href", "/sign-up")
   })
 
@@ -38,12 +36,12 @@ test.describe("sign in page", () => {
     expect(response.ok()).toBeTruthy()
 
     await page.goto("/sign-in")
-    await page.getByLabel("Email").fill(account.email)
-    await page.getByLabel("Password").fill(account.password)
-    await page.getByRole("button", { name: "Sign in" }).click()
+    await page.getByLabel("E-mail").fill(account.email)
+    await page.getByLabel("Senha").fill(account.password)
+    await page.getByRole("button", { name: "Entrar" }).click()
 
     await expect(page).toHaveURL("/dashboard")
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   })
 })
 
@@ -66,6 +64,6 @@ test.describe("signIn helper", () => {
     })
 
     await page.goto("/dashboard")
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   })
 })

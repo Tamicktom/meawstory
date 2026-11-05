@@ -10,6 +10,7 @@ import { textService, type OwnedTextListItem } from "@/services/text"
 
 //* Local imports
 import { requireSession } from "@/lib/session"
+import { formatScore } from "@/lib/format-score"
 
 type TextHistoryCardProps = {
   text: OwnedTextListItem
@@ -24,18 +25,6 @@ function formatTextCreatedAt(createdAt: Date) {
   return textCreatedAtFormatter.format(createdAt)
 }
 
-function formatCompletedScore(score: string) {
-  const value = Number(score)
-
-  if (!Number.isFinite(value)) {
-    return score
-  }
-
-  const formatted = Number.isInteger(value) ? String(value) : value.toFixed(2)
-
-  return `${formatted} / 1000`
-}
-
 function textCorrectionLabel(text: OwnedTextListItem) {
   const correction = text.correction
 
@@ -48,7 +37,7 @@ function textCorrectionLabel(text: OwnedTextListItem) {
   }
 
   if (correction.status === "COMPLETED" && correction.score) {
-    return formatCompletedScore(correction.score)
+    return formatScore(correction.score)
   }
 
   return correction.status === "PENDING"
@@ -60,7 +49,7 @@ function TextHistoryCard(props: TextHistoryCardProps) {
   return (
     <Link
       href={`/dashboard/texts/${props.text.id}`}
-      className="block h-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="block h-full rounded-lg [overflow-wrap:anywhere] outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card className="h-full transition-colors hover:bg-accent">
         <CardHeader>

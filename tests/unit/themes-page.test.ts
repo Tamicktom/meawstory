@@ -129,9 +129,13 @@ describe("ThemesPage", () => {
       {
         id: "theme-empty-section",
         title: "Theme with an empty section",
-        description: ["## Situação", "", "## O que já é verdade", "", "- Algo."].join(
-          "\n"
-        ),
+        description: [
+          "## Situação",
+          "",
+          "## O que já é verdade",
+          "",
+          "- Algo.",
+        ].join("\n"),
         image: null,
       },
     ])
@@ -177,7 +181,9 @@ describe("ThemesPage", () => {
 
     const markup = renderToStaticMarkup(await ThemesPage())
 
-    expect(markup).toContain("No themes yet.")
+    expect(markup).toContain(
+      "Ainda não há exercícios disponíveis. Volte em breve."
+    )
     expect(markup).not.toContain('href="/dashboard/themes/')
   })
 })
