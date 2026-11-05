@@ -6,6 +6,7 @@ import { after } from "next/server";
 //* Local imports
 import * as schema from "@/database/schema";
 import { clientEnv } from "@/env/client";
+import { toAbsoluteUrl } from "@/utils/absolute-url";
 
 //* Libraries imports
 import { db } from "@/database";
@@ -28,7 +29,7 @@ function runAfterResponse(task: Promise<unknown>) {
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
-  baseURL: clientEnv.NEXT_PUBLIC_VERCEL_URL,
+  baseURL: toAbsoluteUrl(clientEnv.NEXT_PUBLIC_VERCEL_URL),
   advanced: {
     backgroundTasks: { handler: runAfterResponse },
   },
