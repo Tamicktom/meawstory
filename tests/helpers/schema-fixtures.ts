@@ -73,6 +73,11 @@ type PostgresErrorDetails = {
   message: string
 }
 
+function stringProperty(value: object, key: string): string | undefined {
+  const property: unknown = Reflect.get(value, key)
+  return typeof property === "string" ? property : undefined
+}
+
 function postgresErrorDetails(
   error: unknown
 ): PostgresErrorDetails | undefined {
@@ -82,24 +87,12 @@ function postgresErrorDetails(
   while (current && typeof current === "object" && !seen.has(current)) {
     seen.add(current)
 
-    if (
-      "code" in current &&
-      typeof current.code === "string" &&
-      /^[0-9A-Z]{5}$/.test(current.code)
-    ) {
-      const constraint =
-        "constraint" in current && typeof current.constraint === "string"
-          ? current.constraint
-          : undefined
-      const message =
-        "message" in current && typeof current.message === "string"
-          ? current.message
-          : ""
-
+    const code = stringProperty(current, "code")
+    if (code && /^[0-9A-Z]{5}$/.test(code)) {
       return {
-        code: current.code,
-        constraint,
-        message,
+        code,
+        constraint: stringProperty(current, "constraint"),
+        message: stringProperty(current, "message") ?? "",
       }
     }
 
@@ -298,6 +291,15 @@ async function currentBody(
   return stored[0]?.content
 }
 
+async function correctionSnapshot(
+  table: typeof text | typeof rubric,
+  id: string,
+  suppliedContent: string | undefined,
+  fallback: string
+): Promise<string> {
+  return suppliedContent ?? (await currentBody(table, id)) ?? fallback
+}
+
 async function insertCorrection(ids: TrackedIds, input: CorrectionInput) {
   const id = input.id ?? newId()
 
@@ -311,14 +313,18 @@ async function insertCorrection(ids: TrackedIds, input: CorrectionInput) {
     rubricId: input.rubricId,
     score: input.score ?? "10.00",
     content: input.content ?? "Correction body",
-    textContent:
-      input.textContent ??
-      (await currentBody(text, input.textId)) ??
-      "Text body",
-    rubricContent:
-      input.rubricContent ??
-      (await currentBody(rubric, input.rubricId)) ??
-      "Rubric body",
+    textContent: await correctionSnapshot(
+      text,
+      input.textId,
+      input.textContent,
+      "Text body"
+    ),
+    rubricContent: await correctionSnapshot(
+      rubric,
+      input.rubricId,
+      input.rubricContent,
+      "Rubric body"
+    ),
     status: input.status ?? "PENDING",
     ...(input.createdAt ? { createdAt: input.createdAt } : {}),
     ...(input.deletedAt ? { deletedAt: input.deletedAt } : {}),

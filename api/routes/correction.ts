@@ -15,27 +15,24 @@ import { textService } from "@/services/text"
 import { correctText } from "@/workflows/correction"
 
 const correctionRoutes = new Elysia({ prefix: "/correction" })
-  .get(
-  "/check-correction-status/:textId",
-  async (request) => {
-    const { textId } = request.params
-
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    })
-
+  .guard({ params: z.object({ textId: z.string() }) })
+  .resolve(async ({ params, status }) => {
+    const session = await auth.api.getSession({ headers: await headers() })
     if (!session) {
-      request.set.status = 401
-      return { message: "Unauthorized" }
+      return status(401, { message: "Unauthorized" })
     }
 
-    const ownedText = await textService.findOwnedText(textId, session.user.id)
-
+    const ownedText = await textService.findOwnedText(
+      params.textId,
+      session.user.id
+    )
     if (!ownedText) {
-      request.set.status = 404
-      return { message: "Text not found" }
+      return status(404, { message: "Text not found" })
     }
 
+    return { session, ownedText }
+  })
+  .get("/check-correction-status/:textId", async ({ ownedText }) => {
     const correction = await correctionService.findLatestActiveCorrection(
       ownedText.id
     )
@@ -43,58 +40,26 @@ const correctionRoutes = new Elysia({ prefix: "/correction" })
     return {
       status: correction?.status ?? "PENDING",
     }
-  },
-  {
-    params: z.object({
-      textId: z.string(),
-    }),
-  }
-)
+  })
   //* Starts the reading of a scene saved before its author confirmed the email.
-  .post(
-    "/start/:textId",
-    async (request) => {
-      const { textId } = request.params
-
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      })
-
-      if (!session) {
-        request.set.status = 401
-        return { message: "Unauthorized" }
-      }
-
-      const ownedText = await textService.findOwnedText(textId, session.user.id)
-
-      if (!ownedText) {
-        request.set.status = 404
-        return { message: "Text not found" }
-      }
-
-      if (!session.user.emailVerified) {
-        request.set.status = 403
-        return { message: "Email not verified" }
-      }
-
-      const correction = await correctionService.findLatestActiveCorrection(
-        ownedText.id
-      )
-
-      if (correction) {
-        request.set.status = 409
-        return { message: "Reading already started" }
-      }
-
-      await start(correctText, [ownedText.id])
-
-      return { textId: ownedText.id }
-    },
-    {
-      params: z.object({
-        textId: z.string(),
-      }),
+  .post("/start/:textId", async ({ session, ownedText, set }) => {
+    if (!session.user.emailVerified) {
+      set.status = 403
+      return { message: "Email not verified" }
     }
-  )
+
+    const correction = await correctionService.findLatestActiveCorrection(
+      ownedText.id
+    )
+
+    if (correction) {
+      set.status = 409
+      return { message: "Reading already started" }
+    }
+
+    await start(correctText, [ownedText.id])
+
+    return { textId: ownedText.id }
+  })
 
 export { correctionRoutes }

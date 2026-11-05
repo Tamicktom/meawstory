@@ -15,11 +15,13 @@ type TextHistoryCardProps = {
   text: OwnedTextListItem
 }
 
+const textCreatedAtFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeZone: "UTC",
+})
+
 function formatTextCreatedAt(createdAt: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  }).format(createdAt)
+  return textCreatedAtFormatter.format(createdAt)
 }
 
 function formatCompletedScore(score: string) {
