@@ -312,3 +312,27 @@ focus `unavailable` and still stores the score comparison. The reading itself
 stays completed. An identical text skips that call and records focus
 `unchanged`. The first completed version, and a previous version without a
 structured result, have no comparison.
+
+## Scene retirement (Phase 1-I)
+
+Retiring a scene sets `text.deleted_at` and leaves every `correction`,
+`reading_call`, and reading-feedback row in place. Those rows are not
+soft-deleted and not hard-deleted. Hard `DELETE` of a text stays the cascade
+used when the account is deleted; it is not how a person removes a scene.
+Because the attempts remain, rate limits and cost still count them, and undo
+can bring the scene back with its readings.
+
+Active lists and draft continuation omit a retired scene. Undo clears
+`deleted_at` only inside the undo window: 8 seconds on screen
+(`SCENE_UNDO_MS`) and 10 seconds accepted by the server
+(`SCENE_UNDO_SERVER_MS`), so a click that leaves as the notice closes can
+still finish. After that window the retirement stands. Neither action changes
+the scene body, its versions, feedback, or attempt rows.
+
+A reading that is still `PENDING` or `IN_PROGRESS` keeps running. Retirement
+does not cancel the model call and does not change the attempt. If the scene
+is still retired when the workflow reaches admission or saving, the existing
+active-text check fails the attempt (`Text not found`) and the scene stays
+out of the lists. Undo before that check lets the reading finish. Undo after
+the attempt has failed brings the scene back with that failed reading, which
+can be retried. A completed reading is never removed.

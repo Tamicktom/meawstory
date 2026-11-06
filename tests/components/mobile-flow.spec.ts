@@ -21,8 +21,11 @@ for (const width of [320, 390]) {
           ).toBeVisible()
           await expect(view.getByText("Fim da leitura.")).toBeVisible()
         }
-        if (state === "Failed" || state === "Draft") {
-          const action = view.getByRole("button")
+        const buttons = view.getByRole("button")
+        const count = await buttons.count()
+        expect(count).toBeGreaterThan(0)
+        for (let index = 0; index < count; index += 1) {
+          const action = buttons.nth(index)
           await expect(action).toBeEnabled()
           const box = await action.boundingBox()
           expect(box).not.toBeNull()

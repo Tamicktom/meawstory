@@ -1,10 +1,16 @@
 //* Libraries imports
-import { and, eq, isNull } from "drizzle-orm"
+import { and, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
-import { text, theme, type CorrectionStatus } from "@/database/schema"
+import {
+  correction,
+  text,
+  theme,
+  type CorrectionStatus,
+} from "@/database/schema"
 
+import { SCENE_UNDO_MS, SCENE_UNDO_SERVER_MS } from "@/lib/scene-deletion"
 import { sceneTitle } from "@/lib/scene-title"
 import { expireReadings } from "@/services/reading"
 
@@ -27,6 +33,22 @@ type CreateTextInput = {
   themeId: string
   content: string
 }
+
+export type UndoableScene = {
+  id: string
+  title: string
+  deletedAt: Date
+  readingInProgress: boolean
+}
+
+type SceneRetirement =
+  | { status: "retired"; deletedAt: Date }
+  | { status: "missing" }
+
+type SceneRestoration =
+  | { status: "restored" }
+  | { status: "missing" }
+  | { status: "expired" }
 
 async function findActiveTextWithTheme(textId: string) {
   const result = await db
@@ -176,6 +198,113 @@ async function createText(input: CreateTextInput) {
   return created
 }
 
+async function lockAuthor(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  userId: string
+) {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${userId}, 0))`
+  )
+}
+
+//* Soft-delete only. Corrections stay so undo restores the readings and limits still count.
+async function retireOwnedScene(
+  textId: string,
+  userId: string
+): Promise<SceneRetirement> {
+  return db.transaction(async (tx) => {
+    await lockAuthor(tx, userId)
+    const deletedAt = new Date()
+    const [retired] = await tx
+      .update(text)
+      .set({ deletedAt })
+      .where(
+        and(eq(text.id, textId), eq(text.userId, userId), isNull(text.deletedAt))
+      )
+      .returning({ id: text.id, deletedAt: text.deletedAt })
+    if (!retired?.deletedAt) return { status: "missing" }
+    return { status: "retired", deletedAt: retired.deletedAt }
+  })
+}
+
+async function restoreOwnedScene(
+  textId: string,
+  userId: string,
+  now = new Date()
+): Promise<SceneRestoration> {
+  return db.transaction(async (tx) => {
+    await lockAuthor(tx, userId)
+    const [scene] = await tx
+      .select({ deletedAt: text.deletedAt })
+      .from(text)
+      .where(and(eq(text.id, textId), eq(text.userId, userId)))
+      .limit(1)
+    if (!scene?.deletedAt) return { status: "missing" }
+    const earliest = new Date(now.getTime() - SCENE_UNDO_SERVER_MS)
+    if (scene.deletedAt.getTime() <= earliest.getTime())
+      return { status: "expired" }
+    const [restored] = await tx
+      .update(text)
+      .set({ deletedAt: null })
+      .where(
+        and(
+          eq(text.id, textId),
+          eq(text.userId, userId),
+          gt(text.deletedAt, earliest)
+        )
+      )
+      .returning({ id: text.id })
+    if (!restored) return { status: "expired" }
+    return { status: "restored" }
+  })
+}
+
+async function listUndoableScenes(
+  userId: string,
+  now = new Date()
+): Promise<UndoableScene[]> {
+  await expireReadings()
+  const earliest = new Date(now.getTime() - SCENE_UNDO_MS)
+  const retired = await db
+    .select({
+      id: text.id,
+      title: text.title,
+      themeTitle: theme.title,
+      deletedAt: text.deletedAt,
+    })
+    .from(text)
+    .innerJoin(theme, eq(text.themeId, theme.id))
+    .where(and(eq(text.userId, userId), gt(text.deletedAt, earliest)))
+    .orderBy(desc(text.deletedAt))
+
+  const ids = retired.map((scene) => scene.id)
+  const latestByScene = new Map<string, CorrectionStatus>()
+  if (ids.length > 0) {
+    const latest = await db
+      .selectDistinctOn([correction.textId], {
+        textId: correction.textId,
+        status: correction.status,
+      })
+      .from(correction)
+      .where(and(inArray(correction.textId, ids), isNull(correction.deletedAt)))
+      .orderBy(correction.textId, desc(correction.createdAt))
+    for (const attempt of latest) latestByScene.set(attempt.textId, attempt.status)
+  }
+
+  return retired.flatMap((scene) => {
+    if (!scene.deletedAt) return []
+    const status = latestByScene.get(scene.id)
+    return [
+      {
+        id: scene.id,
+        title: sceneTitle(scene.title, scene.themeTitle),
+        deletedAt: scene.deletedAt,
+        readingInProgress: status === "PENDING" || status === "IN_PROGRESS",
+      },
+    ]
+  })
+}
+
 async function findDraftForTheme(userId: string, themeId: string) {
   const scenes = await listOwnedTexts(userId)
   for (const scene of scenes) {
@@ -193,5 +322,8 @@ export const textService = {
   findActiveTextContent,
   findOwnedText,
   listOwnedTexts,
+  listUndoableScenes,
+  retireOwnedScene,
+  restoreOwnedScene,
   createText,
 }

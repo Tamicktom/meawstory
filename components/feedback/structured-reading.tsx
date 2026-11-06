@@ -4,6 +4,9 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import Link from "next/link"
 
+//* Components imports
+import { DeleteSceneButton } from "@/components/scenes/delete-scene-button"
+
 //* Local imports
 import { BAND_LABEL, type StructuredReading } from "@/lib/reading-contract"
 import { formatScore } from "@/lib/format-score"
@@ -35,6 +38,7 @@ export type StructuredReadingProps = {
   versions?: { version: number; href: string; current: boolean }[]
   comparison?: VersionComparison
   previousScene?: string
+  textId?: string
 }
 
 type ReadingTab = "reading" | "scene"
@@ -78,6 +82,7 @@ export function StructuredReadingView(props: StructuredReadingProps) {
         createdAt={props.createdAt}
         version={props.version}
         versions={props.versions}
+        textId={props.textId}
       />
       {props.comparison && props.previousScene ? (
         <VersionComparisonView
@@ -129,13 +134,25 @@ function ReadingHeader(props: {
   createdAt: string
   version: number
   versions: StructuredReadingProps["versions"]
+  textId?: string
 }) {
   return (
     <header className="space-y-2">
-      <p className="text-sm text-muted-foreground">
-        Leitura · Versão {props.version}
-      </p>
-      <h1 className="font-heading text-2xl font-medium">{props.title}</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Leitura · Versão {props.version}
+          </p>
+          <h1 className="font-heading text-2xl font-medium">{props.title}</h1>
+        </div>
+        {props.textId ? (
+          <DeleteSceneButton
+            id="delete-scene"
+            textId={props.textId}
+            redirectTo="/dashboard/texts"
+          />
+        ) : null}
+      </div>
       <p className="text-sm text-muted-foreground">
         Exercício: {props.exerciseTitle} ·{" "}
         <time dateTime={props.createdAt}>

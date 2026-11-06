@@ -95,6 +95,7 @@ async function completedReading(
     return (
       <FeedbackView
         themeTitle={sceneTitle(ownedText.title, ownedText.theme.title)}
+        textId={ownedText.id}
         correction={{
           content: selected.content,
           score: selected.score,
@@ -131,6 +132,7 @@ async function completedReading(
       versions={versionLinks(versions, selected.id, latestVersion.id, path)}
       comparison={selected.comparison ?? undefined}
       previousScene={previous?.textContent}
+      textId={ownedText.id}
     />
   )
 }
