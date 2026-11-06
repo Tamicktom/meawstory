@@ -71,6 +71,8 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
     )
   }
   if (latestCorrection.structuredResult && latestCorrection.rubricCriteria) {
+    const exerciseTitle =
+      latestCorrection.source?.themeTitle ?? ownedText.theme.title
     const [version, feedback] = await Promise.all([
       correctionService.completedVersion(ownedText.id, latestCorrection.id),
       loadReadingFeedback(latestCorrection.id),
@@ -78,13 +80,8 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
     return (
       <StructuredReadingView
         correctionId={latestCorrection.id}
-        title={sceneTitle(
-          ownedText.title,
-          latestCorrection.source?.themeTitle ?? ownedText.theme.title
-        )}
-        exerciseTitle={
-          latestCorrection.source?.themeTitle ?? ownedText.theme.title
-        }
+        title={sceneTitle(ownedText.title, exerciseTitle)}
+        exerciseTitle={exerciseTitle}
         createdAt={latestCorrection.createdAt.toISOString()}
         version={version}
         score={latestCorrection.score}
