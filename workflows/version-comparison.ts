@@ -135,7 +135,7 @@ function usageOf(usage: LanguageModelUsage): CallUsage {
   return recordUsage(usage)
 }
 
-export async function requestComparison(
+async function requestComparison(
   provider: OpenAIProvider,
   source: ComparisonSource,
   rejection?: { detail: string }
