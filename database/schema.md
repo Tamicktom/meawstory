@@ -367,3 +367,18 @@ Setting it does not change the frozen snapshot or the terminal result.
 Readings completed before this column existed are backfilled from `finished_at`,
 then `updated_at`, then `created_at`, so they are already opened. A reading
 completed after that stays unopened, and counts as new, until its first opening.
+
+## Catalog situation (Phase 2-C)
+
+The catalog derives one personal situation per active exercise from the author's
+active scenes and active correction attempts. No scene means unwritten. A scene
+without an attempt is a draft; after any reading has been requested, an open
+scene is in review, including waiting, failed and completed readings. Only the
+author's explicit closure makes it closed. These four catalog groups do not
+replace the more detailed reading states in Minhas cenas.
+
+When an exercise has multiple scenes, an open scene takes precedence over closed
+scenes; within either group the most recently updated scene is selected (id breaks
+ties). The card continues that same scene. Retired scenes and attempts, and scenes
+belonging to other authors, do not affect its situation. The catalog applies both
+genre and situation filters to the full active catalog.
