@@ -383,6 +383,14 @@ async function findDraftForTheme(userId: string, themeId: string) {
   return null
 }
 
+function activeOwnedScene(textId: string, userId: string) {
+  return and(
+    eq(text.id, textId),
+    eq(text.userId, userId),
+    isNull(text.deletedAt)
+  )
+}
+
 //* Closing records the writer's decision. It leaves every version where it is.
 async function closeOwnedScene(
   textId: string,
@@ -393,13 +401,7 @@ async function closeOwnedScene(
     const [scene] = await tx
       .select({ id: text.id, closedAt: text.closedAt })
       .from(text)
-      .where(
-        and(
-          eq(text.id, textId),
-          eq(text.userId, userId),
-          isNull(text.deletedAt)
-        )
-      )
+      .where(activeOwnedScene(textId, userId))
       .limit(1)
     if (!scene) return { status: "missing" }
     if (scene.closedAt) return { status: "closed", closedAt: scene.closedAt }
@@ -414,13 +416,7 @@ async function closeOwnedScene(
     const [closed] = await tx
       .update(text)
       .set({ closedAt })
-      .where(
-        and(
-          eq(text.id, textId),
-          eq(text.userId, userId),
-          isNull(text.deletedAt)
-        )
-      )
+      .where(activeOwnedScene(textId, userId))
       .returning({ closedAt: text.closedAt })
     if (!closed?.closedAt) return { status: "missing" }
     return { status: "closed", closedAt: closed.closedAt }
@@ -436,26 +432,14 @@ async function reopenOwnedScene(
     const [scene] = await tx
       .select({ closedAt: text.closedAt })
       .from(text)
-      .where(
-        and(
-          eq(text.id, textId),
-          eq(text.userId, userId),
-          isNull(text.deletedAt)
-        )
-      )
+      .where(activeOwnedScene(textId, userId))
       .limit(1)
     if (!scene) return { status: "missing" }
     if (!scene.closedAt) return { status: "open" }
     const [reopened] = await tx
       .update(text)
       .set({ closedAt: null })
-      .where(
-        and(
-          eq(text.id, textId),
-          eq(text.userId, userId),
-          isNull(text.deletedAt)
-        )
-      )
+      .where(activeOwnedScene(textId, userId))
       .returning({ id: text.id })
     if (!reopened) return { status: "missing" }
     return { status: "reopened" }

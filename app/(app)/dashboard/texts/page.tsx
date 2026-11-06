@@ -158,17 +158,15 @@ function SceneFilters(props: { genre: string; situation: string }) {
   )
 }
 
-export default async function TextsPage(props?: TextsPageProps) {
-  const [session, searchParams] = await Promise.all([
-    requireSession(),
-    props?.searchParams ?? Promise.resolve<SceneSearch>({}),
-  ])
-  const genre = oneParam(searchParams.genero)
-  const situation = oneParam(searchParams.situacao)
-  const [texts, retired] = await Promise.all([
-    textService.listOwnedTexts(session.user.id),
-    textService.listUndoableScenes(session.user.id),
-  ])
+function SceneHistoryResults({
+  texts,
+  genre,
+  situation,
+}: {
+  texts: OwnedTextListItem[]
+  genre: string
+  situation: string
+}) {
   const visible = texts.filter(
     (text) =>
       sceneMatchesGenre(text.genre, genre) &&
@@ -183,6 +181,44 @@ export default async function TextsPage(props?: TextsPageProps) {
         situation
       )
   )
+  return (
+    <>
+      {texts.length > 0 && visible.length === 0 ? (
+        <div className="flex flex-col gap-3">
+          <p>Nenhuma cena corresponde a esses filtros.</p>
+          <Link
+            id="scenes-clear-filters-empty"
+            href="/dashboard/texts"
+            className="w-fit py-2 underline"
+          >
+            Limpar filtros
+          </Link>
+        </div>
+      ) : null}
+      {visible.length > 0 ? (
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((text) => (
+            <li key={text.id} className="min-w-0">
+              <TextHistoryCard text={text} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </>
+  )
+}
+
+export default async function TextsPage(props?: TextsPageProps) {
+  const [session, searchParams] = await Promise.all([
+    requireSession(),
+    props?.searchParams ?? Promise.resolve<SceneSearch>({}),
+  ])
+  const genre = oneParam(searchParams.genero)
+  const situation = oneParam(searchParams.situacao)
+  const [texts, retired] = await Promise.all([
+    textService.listOwnedTexts(session.user.id),
+    textService.listUndoableScenes(session.user.id),
+  ])
   return (
     <div className="flex w-full flex-col gap-4 p-4">
       <h1 className="font-heading text-lg font-medium">Minhas cenas</h1>
@@ -217,27 +253,7 @@ export default async function TextsPage(props?: TextsPageProps) {
           </Link>
         </div>
       ) : null}
-      {texts.length > 0 && visible.length === 0 ? (
-        <div className="flex flex-col gap-3">
-          <p>Nenhuma cena corresponde a esses filtros.</p>
-          <Link
-            id="scenes-clear-filters-empty"
-            href="/dashboard/texts"
-            className="w-fit py-2 underline"
-          >
-            Limpar filtros
-          </Link>
-        </div>
-      ) : null}
-      {visible.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((text) => (
-            <li key={text.id} className="min-w-0">
-              <TextHistoryCard text={text} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <SceneHistoryResults texts={texts} genre={genre} situation={situation} />
     </div>
   )
 }

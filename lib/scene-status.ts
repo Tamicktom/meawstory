@@ -3,7 +3,7 @@ import { bandForScore } from "@/evaluation/bands"
 import { BAND_LABEL, type BandId, type Genre } from "@/lib/reading-contract"
 import type { CorrectionStatus } from "@/database/schema"
 
-export const SCENE_SITUATIONS = [
+const SCENE_SITUATIONS = [
   "draft",
   "waiting",
   "reading",
@@ -35,8 +35,6 @@ export const SCENE_FILTERS = [
   { id: "strong", label: BAND_LABEL.strong },
   { id: "closed", label: "Encerrada" },
 ] as const
-
-export type SceneFilterId = (typeof SCENE_FILTERS)[number]["id"]
 
 const BAND_FILTERS = ["missing", "thin", "working", "strong"] as const
 const STATE_FILTERS = [
