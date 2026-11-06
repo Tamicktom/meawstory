@@ -118,9 +118,18 @@ export function validateStructuredReading(
   rubricCriteriaSchema.parse(criteria)
   const ids = new Set(result.criteria.map((c) => c.id))
   if (ids.size !== 5) throw new Error("Duplicate result criterion.")
+  const criteriaById = new Map(
+    criteria.map((criterion) => [
+      criterion.id,
+      {
+        maxScore: criterion.maxScore,
+        bandsById: new Map(criterion.bands.map((band) => [band.id, band])),
+      },
+    ])
+  )
   for (const entry of result.criteria) {
-    const criterion = criteria.find((c) => c.id === entry.id)
-    const band = criterion?.bands.find((b) => b.id === entry.band)
+    const criterion = criteriaById.get(entry.id)
+    const band = criterion?.bandsById.get(entry.band)
     if (
       !criterion ||
       !band ||

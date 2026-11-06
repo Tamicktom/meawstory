@@ -194,10 +194,11 @@ test("a changed theme briefing cannot silently change a retry", async () => {
   )
 })
 
-test("structured completion freezes scores, bands, evidence and other fields across catalog edits", async () => {
+test("structured completion matches criteria by ID and preserves results across catalog edits", async () => {
   const g = await scene()
   const id = rows.trackCorrection(await reserveReading(g.userId, g.textId))
   const reading = result()
+  reading.criteria.reverse()
   await correctionService.updateCorrection(id, {
     status: "COMPLETED",
     score: "1000.00",
@@ -239,12 +240,20 @@ test("structured completion freezes scores, bands, evidence and other fields acr
     .where(eq(correction.id, id))
 })
 
-for (const defect of ["id", "score", "band", "total", "precision"] as const) {
+for (const defect of [
+  "id",
+  "unknown id",
+  "score",
+  "band",
+  "total",
+  "precision",
+] as const) {
   test(`structured result rejects invalid ${defect} in service and database`, async () => {
     const g = await scene()
     const id = rows.trackCorrection(await reserveReading(g.userId, g.textId))
     const reading = result()
     if (defect === "id") reading.criteria[0].id = reading.criteria[1].id
+    if (defect === "unknown id") reading.criteria[0].id = "missing-criterion"
     if (defect === "score") reading.criteria[0].score = 151
     if (defect === "band") reading.criteria[0].band = "missing"
     if (defect === "precision") reading.criteria[0].score = 149.999

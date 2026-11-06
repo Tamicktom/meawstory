@@ -55,6 +55,8 @@ bunx next dev --hostname 0.0.0.0 --port 3000
 
 No Cursor Cloud, use o PostgreSQL instalado e as instruções de [AGENTS.md](AGENTS.md#cursor-cloud); Docker não está disponível nesse ambiente.
 
+Na Vercel, `vercel.json` define o comando `bun run db:migrate && bun run build`, sobrescrevendo o comando de build do painel, conforme a [configuração da Vercel](https://vercel.com/docs/project-configuration/vercel-json#buildcommand). As migrações pendentes são aplicadas antes de o Next.js consultar o banco na pré-renderização. O deploy preserva os dados existentes; reset e seed da conta de teste ficam no desenvolvimento local.
+
 ## Leituras e dados
 
 Cada cena deve ter de 100 a 2.000 palavras. Os limites são 10 leituras por pessoa em uma janela móvel de 24 horas e 3 em 10 minutos; tentativas que falham não consomem a cota. Após 2 minutos há um aviso de demora; após 10, a tentativa pode ser retomada como falha recuperável. Uma nova tentativa reutiliza a cena salva.
