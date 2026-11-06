@@ -61,6 +61,7 @@ export const user = p.pgTable("user", {
   id: p.text("id").primaryKey(),
   name: p.text("name").notNull(),
   email: p.text("email").notNull().unique(),
+  onboardingCompletedAt: p.timestamp("onboarding_completed_at"),
   emailVerified: p.boolean("email_verified").default(false).notNull(),
   image: p.text("image"),
   ...timestamps,

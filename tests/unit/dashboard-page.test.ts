@@ -3,21 +3,22 @@ import { describe, expect, it } from "bun:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
 //* Local imports
-import DashboardPage from "@/app/(app)/dashboard/page"
+import { DashboardHome } from "@/app/(app)/dashboard/home"
 
 describe("DashboardPage", () => {
-  it("explains that the user picks a theme, writes a text, and receives a correction", () => {
-    const markup = renderToStaticMarkup(DashboardPage())
-
-    expect(markup).toContain(
-      "Escolha um exercício, escreva uma cena e receba uma leitura com base"
+  it("shows the catalog as the next action without history", () => {
+    const markup = renderToStaticMarkup(
+      DashboardHome({ scenes: [], onboardingComplete: true })
     )
-    expect(markup).toContain("no que será observado nesse exercício.")
-    expect(markup).toContain("será observado")
+    expect(markup).toContain("Escolher um exercício")
+    expect(markup).not.toContain("Cenas recentes")
+    expect(markup).not.toContain("O que você quer treinar agora?")
   })
 
   it("links Explorar exercícios to the theme catalog", () => {
-    const markup = renderToStaticMarkup(DashboardPage())
+    const markup = renderToStaticMarkup(
+      DashboardHome({ scenes: [], onboardingComplete: true })
+    )
 
     expect(markup).toContain('id="dashboard-browse-themes"')
     expect(markup).toContain('href="/dashboard/themes"')
@@ -25,7 +26,9 @@ describe("DashboardPage", () => {
   })
 
   it("links Minhas cenas to the text history", () => {
-    const markup = renderToStaticMarkup(DashboardPage())
+    const markup = renderToStaticMarkup(
+      DashboardHome({ scenes: [], onboardingComplete: true })
+    )
 
     expect(markup).toContain('id="dashboard-your-texts"')
     expect(markup).toContain('href="/dashboard/texts"')

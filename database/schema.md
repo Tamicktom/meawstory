@@ -382,3 +382,14 @@ scenes; within either group the most recently updated scene is selected (id brea
 ties). The card continues that same scene. Retired scenes and attempts, and scenes
 belonging to other authors, do not affect its situation. The catalog applies both
 genre and situation filters to the full active catalog.
+
+## Home and first entry (Phase 2-E)
+
+`user.onboarding_completed_at` records that the authenticated person answered or
+skipped the optional training question. Existing accounts start with null too.
+The first completion wins; subsequent submissions do not reset its date. The
+answer is used only to choose an active exercise briefing, never to grade a scene.
+The home uses active owned scenes and attempts, without marking readings opened.
+It prioritizes unopened readings, failures, waiting readings, drafts, revision
+focus, then the catalog; most recent activity and scene id break ties. Closed
+scenes remain in recent history but do not prompt further work.

@@ -34,17 +34,8 @@ test.describe("dashboard session gate", () => {
       page.getByRole("button", { name: "Alternar menu" })
     ).toBeVisible()
     await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
-    await expect(
-      page.getByText(
-        "Escolha um exercício, escreva uma cena e receba uma leitura com base"
-      )
-    ).toBeVisible()
-    await expect(
-      page.getByText("no que será observado nesse exercício.", {
-        exact: false,
-      })
-    ).toBeVisible()
-    await expect(page.getByText(/será observado/)).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Sua próxima ação" })).toBeVisible()
+    await expect(page.locator("#dashboard-next-action")).toHaveText("Escolher um exercício")
   })
 
   test("links Explorar exercícios to the theme catalog", async ({ page }) => {

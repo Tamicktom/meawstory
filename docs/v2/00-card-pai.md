@@ -219,9 +219,11 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### E. Início e primeira entrada
 
-- [ ] [2E-1](fase-2-retorno/2E-1-orientar-inicio-pela-proxima-acao.md) — Orientar o Início pela próxima ação
-- [ ] [2E-2](fase-2-retorno/2E-2-exibir-cenas-recentes-e-resumo-no-inicio.md) — Exibir cenas recentes no Início
-- [ ] [2E-3](fase-2-retorno/2E-3-perguntar-objetivo-na-primeira-entrada.md) — Perguntar o objetivo na primeira entrada
+- [x] [2E-1](fase-2-retorno/2E-1-orientar-inicio-pela-proxima-acao.md) — Orientar o Início pela próxima ação
+- [x] [2E-2](fase-2-retorno/2E-2-exibir-cenas-recentes-e-resumo-no-inicio.md) — Exibir cenas recentes no Início
+- [x] [2E-3](fase-2-retorno/2E-3-perguntar-objetivo-na-primeira-entrada.md) — Perguntar o objetivo na primeira entrada
+
+**Validação da etapa E (2026-11-06):** o Início escolhe uma próxima ação pela ordem leitura nova, falha, espera, rascunho, revisão com foco e catálogo. A atividade mais recente e o id desempatam situações iguais. Rascunhos mostram palavras e data, e o foco congelado aparece antes de revisar. Até quatro cenas recentes levam à escrita ou à leitura; sem histórico, a lista fica oculta. A pergunta inicial oferece os seis gêneros, permite pular e abre diretamente um briefing do gênero escolhido. A migração `20261106183329_gorgeous_vulcan`, aplicada ao banco local, acrescenta `user.onboarding_completed_at`; responder ou pular grava somente a primeira conclusão, inclusive para contas existentes. Passaram 423 testes unitários, 14 testes E2E do Início e da navegação (320, 390 e 1280 px), `bun run typecheck` e o build de produção. React Doctor nas alterações: 100/100. O build usou chave Resend fictícia apenas para validar o ambiente, sem enviar e-mails. Sem mudança de modelo ou prompt e sem chamadas à OpenAI. A fase 2 permanece aberta por 2G-1.
 
 ### F. Notificações
 
