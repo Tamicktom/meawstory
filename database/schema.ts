@@ -159,6 +159,7 @@ export const text = p.pgTable(
 
     title: p.text("title").notNull(),
     content: p.text("content").notNull(), //* Text content
+    checklist: p.jsonb("checklist").$type<string[]>().notNull().default([]),
 
     // one text belongs to one theme
     themeId: p

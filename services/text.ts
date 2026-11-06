@@ -5,6 +5,7 @@ import { and, eq, isNull } from "drizzle-orm"
 import { db } from "@/database"
 import { text, theme, type CorrectionStatus } from "@/database/schema"
 
+import { sceneTitle } from "@/lib/scene-title"
 import { expireReadings } from "@/services/reading"
 
 type OwnedTextCorrection = {
@@ -16,6 +17,7 @@ export type OwnedTextListItem = {
   id: string
   content: string
   createdAt: Date
+  title?: string
   themeTitle: string
   correction: OwnedTextCorrection | null
 }
@@ -63,6 +65,8 @@ async function findOwnedText(textId: string, userId: string) {
       id: true,
       themeId: true,
       content: true,
+      title: true,
+      checklist: true,
     },
     where: {
       id: textId,
@@ -89,6 +93,8 @@ async function listOwnedTexts(userId: string): Promise<OwnedTextListItem[]> {
     columns: {
       id: true,
       content: true,
+      title: true,
+      checklist: true,
       createdAt: true,
     },
     where: {
@@ -131,6 +137,7 @@ async function listOwnedTexts(userId: string): Promise<OwnedTextListItem[]> {
       id: ownedText.id,
       content: ownedText.content,
       createdAt: ownedText.createdAt,
+      title: sceneTitle(ownedText.title, ownedText.theme.title),
       themeTitle: ownedText.theme.title,
       correction: latestCorrection
         ? {
@@ -151,7 +158,7 @@ async function createText(input: CreateTextInput) {
     .values({
       id: crypto.randomUUID(),
       userId: input.userId,
-      title: `Text for theme ${input.themeId}`,
+      title: "",
       content: input.content,
       themeId: input.themeId,
     })
@@ -168,7 +175,19 @@ async function createText(input: CreateTextInput) {
   return created
 }
 
+async function findDraftForTheme(userId: string, themeId: string) {
+  const scenes = await listOwnedTexts(userId)
+  for (const scene of scenes) {
+    if (!scene.correction) {
+      const draft = await findOwnedText(scene.id, userId)
+      if (draft?.themeId === themeId) return draft
+    }
+  }
+  return null
+}
+
 export const textService = {
+  findDraftForTheme,
   findActiveTextWithTheme,
   findActiveTextContent,
   findOwnedText,

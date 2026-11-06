@@ -5,6 +5,8 @@ import { parseMarkdown } from "@tanstack/markdown/parser"
 import { Markdown } from "@tanstack/markdown/react"
 
 //* Services imports
+import { requireSession } from "@/lib/session"
+import { textService } from "@/services/text"
 import { themeService } from "@/services/theme"
 
 //* Style imports
@@ -25,6 +27,8 @@ export default async function WritePage(props: WritePageProps) {
     notFound()
   }
 
+  const session = await requireSession()
+  const draft = await textService.findDraftForTheme(session.user.id, params.id)
   const parsedDescription = parseMarkdown(thisTheme.description)
 
   return (
@@ -45,7 +49,7 @@ export default async function WritePage(props: WritePageProps) {
           className: "min-h-11 w-full sm:w-fit",
         })}
       >
-        Começar a escrever
+        {draft ? "Continuar rascunho" : "Começar a escrever"}
       </Link>
     </div>
   )

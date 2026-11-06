@@ -128,7 +128,7 @@ describe("POST /api/write/:themeId", () => {
     expect(stored).toEqual([
       {
         id: textId,
-        title: "Cena",
+        title: "",
         content,
         userId: session.userId,
         themeId: graph.themeId,

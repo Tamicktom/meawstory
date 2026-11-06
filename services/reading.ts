@@ -61,7 +61,8 @@ export async function saveScene(
   userId: string,
   themeId: string,
   content: string,
-  textId?: string
+  textId?: string,
+  metadata?: { title?: string; checklist?: string[] }
 ) {
   return db.transaction(async (tx) => {
     await tx.execute(
@@ -90,13 +91,29 @@ export async function saveScene(
           409,
           "Esta cena já tem uma leitura. Abra a cena em Minhas cenas."
         )
-      await tx.update(text).set({ content }).where(eq(text.id, textId))
+      await tx
+        .update(text)
+        .set({
+          content,
+          ...(metadata?.title !== undefined
+            ? { title: metadata.title.trim() }
+            : {}),
+          ...(metadata?.checklist ? { checklist: metadata.checklist } : {}),
+        })
+        .where(eq(text.id, textId))
       return { id: textId }
     }
     const id = crypto.randomUUID()
     await tx
       .insert(text)
-      .values({ id, userId, themeId, content, title: "Cena" })
+      .values({
+        id,
+        userId,
+        themeId,
+        content,
+        title: metadata?.title?.trim() ?? "",
+        checklist: metadata?.checklist ?? [],
+      })
     return { id }
   })
 }
@@ -143,7 +160,11 @@ function assertRetrySnapshot(
   }
 }
 
-export async function reserveReading(userId: string, textId: string) {
+export async function reserveReading(
+  userId: string,
+  textId: string,
+  expectedContent?: string
+) {
   await expireReadings()
   return db.transaction(async (tx) => {
     await tx.execute(
@@ -164,6 +185,14 @@ export async function reserveReading(userId: string, textId: string) {
         )
       )
     if (!scene) throw new ReadingError(404, "Cena ou exercício indisponível.")
+    if (
+      expectedContent !== undefined &&
+      scene.scene.content !== expectedContent
+    )
+      throw new ReadingError(
+        409,
+        "A cena mudou em outra aba. Confira o texto antes de enviar."
+      )
     const [previous] = await tx
       .select()
       .from(correction)

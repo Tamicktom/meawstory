@@ -25,6 +25,9 @@ async function writeAndSubmit(page: Page) {
   await page.keyboard.press("ControlOrMeta+A")
   await page.keyboard.insertText(scene)
   await page.getByRole("button", { name: "Enviar para leitura" }).click()
+  await page
+    .getByRole("button", { name: "Confirmar envio", exact: true })
+    .click()
   //* The first request after a server start also compiles the route.
   await expect(page).toHaveURL(/\/dashboard\/texts\/[^/]+$/, {
     timeout: 30_000,
@@ -97,6 +100,9 @@ test.describe("email verification", () => {
     const revised = scene + "\n\nA porta fechou."
     await editor.fill(revised)
     await page.getByRole("button", { name: "Enviar para leitura" }).click()
+    await page
+      .getByRole("button", { name: "Confirmar envio", exact: true })
+      .click()
     await expect(page).toHaveURL(sceneUrl)
     await expect(page.getByText(revised)).toBeVisible()
     await page.goto("/dashboard/texts")
