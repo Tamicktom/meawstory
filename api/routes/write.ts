@@ -52,9 +52,9 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
         checklist,
       })
     } catch (error) {
-      if (!(error instanceof ReadingError)) throw error
-      request.set.status = error.status
-      return { message: error.message }
+      const readingError = requireReadingError(error)
+      request.set.status = readingError.status
+      return { message: readingError.message }
     }
 
     if (draftOnly) return { textId: newText.id }
@@ -70,12 +70,12 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
     try {
       await startReading(session.user.id, newText.id, content)
     } catch (error) {
-      if (!(error instanceof ReadingError)) throw error
-      request.set.status = error.status
+      const readingError = requireReadingError(error)
+      request.set.status = readingError.status
       return {
         textId: newText.id,
-        message: error.message,
-        retryAt: error.retryAt,
+        message: readingError.message,
+        retryAt: readingError.retryAt,
       }
     }
 
@@ -94,5 +94,10 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
     }),
   }
 )
+
+function requireReadingError(error: unknown) {
+  if (!(error instanceof ReadingError)) throw error
+  return error
+}
 
 export { writeRoutes }

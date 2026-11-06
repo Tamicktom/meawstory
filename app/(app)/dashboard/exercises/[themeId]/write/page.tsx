@@ -51,10 +51,7 @@ export default async function WritePage(props: WritePageProps) {
           themeId={params.themeId}
           minWords={thisTheme.minWords ?? undefined}
           maxWords={thisTheme.maxWords ?? undefined}
-          textId={draft?.id}
-          initialContent={draft?.content}
-          initialTitle={draft?.title}
-          initialChecklist={draft?.checklist}
+          {...draftEditorProps(draft)}
           checklistItems={thisTheme.briefing?.mustInclude}
           briefing={<Markdown>{parsedDescription}</Markdown>}
         />
@@ -75,4 +72,15 @@ async function findEditableDraft(themeId: string, textId?: string) {
   if (await correctionService.findLatestActiveCorrection(textId))
     redirect(`/dashboard/texts/${textId}`)
   return draft
+}
+
+function draftEditorProps(
+  draft: Awaited<ReturnType<typeof findEditableDraft>>
+) {
+  return {
+    textId: draft?.id,
+    initialContent: draft?.content,
+    initialTitle: draft?.title,
+    initialChecklist: draft?.checklist,
+  }
 }

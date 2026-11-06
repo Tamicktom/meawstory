@@ -95,27 +95,40 @@ export async function saveScene(
         .update(text)
         .set({
           content,
-          ...(metadata?.title !== undefined
-            ? { title: metadata.title.trim() }
-            : {}),
-          ...(metadata?.checklist ? { checklist: metadata.checklist } : {}),
+          ...draftMetadataUpdate(metadata),
         })
         .where(eq(text.id, textId))
       return { id: textId }
     }
     const id = crypto.randomUUID()
-    await tx
-      .insert(text)
-      .values({
-        id,
-        userId,
-        themeId,
-        content,
-        title: metadata?.title?.trim() ?? "",
-        checklist: metadata?.checklist ?? [],
-      })
+    await tx.insert(text).values({
+      id,
+      userId,
+      themeId,
+      content,
+      title: metadata?.title?.trim() ?? "",
+      checklist: metadata?.checklist ?? [],
+    })
     return { id }
   })
+}
+
+function draftMetadataUpdate(metadata?: {
+  title?: string
+  checklist?: string[]
+}) {
+  return {
+    ...(metadata?.title !== undefined ? { title: metadata.title.trim() } : {}),
+    ...(metadata?.checklist ? { checklist: metadata.checklist } : {}),
+  }
+}
+
+function assertExpectedContent(content: string, expectedContent?: string) {
+  if (expectedContent !== undefined && content !== expectedContent)
+    throw new ReadingError(
+      409,
+      "A cena mudou em outra aba. Confira o texto antes de enviar."
+    )
 }
 
 // A retry must still match both frozen bodies before another attempt is reserved.
@@ -185,14 +198,7 @@ export async function reserveReading(
         )
       )
     if (!scene) throw new ReadingError(404, "Cena ou exercício indisponível.")
-    if (
-      expectedContent !== undefined &&
-      scene.scene.content !== expectedContent
-    )
-      throw new ReadingError(
-        409,
-        "A cena mudou em outra aba. Confira o texto antes de enviar."
-      )
+    assertExpectedContent(scene.scene.content, expectedContent)
     const [previous] = await tx
       .select()
       .from(correction)
