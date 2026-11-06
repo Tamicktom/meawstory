@@ -1,7 +1,18 @@
 import { validateStructuredReading } from "@/lib/reading-contract"
 import { assertVersionComparison } from "@/lib/version-comparison"
 //* Libraries imports
-import { and, count, desc, eq, gt, inArray, isNull, lt, lte, sql } from "drizzle-orm"
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  lte,
+  sql,
+} from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
@@ -15,7 +26,9 @@ import {
 import { callCost, priceFor } from "@/lib/model-pricing"
 import type { GradingCall } from "@/workflows/correction-grading"
 
-type MeasuredCall = Omit<GradingCall, "rejection"> & { rejection: string | null }
+type MeasuredCall = Omit<GradingCall, "rejection"> & {
+  rejection: string | null
+}
 
 import { READING_TIMEOUT_MS } from "@/lib/reading-policy"
 import { expireReadings } from "@/services/reading"
@@ -151,19 +164,27 @@ async function updateCorrectionStatus(
     )
 }
 
+async function validateCorrectionWrite(
+  id: string,
+  values: Partial<Omit<InsertCorrectionValues, "id">>
+) {
+  if (!values.structuredResult && !values.comparison) return
+
+  const attempt = await findAttemptSnapshot(id)
+  if (values.structuredResult) validateStructuredCompletion(values, attempt)
+  if (!values.comparison) return
+
+  assertVersionComparison(
+    values.comparison,
+    values.textContent ?? attempt?.textContent ?? ""
+  )
+}
+
 async function updateCorrection(
   id: string,
   values: Partial<Omit<InsertCorrectionValues, "id">>
 ): Promise<CorrectionWriteResult | null> {
-  if (values.structuredResult || values.comparison) {
-    const attempt = await findAttemptSnapshot(id)
-    if (values.structuredResult) validateStructuredCompletion(values, attempt)
-    if (values.comparison)
-      assertVersionComparison(
-        values.comparison,
-        values.textContent ?? attempt?.textContent ?? ""
-      )
-  }
+  await validateCorrectionWrite(id, values)
   const result = await db
     .update(correction)
     //* The database clock, like created_at and started_at, so durations never mix clocks.
