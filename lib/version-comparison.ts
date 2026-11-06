@@ -41,7 +41,7 @@ const focusSchema = z.union([
   z.object({ status: z.literal("unavailable") }),
 ])
 
-export const versionComparisonSchema = z
+const versionComparisonSchema = z
   .object({
     version: z.literal(1),
     previousCorrectionId: z.string().trim().min(1),
