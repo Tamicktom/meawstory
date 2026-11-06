@@ -10,7 +10,7 @@ import {
   type StructuredReading,
 } from "@/lib/reading-contract"
 
-export const CRITERION_MOVEMENTS = ["improved", "regressed", "unchanged"] as const
+const CRITERION_MOVEMENTS = ["improved", "regressed", "unchanged"] as const
 export type CriterionMovement = (typeof CRITERION_MOVEMENTS)[number]
 
 const BAND_RANK: Record<BandId, number> = {
