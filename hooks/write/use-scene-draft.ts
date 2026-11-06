@@ -19,6 +19,7 @@ type DraftSnapshot = {
   content: string
   title: string
   checklist: string[]
+  revisionIntent: string
 }
 
 type SaveInput = {
@@ -108,6 +109,7 @@ function initialDraft(props: EditorProps): DraftSnapshot {
     content: props.initialContent ?? "",
     title: normalizeTitle(props.initialTitle),
     checklist: props.initialChecklist ?? [],
+    revisionIntent: props.initialIntent ?? "",
   }
 }
 
@@ -204,7 +206,16 @@ function useAutosave(options: AutosaveOptions) {
       })
     }, 1000)
     return () => window.clearTimeout(timer)
-  }, [snapshot, dirty, ui.pending, ui.locked, ui.retry, submitted, saveAsync, dispatch])
+  }, [
+    snapshot,
+    dirty,
+    ui.pending,
+    ui.locked,
+    ui.retry,
+    submitted,
+    saveAsync,
+    dispatch,
+  ])
 }
 
 function useUnsavedChangesWarning(dirty: boolean) {
@@ -275,13 +286,16 @@ export function useSceneDraft(props: EditorProps) {
   const [checklist, setChecklist] = useState(
     () => initialDraft(props).checklist
   )
+  const [revisionIntent, setRevisionIntent] = useState(
+    () => initialDraft(props).revisionIntent
+  )
   const [ui, dispatch] = useReducer(uiReducer, initialUi)
   const textId = useRef(props.textId)
   const submitted = useRef(false)
   const [confirmed] = useState(() => ({
     current: JSON.stringify(initialDraft(props)),
   }))
-  const snapshot = JSON.stringify({ content, title, checklist })
+  const snapshot = JSON.stringify({ content, title, checklist, revisionIntent })
   const dirty = snapshot !== confirmed.current
   const items = props.checklistItems ?? []
   const words = countWords(content)
@@ -310,6 +324,8 @@ export function useSceneDraft(props: EditorProps) {
     setTitle,
     checklist,
     setChecklist,
+    revisionIntent,
+    setRevisionIntent,
     pending: ui.pending,
     error: ui.error,
     saved: ui.saved,

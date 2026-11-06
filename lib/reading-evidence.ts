@@ -1,3 +1,28 @@
+import type { StructuredReading } from "@/lib/reading-contract"
+
+//* The highlight comes first. A quotation already shown is not repeated in the panel.
+export function citedExcerpts(
+  result: StructuredReading,
+  criteria: { id: string; name: string }[]
+) {
+  const names = new Map(
+    criteria.map((criterion) => [criterion.id, criterion.name])
+  )
+  const seen = new Set<string>()
+  const excerpts: { label: string; text: string }[] = []
+  function add(label: string, text: string) {
+    if (seen.has(text)) return
+    seen.add(text)
+    excerpts.push({ label, text })
+  }
+  add("Ponto forte", result.highlight.evidence)
+  for (const criterion of result.criteria) {
+    const label = names.get(criterion.id) ?? "Critério"
+    for (const quote of criterion.evidence) add(label, quote)
+  }
+  return excerpts
+}
+
 // Partition at every boundary: overlapping evidence never duplicates or hides scene text.
 export function evidenceSegments(scene: string, quotes: string[]) {
   const ranges: { start: number; end: number; quote: number }[] = []

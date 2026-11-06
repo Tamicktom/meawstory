@@ -19,6 +19,29 @@ export class ReadingError extends Error {
     super(message)
   }
 }
+
+const REVISION_INTENT_LIMIT = 2000
+
+//* A completed structured reading is the only state that opens the next version.
+export function canReviseReading(
+  attempt: { status: string; structuredResult: unknown } | null | undefined
+) {
+  return attempt?.status === "COMPLETED" && attempt.structuredResult != null
+}
+
+//* Blank means the writer omitted the answer. It never becomes part of the grade.
+export function normalizeRevisionIntent(value: string | null | undefined) {
+  if (value == null) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (trimmed.length > REVISION_INTENT_LIMIT)
+    throw new ReadingError(
+      400,
+      "A intenção da revisão pode ter até 2.000 caracteres."
+    )
+  return trimmed
+}
+
 const active = inArray(correction.status, ["PENDING", "IN_PROGRESS"])
 //* A PENDING attempt never left the queue; an IN_PROGRESS one stalled while being read (1C-5).
 export async function expireReadings() {
@@ -62,7 +85,11 @@ export async function saveScene(
   themeId: string,
   content: string,
   textId?: string,
-  metadata?: { title?: string; checklist?: string[] }
+  metadata?: {
+    title?: string
+    checklist?: string[]
+    revisionIntent?: string
+  }
 ) {
   return db.transaction(async (tx) => {
     await tx.execute(
@@ -81,12 +108,8 @@ export async function saveScene(
           )
         )
       if (!scene) throw new ReadingError(404, "Cena não encontrada.")
-      const [attempt] = await tx
-        .select()
-        .from(correction)
-        .where(eq(correction.textId, textId))
-        .limit(1)
-      if (attempt)
+      const latest = await latestActiveAttempt(tx, textId)
+      if (latest && !canReviseReading(latest))
         throw new ReadingError(
           409,
           "Esta cena já tem uma leitura. Abra a cena em Minhas cenas."
@@ -96,6 +119,7 @@ export async function saveScene(
         .set({
           content,
           ...draftMetadataUpdate(metadata),
+          ...revisionIntentUpdate(canReviseReading(latest), metadata),
         })
         .where(eq(text.id, textId))
       return { id: textId }
@@ -121,6 +145,27 @@ function draftMetadataUpdate(metadata?: {
     ...(metadata?.title !== undefined ? { title: metadata.title.trim() } : {}),
     ...(metadata?.checklist ? { checklist: metadata.checklist } : {}),
   }
+}
+
+function revisionIntentUpdate(
+  revising: boolean,
+  metadata?: { revisionIntent?: string }
+) {
+  if (!revising || metadata?.revisionIntent === undefined) return {}
+  return { revisionIntent: normalizeRevisionIntent(metadata.revisionIntent) }
+}
+
+async function latestActiveAttempt(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  textId: string
+) {
+  const [attempt] = await tx
+    .select()
+    .from(correction)
+    .where(and(eq(correction.textId, textId), isNull(correction.deletedAt)))
+    .orderBy(desc(correction.createdAt))
+    .limit(1)
+  return attempt
 }
 
 function assertExpectedContent(content: string, expectedContent?: string) {
@@ -199,21 +244,25 @@ export async function reserveReading(
       )
     if (!scene) throw new ReadingError(404, "Cena ou exercício indisponível.")
     assertExpectedContent(scene.scene.content, expectedContent)
-    const [previous] = await tx
-      .select()
-      .from(correction)
-      .where(and(eq(correction.textId, textId), isNull(correction.deletedAt)))
-      .orderBy(desc(correction.createdAt))
-      .limit(1)
-    if (previous && previous.status !== "FAILED")
+    const previous = await latestActiveAttempt(tx, textId)
+    const revising = canReviseReading(previous)
+    if (previous?.status === "FAILED") assertRetrySnapshot(scene, previous)
+    else if (previous && !revising)
       throw new ReadingError(
         409,
         "A leitura já foi iniciada. Abra a cena em Minhas cenas."
       )
-    const content = previous?.textContent ?? scene.scene.content
+    const content =
+      previous?.status === "FAILED" ? previous.textContent : scene.scene.content
     const sizeError = sceneSizeError(content)
     if (sizeError) throw new ReadingError(400, sizeError)
-    assertRetrySnapshot(scene, previous)
+    //* The intention is context for this version. The prompt is built only from the frozen scene.
+    const revisionIntent =
+      previous?.status === "FAILED"
+        ? (previous.revisionIntent ?? null)
+        : revising
+          ? normalizeRevisionIntent(scene.scene.revisionIntent)
+          : null
     const attempts = await tx
       .select({ createdAt: correction.createdAt })
       .from(correction)
@@ -252,7 +301,13 @@ export async function reserveReading(
       content: "",
       score: "0.00",
       status: "PENDING",
+      revisionIntent,
     })
+    if (revising)
+      await tx
+        .update(text)
+        .set({ revisionIntent: null })
+        .where(eq(text.id, textId))
     return id
   })
 }

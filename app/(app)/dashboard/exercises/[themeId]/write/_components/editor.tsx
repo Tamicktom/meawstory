@@ -1,10 +1,20 @@
 "use client"
+
+//* Libraries imports
 import { type ReactNode } from "react"
-import { useSceneDraft } from "@/hooks/write/use-scene-draft"
+import Link from "next/link"
+
+//* Components imports
 import { Button } from "@/components/ui/button"
 import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
+
+//* Hooks imports
+import { useSceneDraft } from "@/hooks/write/use-scene-draft"
+
+//* Local imports
 import { sceneSizeError } from "@/lib/reading-policy"
 import { ReviewPanel } from "./review-panel"
+import { RevisionFocus, type RevisionQuote } from "./revision-focus"
 import { SaveError } from "./save-error"
 import { SceneChecklist } from "./scene-checklist"
 
@@ -18,6 +28,13 @@ export type EditorProps = {
   briefing?: ReactNode
   minWords?: number
   maxWords?: number
+  initialIntent?: string
+  revision?: {
+    version: number
+    focus: string
+    quotes: RevisionQuote[]
+    readingHref: string
+  }
 }
 export function Editor(props: EditorProps) {
   const draft = useSceneDraft(props)
@@ -38,6 +55,8 @@ export function Editor(props: EditorProps) {
     else draft.setReview(true)
   }
 
+  const hidePanel = draft.focus && !props.revision
+
   return (
     <div data-writing-focus={draft.focus} className="min-w-0">
       {draft.focus ? (
@@ -47,8 +66,10 @@ export function Editor(props: EditorProps) {
           }
         </style>
       ) : null}
-      <div className="mb-4 flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 pb-4">
         <Button
+          id="toggle-focus-mode"
+          type="button"
           variant="outline"
           onClick={() => draft.setFocus(!draft.focus)}
         >
@@ -57,26 +78,51 @@ export function Editor(props: EditorProps) {
       </div>
       <div
         className={
-          draft.focus
+          hidePanel
             ? ""
             : "grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]"
         }
       >
         <aside
-          hidden={draft.focus}
+          hidden={hidePanel}
           id="exercise-information"
+          aria-label={
+            props.revision ? "Foco da revisão" : "Informações do exercício"
+          }
           className="order-2 min-w-0 lg:order-1"
         >
-          <details open>
-            <summary className="cursor-pointer py-3 font-medium">
-              Informações do exercício
-            </summary>
-            <div className="prose max-w-none break-words dark:prose-invert">
-              {props.briefing}
-            </div>
-          </details>
+          {props.revision ? (
+            <RevisionFocus
+              focus={props.revision.focus}
+              quotes={props.revision.quotes}
+            />
+          ) : (
+            <details open>
+              <summary className="cursor-pointer py-3 font-medium">
+                Informações do exercício
+              </summary>
+              <div className="prose max-w-none break-words dark:prose-invert">
+                {props.briefing}
+              </div>
+            </details>
+          )}
         </aside>
         <div className="order-1 flex min-w-0 flex-col gap-4 lg:order-2">
+          {props.revision ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">
+                Versão {props.revision.version} · rascunho
+              </p>
+              <p>A versão anterior permanece como foi lida.</p>
+              <Link
+                id="back-to-reading"
+                href={props.revision.readingHref}
+                className="w-fit py-2 underline"
+              >
+                Voltar à leitura
+              </Link>
+            </div>
+          ) : null}
           <label htmlFor="scene-title">Título da cena (opcional)</label>
           <input
             id="scene-title"
@@ -114,6 +160,31 @@ export function Editor(props: EditorProps) {
             disabled={draft.pending || draft.locked}
             onToggle={toggleItem}
           />
+          {props.revision ? (
+            <div className="flex flex-col gap-2">
+              <label htmlFor="revision-intent">
+                O que você tentou mudar? (opcional)
+              </label>
+              <textarea
+                id="revision-intent"
+                value={draft.revisionIntent}
+                maxLength={2000}
+                disabled={draft.pending || draft.locked}
+                aria-describedby="revision-intent-note"
+                onChange={(event) =>
+                  draft.setRevisionIntent(event.target.value)
+                }
+                className="min-h-24 w-full rounded-md border p-3"
+              />
+              <p
+                id="revision-intent-note"
+                className="text-sm text-muted-foreground"
+              >
+                Este campo é só o contexto desta revisão. Ele não muda a
+                pontuação.
+              </p>
+            </div>
+          ) : null}
           {draft.error ? (
             <SaveError
               error={draft.error}
@@ -129,6 +200,7 @@ export function Editor(props: EditorProps) {
           {!draft.review ? (
             <Button
               id="submit-text"
+              type="button"
               disabled={draft.pending || draft.locked}
               onClick={askReview}
             >
@@ -142,6 +214,7 @@ export function Editor(props: EditorProps) {
               missing={missing}
               pending={draft.pending}
               locked={draft.locked}
+              revisionIntent={props.revision ? draft.revisionIntent : undefined}
               onBack={() => draft.setReview(false)}
               onConfirm={draft.submit}
             />

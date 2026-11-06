@@ -24,6 +24,10 @@ export type StructuredReadingProps = {
     publicDescription: string
   }[]
   feedback: ReadingFeedback
+  reviseHref?: string
+  latestHref?: string
+  revisionIntent?: string | null
+  versions?: { version: number; href: string; current: boolean }[]
 }
 
 export function StructuredReadingView(props: StructuredReadingProps) {
@@ -73,6 +77,20 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           Esta leitura de IA serve para treino e não define o valor da sua
           escrita.
         </p>
+        {props.versions && props.versions.length > 1 ? (
+          <nav aria-label="Versões da cena" className="flex flex-wrap gap-2">
+            {props.versions.map((item) => (
+              <Link
+                key={item.version}
+                href={item.href}
+                aria-current={item.current ? "page" : undefined}
+                className="inline-flex min-h-11 items-center rounded-md border px-3 py-2 underline"
+              >
+                Versão {item.version}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
       </header>
       <div
         role="tablist"
@@ -120,6 +138,17 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           aria-label="Leitura da cena"
           className={`min-w-0 space-y-5 ${tab === "reading" ? "" : "hidden md:block"}`}
         >
+          {props.version > 1 && props.revisionIntent ? (
+            <section
+              aria-label="Contexto da revisão"
+              className="flex flex-col gap-2"
+            >
+              <h2 className="font-heading text-lg font-medium">
+                O que você tentou mudar
+              </h2>
+              <p className="whitespace-pre-wrap">{props.revisionIntent}</p>
+            </section>
+          ) : null}
           <section className="space-y-2">
             <h2 className="font-heading text-lg font-medium">Leitura geral</h2>
             <p className="whitespace-pre-wrap">{result.opening}</p>
@@ -129,20 +158,26 @@ export function StructuredReadingView(props: StructuredReadingProps) {
               Foco da próxima versão
             </h2>
             <p className="whitespace-pre-wrap">{result.revision}</p>
-            <button
-              type="button"
-              disabled
-              aria-describedby="revision-unavailable"
-              className="min-h-11 rounded-md bg-primary px-4 text-primary-foreground disabled:opacity-50"
-            >
-              Revisar com esse foco
-            </button>
-            <p
-              id="revision-unavailable"
-              className="text-xs text-muted-foreground"
-            >
-              A criação de uma nova versão estará disponível na próxima etapa.
-            </p>
+            {props.reviseHref ? (
+              <Link
+                id="revise-with-focus"
+                href={props.reviseHref}
+                className="inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-primary-foreground"
+              >
+                Revisar com esse foco
+              </Link>
+            ) : props.latestHref ? (
+              <p>
+                A nova versão parte da leitura mais recente.{" "}
+                <Link
+                  id="open-latest-version"
+                  href={props.latestHref}
+                  className="underline"
+                >
+                  Abrir a versão mais recente
+                </Link>
+              </p>
+            ) : null}
           </section>
           <section className="space-y-2">
             <h2 className="font-heading text-lg font-medium">Ponto forte</h2>

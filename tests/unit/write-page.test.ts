@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react"
 import * as nextHeaders from "next/headers"
+import { eq } from "drizzle-orm"
 import { openSession } from "@/tests/helpers/open-session"
 import { renderToStaticMarkup } from "react-dom/server"
 
@@ -16,6 +17,9 @@ import { Editor } from "@/app/(app)/dashboard/exercises/[themeId]/write/_compone
 //* Local imports
 import WritePage from "@/app/(app)/dashboard/exercises/[themeId]/write/page"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
+import { insertCompletedStructuredReading } from "@/tests/helpers/structured-reading"
+import { db } from "@/database"
+import { text } from "@/database/schema"
 
 const rows = createIsolatedRows()
 const headerBox = { current: new Headers() }
@@ -175,4 +179,51 @@ describe("WritePage draft access", () => {
       })
     })
   }
+
+  it("opens the next version with the latest focus and the saved draft", async () => {
+    const session = await signIn()
+    const rubricId = await rows.insertRubric({ structured: true })
+    const themeId = await rows.insertTheme(rubricId, {
+      description: "## Situação\n\nA praça está vazia.",
+    })
+    const content = "Uma cena. ".repeat(20)
+    const textId = await rows.insertText({
+      userId: session.userId,
+      themeId,
+      content,
+    })
+    await insertCompletedStructuredReading(rows, { textId, rubricId })
+    await db
+      .update(text)
+      .set({
+        content: `${content}\n\nEla atravessou.`,
+        revisionIntent: "Já comecei a mudar o gesto.",
+      })
+      .where(eq(text.id, textId))
+
+    const page = await loadPage(themeId, textId)
+    const [, grid] = childElements(page)
+    const [editor] = childElements(grid) as ReactElement<{
+      initialContent: string
+      initialIntent: string
+      briefing?: ReactNode
+      revision?: {
+        version: number
+        focus: string
+        readingHref: string
+        quotes: { label: string; text: string }[]
+      }
+    }>[]
+
+    expect(editor.type).toBe(Editor)
+    expect(editor.props.initialContent).toBe(`${content}\n\nEla atravessou.`)
+    expect(editor.props.initialIntent).toBe("Já comecei a mudar o gesto.")
+    expect(editor.props.briefing).toBeUndefined()
+    expect(editor.props.revision).toMatchObject({
+      version: 2,
+      focus: "Mostre o custo da escolha num gesto.",
+      readingHref: `/dashboard/texts/${textId}`,
+      quotes: [{ label: "Ponto forte", text: "Uma cena." }],
+    })
+  })
 })

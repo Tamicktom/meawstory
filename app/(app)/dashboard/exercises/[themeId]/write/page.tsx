@@ -1,5 +1,7 @@
 import { textService } from "@/services/text"
 import { correctionService } from "@/services/correction"
+import { canReviseReading } from "@/services/reading"
+import { citedExcerpts } from "@/lib/reading-evidence"
 import { requireSession } from "@/lib/session"
 //* Libraries imports
 import { notFound, redirect } from "next/navigation"
@@ -28,22 +30,26 @@ export default async function WritePage(props: WritePageProps) {
     notFound()
   }
 
-  const draft = await findEditableDraft(
+  const editable = await findEditableDraft(
     params.themeId,
     (await props.searchParams)?.textId
   )
-  const parsedDescription = parseMarkdown(thisTheme.description)
+  const parsedDescription = editable.revision
+    ? null
+    : parseMarkdown(thisTheme.description)
 
   return (
     <div className="flex w-full max-w-6xl min-w-0 flex-col gap-6 p-4">
       <header className="flex flex-col gap-2 [overflow-wrap:anywhere]">
-        <p className="text-sm text-muted-foreground">Escrita</p>
+        <p className="text-sm text-muted-foreground">
+          {editable.revision ? "Revisão" : "Escrita"}
+        </p>
         <h1 className="font-heading text-2xl font-medium">{thisTheme.title}</h1>
         <a
           href="#exercise-information"
           className="w-fit py-2 underline lg:hidden"
         >
-          Consultar exercício
+          {editable.revision ? "Consultar o foco" : "Consultar exercício"}
         </a>
       </header>
       <div className="min-w-0">
@@ -51,9 +57,14 @@ export default async function WritePage(props: WritePageProps) {
           themeId={params.themeId}
           minWords={thisTheme.minWords ?? undefined}
           maxWords={thisTheme.maxWords ?? undefined}
-          {...draftEditorProps(draft)}
+          {...draftEditorProps(editable.draft)}
+          revision={editable.revision}
           checklistItems={thisTheme.briefing?.mustInclude}
-          briefing={<Markdown>{parsedDescription}</Markdown>}
+          briefing={
+            parsedDescription ? (
+              <Markdown>{parsedDescription}</Markdown>
+            ) : undefined
+          }
         />
       </div>
     </div>
@@ -62,25 +73,38 @@ export default async function WritePage(props: WritePageProps) {
 
 async function findEditableDraft(themeId: string, textId?: string) {
   const session = await requireSession()
-  if (!textId)
-    return (
-      (await textService.findDraftForTheme(session.user.id, themeId)) ??
-      undefined
-    )
+  if (!textId) {
+    const draft = await textService.findDraftForTheme(session.user.id, themeId)
+    return { draft: draft ?? undefined, revision: undefined }
+  }
   const draft = await textService.findOwnedText(textId, session.user.id)
   if (!draft || draft.themeId !== themeId) notFound()
-  if (await correctionService.findLatestActiveCorrection(textId))
+  const latest = await correctionService.findLatestActiveCorrection(textId)
+  if (latest && !canReviseReading(latest))
     redirect(`/dashboard/texts/${textId}`)
-  return draft
+  if (!latest || !latest.structuredResult || !latest.rubricCriteria)
+    return { draft, revision: undefined }
+  const version =
+    Number(await correctionService.completedVersion(textId, latest.id)) + 1
+  return {
+    draft,
+    revision: {
+      version,
+      focus: latest.structuredResult.revision,
+      quotes: citedExcerpts(latest.structuredResult, latest.rubricCriteria),
+      readingHref: `/dashboard/texts/${textId}`,
+    },
+  }
 }
 
 function draftEditorProps(
-  draft: Awaited<ReturnType<typeof findEditableDraft>>
+  draft: Awaited<ReturnType<typeof findEditableDraft>>["draft"]
 ) {
   return {
     textId: draft?.id,
     initialContent: draft?.content,
     initialTitle: draft?.title,
     initialChecklist: draft?.checklist,
+    initialIntent: draft?.revisionIntent ?? "",
   }
 }

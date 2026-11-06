@@ -6,6 +6,7 @@ import { isValidElement } from "react"
 
 //* Components imports
 import { FeedbackView } from "@/components/feedback/feedback-view"
+import { StructuredReadingView } from "@/components/feedback/structured-reading"
 import { ReadingGate } from "@/components/reading/reading-gate"
 
 //* Local imports
@@ -14,6 +15,7 @@ import { db } from "@/database"
 import { text } from "@/database/schema"
 import { openSession } from "@/tests/helpers/open-session"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
+import { insertCompletedStructuredReading } from "@/tests/helpers/structured-reading"
 
 const rows = createIsolatedRows()
 const headerBox = {
@@ -53,7 +55,10 @@ async function signIn(emailVerified = false) {
   return session
 }
 
-function loadPage(textId: string, searchParams: { error?: string } = {}) {
+function loadPage(
+  textId: string,
+  searchParams: { error?: string; versao?: string } = {}
+) {
   return TextFeedbackPage({
     params: Promise.resolve({
       textId,
@@ -99,6 +104,21 @@ function gateProps(element: unknown) {
     email: string
     emailVerified: boolean
     verificationLinkFailed: boolean
+  }
+}
+
+function structuredProps(element: unknown) {
+  if (!isValidElement(element) || element.type !== StructuredReadingView) {
+    throw new Error("Expected the page to render StructuredReadingView.")
+  }
+
+  return element.props as {
+    version: number
+    scene: string
+    revisionIntent: string | null
+    reviseHref?: string
+    latestHref?: string
+    versions?: { version: number }[]
   }
 }
 
@@ -236,6 +256,65 @@ describe("TextFeedbackPage", () => {
     expect(props.emailVerified).toBe(false)
     expect(props.verificationLinkFailed).toBe(false)
     expect(props.email).toContain("@example.com")
+  })
+
+  it("shows the frozen version and opens the next draft from its focus", async () => {
+    const session = await signIn(true)
+    const rubricId = await rows.insertRubric({ structured: true })
+    const themeId = await rows.insertTheme(rubricId)
+    const content = "Uma cena. ".repeat(20)
+    const textId = await rows.insertText({
+      userId: session.userId,
+      themeId,
+      content,
+    })
+    await insertCompletedStructuredReading(rows, {
+      textId,
+      rubricId,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    })
+    await db
+      .update(text)
+      .set({ content: `${content}\n\nEla atravessou.` })
+      .where(eq(text.id, textId))
+    await insertCompletedStructuredReading(rows, {
+      textId,
+      rubricId,
+      revisionIntent: "Tornar o gesto visível.",
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+    })
+
+    const latest = structuredProps(await loadPage(textId))
+    expect(latest.version).toBe(2)
+    expect(latest.scene).toContain("Ela atravessou.")
+    expect(latest.revisionIntent).toBe("Tornar o gesto visível.")
+    expect(latest.reviseHref).toBe(
+      `/dashboard/exercises/${themeId}/write?textId=${textId}`
+    )
+    expect(latest.versions?.map((item) => item.version)).toEqual([1, 2])
+
+    const earlier = structuredProps(await loadPage(textId, { versao: "1" }))
+    expect(earlier.version).toBe(1)
+    expect(earlier.scene).not.toContain("Ela atravessou.")
+    expect(earlier.revisionIntent).toBeNull()
+    expect(earlier.reviseHref).toBeUndefined()
+    expect(earlier.latestHref).toBe(`/dashboard/texts/${textId}`)
+  })
+
+  it("renders not found for a version that does not exist", async () => {
+    const session = await signIn(true)
+    const rubricId = await rows.insertRubric({ structured: true })
+    const themeId = await rows.insertTheme(rubricId)
+    const textId = await rows.insertText({
+      userId: session.userId,
+      themeId,
+      content: "Uma cena. ".repeat(20),
+    })
+    await insertCompletedStructuredReading(rows, { textId, rubricId })
+
+    await expect(loadPage(textId, { versao: "4" })).rejects.toThrow(
+      "NEXT_HTTP_ERROR_FALLBACK;404"
+    )
   })
 
   it("offers the reading when a verified account has no correction", async () => {

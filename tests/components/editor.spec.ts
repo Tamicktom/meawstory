@@ -83,3 +83,60 @@ test("submission waits for save and sends exactly the confirmed paragraphs", asy
   )
   expect(bodies.at(-1)).toMatchObject({ content, draftOnly: false })
 })
+
+for (const width of [320, 1280]) {
+  test(`revision keeps the focus visible and sends an optional intention at ${width}px`, async ({
+    mount,
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    const bodies: Record<string, unknown>[] = []
+    await page.route("**/api/write/**", async (route) => {
+      bodies.push(route.request().postDataJSON())
+      await route.fulfill({ json: { textId: "scene-1" } })
+    })
+    const view = await mount("components/write/editor/Revision")
+    await expect(view.getByText("Versão 2 · rascunho")).toBeVisible()
+    await expect(
+      view.getByRole("complementary", { name: "Foco da revisão" })
+    ).toContainText("Mostre um gesto diante da chave antes da decisão.")
+    await expect(view.getByText("Informações do exercício")).toHaveCount(0)
+    await view.getByRole("button", { name: "Modo foco", exact: true }).click()
+    await expect(
+      view.getByRole("complementary", { name: "Foco da revisão" })
+    ).toBeVisible()
+    await view.getByRole("button", { name: "Sair do modo foco" }).click()
+    await view.getByLabel("Sua cena", { exact: true }).fill(content)
+    await view
+      .getByRole("button", { name: "Enviar para leitura", exact: true })
+      .click()
+    const review = view.getByRole("region", { name: "Conferir envio" })
+    await expect(review).toContainText("Não informada")
+    await view.getByRole("button", { name: "Voltar a escrever" }).click()
+    await view
+      .getByLabel("O que você tentou mudar? (opcional)")
+      .fill("Tornar o gesto visível.")
+    await view
+      .getByRole("button", { name: "Enviar para leitura", exact: true })
+      .click()
+    await expect(review).toContainText("Tornar o gesto visível.")
+    await view
+      .getByRole("button", { name: "Confirmar envio", exact: true })
+      .click()
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-navigated-to",
+      "/dashboard/texts/scene-1"
+    )
+    expect(bodies.at(-1)).toMatchObject({
+      content,
+      draftOnly: false,
+      revisionIntent: "Tornar o gesto visível.",
+      textId: "scene-1",
+    })
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth
+      )
+    ).toBe(true)
+  })
+}

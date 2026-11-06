@@ -122,6 +122,7 @@ describe("textService.findOwnedText", () => {
         title: `Text ${graph.textId}`,
         checklist: [],
         content: `Text body ${graph.textId}`,
+        revisionIntent: null,
         theme: {
           title: "Owned theme",
         },

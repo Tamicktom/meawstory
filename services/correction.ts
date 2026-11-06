@@ -220,6 +220,34 @@ async function recordCall(
   })
 }
 
+async function listCompletedVersions(textId: string) {
+  await expireReadings()
+  const readings = await db.query.correction.findMany({
+    columns: {
+      id: true,
+      createdAt: true,
+      content: true,
+      score: true,
+      textContent: true,
+      structuredResult: true,
+      rubricCriteria: true,
+      source: true,
+      revisionIntent: true,
+      status: true,
+    },
+    where: {
+      textId,
+      status: "COMPLETED",
+      deletedAt: { isNull: true },
+    },
+    orderBy: { createdAt: "asc" },
+  })
+  return readings.map((reading, index) => ({
+    ...reading,
+    version: index + 1,
+  }))
+}
+
 async function completedVersion(textId: string, correctionId: string) {
   const [row] = await db
     .select({ value: count() })
@@ -239,6 +267,7 @@ async function completedVersion(textId: string, correctionId: string) {
 }
 
 export const correctionService = {
+  listCompletedVersions,
   completedVersion,
   recordCall,
   findAttemptSnapshot,
