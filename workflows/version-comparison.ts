@@ -89,7 +89,7 @@ const COMPARISON_PROMPT_CONFIG = {
   providerOptions: { openai: { store: false as const } },
 }
 
-export const COMPARISON_PROMPT_VERSION = `sha256:${createHash("sha256").update(JSON.stringify(COMPARISON_PROMPT_CONFIG)).digest("hex")}`
+const COMPARISON_PROMPT_VERSION = `sha256:${createHash("sha256").update(JSON.stringify(COMPARISON_PROMPT_CONFIG)).digest("hex")}`
 
 export function comparisonConfiguration() {
   return {
