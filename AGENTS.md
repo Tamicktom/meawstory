@@ -16,6 +16,10 @@ Read `database/schema.md` before changing tables, queries, deletes, seeds, or co
 
 Runtime is Bun. Auth is Better Auth with email and password (`lib/auth.ts`). The HTTP API is Elysia at `app/api/[[...slugs]]`. Routes under `app/(app)` require a session.
 
+## Reading evaluation
+
+`evaluation/reference` holds the reference set of scenes for measuring the reading; its README explains how to measure and how to change the set. The reading's model call is `requestCorrection` in `workflows/correction-grading.ts`, shared by the workflow and `bun run eval:baseline`. Before changing the model, the instructions, or the prompt, measure the new setup with `bun run eval:baseline --label <name>` and compare its report with the latest one in `evaluation/reference/baselines`. A baseline sends every scene to OpenAI, so run it only when the task calls for a measurement.
+
 ## Local database
 
 Development Postgres is the `postgres` service in `docker-compose.yml`: Postgres 18, container `meawstory-postgres`, port 5432, user `postgres`, password `postgres`, database `postgres`. `DATABASE_URL` in `example.env` points at that container.

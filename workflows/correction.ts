@@ -1,5 +1,4 @@
 //* Libraries imports
-import { generateText, Output } from "ai"
 import { FatalError, getStepMetadata } from "workflow"
 
 //* Services imports
@@ -11,10 +10,8 @@ import type { CorrectionStatus } from "@/database/schema"
 
 //* Local imports
 import {
-  buildCorrectionPrompt,
-  correctionInstructions,
-  correctionOutputSchema,
   formatCorrectionScore,
+  requestCorrection,
   type CorrectionSource,
 } from "@/workflows/correction-grading"
 import { readSavedCorrection } from "@/workflows/correction-stand-in"
@@ -167,20 +164,9 @@ async function gradeText(source: CorrectionSource) {
     return gradedResult(saved.content, saved.score)
   }
 
-  const result = await generateText({
-    model: openAI("gpt-5-mini"),
-    instructions: correctionInstructions,
-    prompt: buildCorrectionPrompt(source),
-    output: Output.object({
-      schema: correctionOutputSchema,
-      name: "correction",
-      description: "Rubric-based correction of one student text.",
-    }),
-    //* Our public privacy text relies on this: see docs/v2/fase-0-base/0A-3.
-    providerOptions: { openai: { store: false } },
-  })
+  const { output } = await requestCorrection(openAI, source)
 
-  return gradedResult(result.output.content, result.output.score)
+  return gradedResult(output.content, output.score)
 }
 
 function gradedResult(content: string, score: number) {

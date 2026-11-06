@@ -22,7 +22,7 @@ Embasar as promessas públicas sobre o tratamento das cenas enviadas para leitur
 
 ### O que mudou no código
 
-A leitura chama a Responses API (`/v1/responses`) sem definir `store`, e o padrão dessa API guarda a resposta por pelo menos 30 dias, sem prazo final na documentação. **Decisão:** enviar `store: false` em `workflows/correction.ts`. Com isso, resta a retenção dos logs de abuso.
+A leitura chama a Responses API (`/v1/responses`) sem definir `store`, e o padrão dessa API guarda a resposta por pelo menos 30 dias, sem prazo final na documentação. **Decisão:** enviar `store: false` na chamada ao modelo (`requestCorrection`, em `workflows/correction-grading.ts`). Com isso, resta a retenção dos logs de abuso.
 
 As respostas geradas antes dessa mudança continuam sujeitas ao padrão.
 

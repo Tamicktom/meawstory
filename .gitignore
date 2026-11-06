@@ -15,6 +15,7 @@
 /blob-report/
 /tests/helpers/.saved-correction.json
 /.email-outbox/
+/evaluation/reference/forms/
 
 # next.js
 /.next/

@@ -1,5 +1,10 @@
 //* Libraries imports
+import { generateText, Output } from "ai"
+import type { OpenAIProvider } from "@ai-sdk/openai"
 import { z } from "zod"
+
+//* The reference-set baseline (evaluation/) calls the same function, so it measures this exact setup.
+export const CORRECTION_MODEL_ID = "gpt-5-mini"
 
 export const correctionOutputSchema = z.object({
   content: z.string().trim().min(1),
@@ -51,4 +56,24 @@ export function formatCorrectionScore(score: number): string {
   }
 
   return rounded.toFixed(2)
+}
+
+export async function requestCorrection(
+  provider: OpenAIProvider,
+  source: CorrectionSource
+) {
+  const result = await generateText({
+    model: provider(CORRECTION_MODEL_ID),
+    instructions: correctionInstructions,
+    prompt: buildCorrectionPrompt(source),
+    output: Output.object({
+      schema: correctionOutputSchema,
+      name: "correction",
+      description: "Rubric-based correction of one student text.",
+    }),
+    //* Our public privacy text relies on this: see docs/v2/fase-0-base/0A-3.
+    providerOptions: { openai: { store: false } },
+  })
+
+  return { output: result.output, usage: result.usage }
 }
