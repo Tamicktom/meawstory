@@ -10,6 +10,7 @@ export function Completed() {
   return (
     <FeedbackView
       themeTitle={themeTitle}
+      textId="text-1"
       correction={{
         score: "640.5",
         textContent,

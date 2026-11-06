@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test"
 import { eq } from "drizzle-orm"
 import * as nextHeaders from "next/headers"
+import * as navigation from "next/navigation"
 import { renderToStaticMarkup } from "react-dom/server"
 
 //* Local imports
@@ -25,9 +26,14 @@ beforeEach(() => {
   const headersSpy = spyOn(nextHeaders, "headers").mockImplementation(
     async () => headerBox.current as never
   )
+  const routerSpy = spyOn(navigation, "useRouter").mockReturnValue({
+    push() {},
+    refresh() {},
+  } as never)
 
   restoreHeaders = () => {
     headersSpy.mockRestore()
+    routerSpy.mockRestore()
   }
 })
 
@@ -136,6 +142,8 @@ describe("TextsPage", () => {
     expect(markup).toContain("Rascunho salvo")
     expect(markup).not.toContain("This draft belongs to someone else.")
     expect(markup).not.toContain("Você ainda não tem cenas.")
+    expect(markup).toContain(`id="delete-scene-${newerId}"`)
+    expect(markup).toContain(`id="delete-scene-${older.textId}"`)
   })
 
   it("hides the placeholder score while a correction is still running", async () => {
@@ -182,5 +190,77 @@ describe("TextsPage", () => {
 
     expect(markup).toContain("Leitura com falha")
     expect(markup).not.toContain("/ 1000")
+  })
+
+  it("offers undo for a scene retired a moment ago and hides its text", async () => {
+    const session = await signIn()
+    const graph = await rows.insertActiveText({
+      content: "A retired draft should leave the list.",
+      themeTitle: "Retired theme",
+    })
+
+    await db
+      .update(text)
+      .set({
+        userId: session.userId,
+        deletedAt: new Date(),
+      })
+      .where(eq(text.id, graph.textId))
+
+    const markup = await loadPage()
+
+    expect(markup).toContain("Cena excluída.")
+    expect(markup).toContain(`Text ${graph.textId}`)
+    expect(markup).toContain(`id="undo-delete-scene-${graph.textId}"`)
+    expect(markup).not.toContain("A retired draft should leave the list.")
+    expect(markup).not.toContain("Você ainda não tem cenas.")
+  })
+
+  it("says an in-progress reading will not finish while the scene stays deleted", async () => {
+    const session = await signIn()
+    const graph = await rows.insertActiveText({
+      themeTitle: "Scene still being read",
+    })
+
+    await db
+      .update(text)
+      .set({ userId: session.userId })
+      .where(eq(text.id, graph.textId))
+    await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      status: "PENDING",
+    })
+    await db
+      .update(text)
+      .set({ deletedAt: new Date() })
+      .where(eq(text.id, graph.textId))
+
+    const markup = await loadPage()
+
+    expect(markup).toContain("Cena excluída.")
+    expect(markup).toContain("A leitura em andamento não será concluída.")
+  })
+
+  it("leaves out a scene whose undo window has already closed", async () => {
+    const session = await signIn()
+    const graph = await rows.insertActiveText({
+      content: "This retirement is already final.",
+      themeTitle: "Closed window",
+    })
+
+    await db
+      .update(text)
+      .set({
+        userId: session.userId,
+        deletedAt: new Date(Date.now() - 60_000),
+      })
+      .where(eq(text.id, graph.textId))
+
+    const markup = await loadPage()
+
+    expect(markup).not.toContain("Cena excluída.")
+    expect(markup).not.toContain("This retirement is already final.")
+    expect(markup).toContain("Você ainda não tem cenas.")
   })
 })

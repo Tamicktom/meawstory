@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 //* Components imports
+import { DeleteSceneButton } from "@/components/scenes/delete-scene-button"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
@@ -131,7 +132,16 @@ function ReadingGate(props: ReadingGateProps) {
       lang="pt-BR"
       className="flex w-full max-w-3xl min-w-0 flex-col gap-4 p-4 [overflow-wrap:anywhere]"
     >
-      <h1 className="font-heading text-lg font-medium">{props.themeTitle}</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <h1 className="min-w-0 font-heading text-lg font-medium">
+          {props.themeTitle}
+        </h1>
+        <DeleteSceneButton
+          id="delete-scene"
+          textId={props.textId}
+          redirectTo="/dashboard/texts"
+        />
+      </div>
       {props.emailVerified ? (
         <StartReading textId={props.textId} />
       ) : (

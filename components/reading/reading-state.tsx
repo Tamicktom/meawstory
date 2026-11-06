@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { DeleteSceneButton } from "@/components/scenes/delete-scene-button"
 import { Button } from "@/components/ui/button"
 import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 import { READING_DELAY_MS } from "@/lib/reading-policy"
@@ -32,7 +33,16 @@ export function ReadingState(props: Props) {
   const delayed = now - Date.parse(props.createdAt) >= READING_DELAY_MS
   return (
     <div className="flex w-full max-w-3xl min-w-0 flex-col gap-4 p-4 [overflow-wrap:anywhere]">
-      <h1 className="font-heading text-lg font-medium">{props.themeTitle}</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <h1 className="min-w-0 font-heading text-lg font-medium">
+          {props.themeTitle}
+        </h1>
+        <DeleteSceneButton
+          id="delete-scene"
+          textId={props.textId}
+          redirectTo="/dashboard/texts"
+        />
+      </div>
       {props.status === "FAILED" ? (
         <>
           <p role="status">

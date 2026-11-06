@@ -173,8 +173,10 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### I. Controle e medição
 
-- [ ] [1I-1](fase-1-revisao/1I-1-excluir-cena-com-opcao-de-desfazer.md) — Excluir uma cena com opção de desfazer
+- [x] [1I-1](fase-1-revisao/1I-1-excluir-cena-com-opcao-de-desfazer.md) — Excluir uma cena com opção de desfazer
 - [x] [1I-2](fase-1-revisao/1I-2-instrumentar-eventos-do-funil.md) — Instrumentar os eventos do funil — não se aplica; a medição do funil fica fora deste ciclo, e erros e custo já são medidos
+
+**Validação da etapa I (2026-11-06):** “Excluir cena” aparece em Minhas cenas e na própria cena. A exclusão marca `text.deleted_at` e não apaga nem aposenta leituras, chamadas ou feedback; o desfazer, por 8 segundos na tela e até 10 no servidor, devolve a cena com o histórico intacto. Depois disso a aposentadoria permanece, e a cena sai das listas e da continuação de rascunho. Uma leitura em andamento não é cancelada: se a cena continuar excluída quando o fluxo for gravar, a tentativa falha como texto indisponível; se o desfazer ocorrer antes, a leitura pode concluir. Não há tabela nem migração nova. Passaram 370 testes unitários, os testes de componentes da exclusão, da leitura e do celular, e a jornada em 320 e 1280 px, além de `bun run typecheck`. React Doctor nas alterações: 100/100. Sem alteração de modelo, prompt ou chamadas à OpenAI. A fase 1 continua aberta: 1D-2 segue pendente.
 
 ## Fase 2 — Motivo para voltar
 

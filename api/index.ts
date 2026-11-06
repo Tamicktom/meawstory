@@ -5,6 +5,7 @@ import { Elysia } from "elysia"
 import { writeRoutes } from "./routes/write"
 import { correctionRoutes } from "./routes/correction"
 import { readingFeedbackRoutes } from "./routes/reading-feedback"
+import { sceneRoutes } from "./routes/scenes"
 import { opsRoutes } from "./routes/ops"
 import { errorMessage, logEvent } from "@/lib/telemetry"
 
@@ -22,6 +23,7 @@ const app = new Elysia({ prefix: "/api" })
   })
   .use(writeRoutes)
   .use(readingFeedbackRoutes)
+  .use(sceneRoutes)
   .use(opsRoutes)
   .use(correctionRoutes)
   .get("/", () => {
