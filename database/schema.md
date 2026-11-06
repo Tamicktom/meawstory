@@ -336,3 +336,34 @@ active-text check fails the attempt (`Text not found`) and the scene stays
 out of the lists. Undo before that check lets the reading finish. Undo after
 the attempt has failed brings the scene back with that failed reading, which
 can be retried. A completed reading is never removed.
+
+## Scene closure (Phase 2-B)
+
+Closing a scene sets `text.closed_at`. It is the writer's decision and is
+allowed after the latest active attempt is completed, at any score band. A low
+score does not close the scene and is not recorded as giving up. Closing does
+not delete, retire, or rewrite versions, attempts, calls, or feedback.
+Reopening clears `closed_at` at any later time and restores the situation the
+scene had before. Retirement (`deleted_at`) stays separate: a closed scene can
+still be retired, and reopening does not restore a retired scene.
+
+While `closed_at` is set, the scene cannot be edited and cannot start another
+reading. The reading and the comparison remain available. The current situation
+is derived for Minhas cenas, the catalog, and Início; it is not stored. A scene
+is closed when `closed_at` is set. Otherwise the latest active attempt decides:
+no attempt is a saved draft; `PENDING` is waiting; `IN_PROGRESS` is being read;
+`FAILED` is a failed reading; `COMPLETED` whose current body differs from the
+frozen version is a revision in progress; `COMPLETED` with the same body is a
+finished reading. The band shown for a finished reading comes from the total
+score, using the same 20/50/80/100 thresholds as the rubric. Failed attempts
+are not versions and do not add a row to those lists.
+
+## First opening of a reading (Phase 2-B)
+
+`correction.opened_at` is the first time the author opened that completed
+reading. Listing a scene, or a notification, does not set it. It can be written
+only while null, only on a `COMPLETED` reading, and a later change is rejected.
+Setting it does not change the frozen snapshot or the terminal result.
+Readings completed before this column existed are backfilled from `finished_at`,
+then `updated_at`, then `created_at`, so they are already opened. A reading
+completed after that stays unopened, and counts as new, until its first opening.

@@ -165,6 +165,8 @@ export const text = p.pgTable(
     checklist: p.jsonb("checklist").$type<string[]>().notNull().default([]),
     //* Optional draft answer for the next version. Null means omitted (1G-2).
     revisionIntent: p.text("revision_intent"),
+    //* When the writer closed the scene. Null means it is still open (2B-1).
+    closedAt: p.timestamp("closed_at"),
 
     // one text belongs to one theme
     themeId: p
@@ -233,6 +235,8 @@ export const correction = p.pgTable(
     revisionIntent: p.text("revision_intent"),
     //* Comparison with the previous completed version. Null on the first version (1H-1).
     comparison: p.jsonb("comparison").$type<VersionComparison>(),
+    //* First time the author opened this completed reading. Null means still new (2B-2).
+    openedAt: p.timestamp("opened_at"),
 
     ...timestamps,
     ...softDelete,
@@ -256,6 +260,10 @@ export const correction = p.pgTable(
     p.check(
       "correction_comparison_when_completed",
       sql`${table.comparison} IS NULL OR ${table.status} = 'COMPLETED'`
+    ),
+    p.check(
+      "correction_opened_when_completed",
+      sql`${table.openedAt} IS NULL OR ${table.status} = 'COMPLETED'`
     ),
   ]
 )

@@ -317,6 +317,24 @@ async function completedVersion(textId: string, correctionId: string) {
   return row.value
 }
 
+//* Records the first opening only. Listing a scene does not call this.
+async function markReadingOpened(correctionId: string, userId: string) {
+  await db.execute(sql`
+    update correction
+    set opened_at = now()
+    where id = ${correctionId}
+      and opened_at is null
+      and status = 'COMPLETED'
+      and deleted_at is null
+      and exists (
+        select 1 from text
+        where text.id = correction.text_id
+          and text.user_id = ${userId}
+          and text.deleted_at is null
+      )
+  `)
+}
+
 export const correctionService = {
   listCompletedVersions,
   findPreviousCompletedReading,
@@ -328,4 +346,5 @@ export const correctionService = {
   findLatestActiveCorrection,
   updateCorrectionStatus,
   updateCorrection,
+  markReadingOpened,
 }

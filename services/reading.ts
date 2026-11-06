@@ -108,6 +108,11 @@ export async function saveScene(
           )
         )
       if (!scene) throw new ReadingError(404, "Cena não encontrada.")
+      if (scene.closedAt)
+        throw new ReadingError(
+          409,
+          "Esta cena está encerrada. Reabra a cena para continuar."
+        )
       const latest = await latestActiveAttempt(tx, textId)
       if (latest && !canReviseReading(latest))
         throw new ReadingError(
@@ -276,6 +281,11 @@ export async function reserveReading(
         )
       )
     if (!scene) throw new ReadingError(404, "Cena ou exercício indisponível.")
+    if (scene.scene.closedAt)
+      throw new ReadingError(
+        409,
+        "Esta cena está encerrada. Reabra a cena para continuar."
+      )
     assertExpectedContent(scene.scene.content, expectedContent)
     const previous = await latestActiveAttempt(tx, textId)
     const revising = canReviseReading(previous)

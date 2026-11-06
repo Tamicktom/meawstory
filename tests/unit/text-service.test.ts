@@ -123,6 +123,7 @@ describe("textService.findOwnedText", () => {
         checklist: [],
         content: `Text body ${graph.textId}`,
         revisionIntent: null,
+        closedAt: null,
         theme: {
           title: "Owned theme",
         },
@@ -209,18 +210,31 @@ describe("textService.listOwnedTexts", () => {
     const listed = await textService.listOwnedTexts(older.userId)
 
     expect(listed.map((item) => item.id)).toEqual([newerId, older.textId])
-    expect(listed[0]).toEqual({
+    expect(listed[0]).toMatchObject({
       id: newerId,
       title: `Text ${newerId}`,
       content: "The newer draft names the missing key.",
       createdAt: new Date("2024-06-01T00:00:00.000Z"),
+      themeId: older.themeId,
       themeTitle: "Older theme",
+      genre: null,
+      closed: false,
+      versionCount: 2,
+      situation: "ready",
+      band: "working",
+      label: "Funciona",
+      unopened: true,
       correction: {
         status: "COMPLETED",
         score: "640.00",
       },
     })
-    expect(listed[1]?.correction).toBeNull()
+    expect(listed[1]).toMatchObject({
+      situation: "draft",
+      versionCount: 0,
+      label: "Rascunho salvo",
+      correction: null,
+    })
     expect(listed.some((item) => item.id === retiredId)).toBe(false)
     expect(listed.some((item) => item.id === other.textId)).toBe(false)
   })
@@ -252,6 +266,11 @@ describe("textService.listOwnedTexts", () => {
     expect(listed[0]?.correction).toEqual({
       status: "FAILED",
       score: null,
+    })
+    expect(listed[0]).toMatchObject({
+      situation: "failed",
+      versionCount: 1,
+      label: "Leitura com falha",
     })
   })
 })

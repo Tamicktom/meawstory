@@ -96,6 +96,7 @@ async function openRevisionDraft(
 ) {
   const draft = await textService.findOwnedText(textId, userId)
   if (!draft || draft.themeId !== themeId) notFound()
+  if (draft.closedAt) redirect(`/dashboard/texts/${textId}`)
   const latest = await correctionService.findLatestActiveCorrection(textId)
   if (latest && !canReviseReading(latest))
     redirect(`/dashboard/texts/${textId}`)

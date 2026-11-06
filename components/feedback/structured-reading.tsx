@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type RefObject } from "react"
 import Link from "next/link"
 
 //* Components imports
-import { DeleteSceneButton } from "@/components/scenes/delete-scene-button"
+import { ReadingSceneActions } from "./reading-scene-actions"
 
 //* Local imports
 import { BAND_LABEL, type StructuredReading } from "@/lib/reading-contract"
@@ -39,6 +39,7 @@ export type StructuredReadingProps = {
   comparison?: VersionComparison
   previousScene?: string
   textId?: string
+  closed?: boolean
 }
 
 type ReadingTab = "reading" | "scene"
@@ -83,6 +84,7 @@ export function StructuredReadingView(props: StructuredReadingProps) {
         version={props.version}
         versions={props.versions}
         textId={props.textId}
+        closed={props.closed}
       />
       {props.comparison && props.previousScene ? (
         <VersionComparisonView
@@ -91,7 +93,9 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           previousScene={props.previousScene}
           nextScene={props.scene}
           revisionIntent={props.revisionIntent}
-          reviseHref={props.reviseHref}
+          reviseHref={props.closed ? undefined : props.reviseHref}
+          closed={props.closed}
+          textId={props.textId}
         />
       ) : null}
       <ReadingTabs tab={tab} onChange={setTab} />
@@ -108,6 +112,7 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           latestHref={props.latestHref}
           revisionIntent={props.revisionIntent}
           compared={Boolean(props.comparison)}
+          closed={props.closed}
           onLocate={locate}
         />
         <SceneColumn
@@ -135,6 +140,7 @@ function ReadingHeader(props: {
   version: number
   versions: StructuredReadingProps["versions"]
   textId?: string
+  closed?: boolean
 }) {
   return (
     <header className="space-y-2">
@@ -145,13 +151,7 @@ function ReadingHeader(props: {
           </p>
           <h1 className="font-heading text-2xl font-medium">{props.title}</h1>
         </div>
-        {props.textId ? (
-          <DeleteSceneButton
-            id="delete-scene"
-            textId={props.textId}
-            redirectTo="/dashboard/texts"
-          />
-        ) : null}
+        <ReadingSceneActions textId={props.textId} closed={props.closed} />
       </div>
       <p className="text-sm text-muted-foreground">
         Exercício: {props.exerciseTitle} ·{" "}
@@ -245,6 +245,7 @@ function ReadingColumn(props: {
   latestHref?: string
   revisionIntent?: string | null
   compared: boolean
+  closed?: boolean
   onLocate: (quote: number) => void
 }) {
   return (
@@ -274,8 +275,9 @@ function ReadingColumn(props: {
         </h2>
         <p className="whitespace-pre-wrap">{props.result.revision}</p>
         <RevisionLink
-          reviseHref={props.reviseHref}
+          reviseHref={props.closed ? undefined : props.reviseHref}
           latestHref={props.latestHref}
+          closed={props.closed}
         />
       </section>
       <section className="space-y-2">
@@ -331,7 +333,12 @@ function ReadingColumn(props: {
   )
 }
 
-function RevisionLink(props: { reviseHref?: string; latestHref?: string }) {
+function RevisionLink(props: {
+  reviseHref?: string
+  latestHref?: string
+  closed?: boolean
+}) {
+  if (props.closed) return <p>Reabra a cena para revisar.</p>
   if (props.reviseHref)
     return (
       <Link

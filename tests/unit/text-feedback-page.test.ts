@@ -12,7 +12,7 @@ import { ReadingGate } from "@/components/reading/reading-gate"
 //* Local imports
 import TextFeedbackPage from "@/app/(app)/dashboard/texts/[textId]/page"
 import { db } from "@/database"
-import { text } from "@/database/schema"
+import { correction, text } from "@/database/schema"
 import { openSession } from "@/tests/helpers/open-session"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
 import { insertCompletedStructuredReading } from "@/tests/helpers/structured-reading"
@@ -331,5 +331,93 @@ describe("TextFeedbackPage", () => {
     const props = gateProps(await loadPage(textId, { error: "TOKEN_EXPIRED" }))
 
     expect(props.verificationLinkFailed).toBe(true)
+  })
+
+  it("records the first opening of the version on screen and leaves the reading frozen", async () => {
+    const session = await signIn()
+    const rubricId = await rows.insertRubric()
+    const themeId = await rows.insertTheme(rubricId)
+    const textId = await rows.insertText({
+      userId: session.userId,
+      themeId,
+      content: "Cena.",
+    })
+    const olderId = await rows.insertCorrection({
+      textId,
+      rubricId,
+      score: "10.00",
+      content: "Primeira",
+      textContent: "Cena.",
+      status: "COMPLETED",
+      createdAt: new Date("2020-01-01T00:00:00.000Z"),
+    })
+    const newerId = await rows.insertCorrection({
+      textId,
+      rubricId,
+      score: "20.00",
+      content: "Segunda",
+      textContent: "Cena.",
+      status: "COMPLETED",
+      createdAt: new Date("2024-06-01T00:00:00.000Z"),
+    })
+
+    await loadPage(textId, { versao: "1" })
+    const [older, newer] = await Promise.all([
+      db
+        .select({
+          openedAt: correction.openedAt,
+          score: correction.score,
+          content: correction.content,
+        })
+        .from(correction)
+        .where(eq(correction.id, olderId)),
+      db
+        .select({ openedAt: correction.openedAt, score: correction.score })
+        .from(correction)
+        .where(eq(correction.id, newerId)),
+    ])
+    const openedAt = older[0]?.openedAt
+
+    await loadPage(textId, { versao: "1" })
+    const [again] = await db
+      .select({ openedAt: correction.openedAt })
+      .from(correction)
+      .where(eq(correction.id, olderId))
+
+    expect(openedAt).toBeInstanceOf(Date)
+    expect(again?.openedAt?.toISOString()).toBe(openedAt?.toISOString())
+    expect(older[0]).toMatchObject({ score: "10.00", content: "Primeira" })
+    expect(newer[0]?.openedAt).toBeNull()
+    expect(newer[0]?.score).toBe("20.00")
+  })
+
+  it("does not mark a completed reading when the page shows a failed attempt", async () => {
+    const session = await signIn()
+    const rubricId = await rows.insertRubric()
+    const themeId = await rows.insertTheme(rubricId)
+    const textId = await rows.insertText({
+      userId: session.userId,
+      themeId,
+    })
+    const completedId = await rows.insertCorrection({
+      textId,
+      rubricId,
+      status: "COMPLETED",
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    })
+    await rows.insertCorrection({
+      textId,
+      rubricId,
+      status: "FAILED",
+      createdAt: new Date(),
+    })
+
+    await loadPage(textId)
+    const [stored] = await db
+      .select({ openedAt: correction.openedAt })
+      .from(correction)
+      .where(eq(correction.id, completedId))
+
+    expect(stored?.openedAt).toBeNull()
   })
 })

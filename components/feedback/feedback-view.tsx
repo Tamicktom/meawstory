@@ -4,7 +4,7 @@ import { Markdown } from "@tanstack/markdown/react"
 import Link from "next/link"
 
 //* Components imports
-import { DeleteSceneButton } from "@/components/scenes/delete-scene-button"
+import { ReadingSceneActions } from "./reading-scene-actions"
 
 //* Local imports
 import { formatScore } from "@/lib/format-score"
@@ -18,6 +18,7 @@ type FeedbackCorrection = {
 type FeedbackViewProps = {
   themeTitle: string
   textId?: string
+  closed?: boolean
   correction: FeedbackCorrection | null
 }
 
@@ -41,13 +42,7 @@ function FeedbackView(props: FeedbackViewProps) {
         <h1 className="min-w-0 font-heading text-lg font-medium">
           {props.themeTitle}
         </h1>
-        {props.textId ? (
-          <DeleteSceneButton
-            id="delete-scene"
-            textId={props.textId}
-            redirectTo="/dashboard/texts"
-          />
-        ) : null}
+        <ReadingSceneActions textId={props.textId} closed={props.closed} />
       </div>
       {correction ? (
         <div className="flex flex-col gap-4">

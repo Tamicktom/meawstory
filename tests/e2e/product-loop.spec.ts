@@ -94,9 +94,12 @@ for (const width of [1280, 320, 390]) {
       ).toBeVisible()
       await privacy.close()
       await expect(editor).toHaveValue(submittedText)
-      await expect(page.getByRole("status")).toContainText("Salvo há instantes", {
-        timeout: 15_000,
-      })
+      await expect(page.getByRole("status")).toContainText(
+        "Salvo há instantes",
+        {
+          timeout: 15_000,
+        }
+      )
       const firstItem = page.getByRole("checkbox").first()
       await firstItem.check()
       await expect(page.getByRole("status")).toContainText("Salvo há instantes")
@@ -172,9 +175,34 @@ for (const width of [1280, 320, 390]) {
       await expect(
         page.getByRole("heading", { name: "Minhas cenas" })
       ).toBeVisible()
+      const sceneLink = page.getByRole("link", { name: new RegExp(themeTitle) })
+      await expect(sceneLink).toContainText("Funciona")
+      await expect(sceneLink).toContainText("1 versão")
+      await expect(sceneLink).toContainText("Virada")
+      await expect(page.getByText("Nova", { exact: true })).toHaveCount(0)
+
+      await sceneLink.click()
+      await page
+        .getByRole("button", { name: "Dar a cena por encerrada" })
+        .click()
       await expect(
-        page.getByRole("link", { name: new RegExp(themeTitle) })
-      ).toContainText("Pontuação: 640 de 1000")
+        page.getByRole("button", { name: "Reabrir cena" })
+      ).toBeVisible()
+      await expect(
+        page.getByRole("link", { name: "Revisar com esse foco" })
+      ).toHaveCount(0)
+      await page.getByRole("link", { name: "Voltar para Minhas cenas" }).click()
+      await expect(sceneLink).toContainText("Encerrada")
+      await expect(sceneLink).toContainText("Funciona")
+      await page.getByRole("button", { name: "Reabrir cena" }).click()
+      await expect(sceneLink).toContainText("Funciona")
+      await expect(sceneLink).not.toContainText("Encerrada")
+      await page.goto("/dashboard/texts?genero=action&situacao=strong")
+      await expect(
+        page.getByText("Nenhuma cena corresponde a esses filtros.")
+      ).toBeVisible()
+      await page.goto("/dashboard/texts?genero=turning_point&situacao=working")
+      await expect(sceneLink).toContainText("Funciona")
     })
   })
 }

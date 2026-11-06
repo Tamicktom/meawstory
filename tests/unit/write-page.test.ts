@@ -180,6 +180,26 @@ describe("WritePage draft access", () => {
     })
   }
 
+  it("sends a closed scene back to its reading", async () => {
+    const session = await signIn()
+    const rubricId = await rows.insertRubric({ structured: true })
+    const themeId = await rows.insertTheme(rubricId)
+    const textId = await rows.insertText({
+      userId: session.userId,
+      themeId,
+      content: "Uma cena. ".repeat(20),
+    })
+    await insertCompletedStructuredReading(rows, { textId, rubricId })
+    await db
+      .update(text)
+      .set({ closedAt: new Date() })
+      .where(eq(text.id, textId))
+
+    await expect(loadPage(themeId, textId)).rejects.toMatchObject({
+      digest: expect.stringContaining(`/dashboard/texts/${textId}`),
+    })
+  })
+
   it("opens the next version with the latest focus and the saved draft", async () => {
     const session = await signIn()
     const rubricId = await rows.insertRubric({ structured: true })

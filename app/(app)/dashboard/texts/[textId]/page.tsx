@@ -71,7 +71,11 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
       />
     )
   }
-  return completedReading(ownedText, requestedVersion(searchParams.versao))
+  return completedReading(
+    ownedText,
+    requestedVersion(searchParams.versao),
+    session.user.id
+  )
 }
 
 type OwnedScene = NonNullable<
@@ -84,18 +88,22 @@ type CompletedVersion = Awaited<
 
 async function completedReading(
   ownedText: OwnedScene,
-  requested: number | null
+  requested: number | null,
+  userId: string
 ) {
   if (Number.isNaN(requested)) notFound()
   const versions = await correctionService.listCompletedVersions(ownedText.id)
   const latestVersion = versions.at(-1)
   const selected = selectedVersion(versions, requested)
   if (!selected || !latestVersion) notFound()
+  await correctionService.markReadingOpened(selected.id, userId)
+  const closed = ownedText.closedAt != null
   if (!hasStructuredReading(selected)) {
     return (
       <FeedbackView
         themeTitle={sceneTitle(ownedText.title, ownedText.theme.title)}
         textId={ownedText.id}
+        closed={closed}
         correction={{
           content: selected.content,
           score: selected.score,
@@ -133,6 +141,7 @@ async function completedReading(
       comparison={selected.comparison ?? undefined}
       previousScene={previous?.textContent}
       textId={ownedText.id}
+      closed={closed}
     />
   )
 }
