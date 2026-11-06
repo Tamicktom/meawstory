@@ -30,7 +30,7 @@ Fechar os limites que protegem a leitura e o custo antes de implementar as valid
 - Excluir uma cena não devolve leituras: a contagem inclui leituras de cenas excluídas.
 - Uma leitura presa em andamento conta até o tempo limite de 0C-6 encerrá-la como falha.
 - O tempo de espera informado vai até a leitura mais antiga dentro da janela sair dela.
-- Estes limites protegem contra abuso. A cota do plano gratuito é outra decisão, tomada em 3A-1.
+- Estes limites protegem contra abuso. Em 2026-11-06 a cota de plano gratuito e o plano pago saíram deste ciclo. Estes números continuam sendo o único teto de envio.
 
 **Revisão:** depois de medir o custo em 1C-6 ou após 30 dias de uso real, o que vier primeiro.
 

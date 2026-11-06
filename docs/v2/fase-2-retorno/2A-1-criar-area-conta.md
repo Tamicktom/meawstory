@@ -8,8 +8,7 @@ Dar um destino real à navegação e um lugar para as preferências, antes da ed
 ## Escopo
 - Criar a página Conta com o nome e o e-mail da pessoa.
 - Oferecer a ação de sair.
-- Reservar o lugar das preferências de notificação.
-- Deixar edição de dados, exportação e exclusão para a Fase 3.
+- Edição de dados, exportação, exclusão de conta e preferência de notificação ficam fora deste ciclo.
 
 ## Critérios de conclusão
 - Uma pessoa autenticada abre a Conta, vê os próprios dados e consegue sair.

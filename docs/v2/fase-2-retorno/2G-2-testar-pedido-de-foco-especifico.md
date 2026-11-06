@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa G — Testes e expansão** · Tipo: Pesquisa · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. O experimento de foco específico fica fora do MVP. O texto abaixo fica como registro.
+
 ## Objetivo
 Avaliar se uma intenção declarada antes da leitura melhora a prática sem enviesar a pontuação.
 

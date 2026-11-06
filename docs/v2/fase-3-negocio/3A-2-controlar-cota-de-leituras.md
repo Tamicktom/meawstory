@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa A — Oferta e cota** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. Não há cota de leituras de plano neste ciclo. Os limites de abuso da Fase 0 continuam valendo. O texto abaixo fica como registro.
+
 ## Objetivo
 Controlar custo com previsibilidade e sem impedir a escrita.
 

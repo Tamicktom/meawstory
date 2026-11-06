@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa B — Conta e dados** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A Conta deste ciclo mostra nome, e-mail e sair. Editar os dados fica fora. O texto abaixo fica como registro.
+
 ## Objetivo
 Dar controle sobre as informações pessoais mantidas no produto.
 

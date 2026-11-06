@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa A — Oferta e cota** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. Pagamento e plano pago ficam fora do MVP. O texto abaixo fica como registro.
+
 ## Objetivo
 Testar disposição a pagar e sustentar o custo das leituras.
 

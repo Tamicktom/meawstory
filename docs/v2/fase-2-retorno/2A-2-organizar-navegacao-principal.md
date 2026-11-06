@@ -6,7 +6,7 @@
 Dar acesso previsível às áreas do ciclo de prática.
 
 ## Escopo
-- Usar Início, Exercícios, Minhas cenas, Progresso e Conta como destinos principais.
+- Usar Início, Exercícios, Minhas cenas e Conta como destinos principais.
 - Manter a navegação consistente nas áreas autenticadas.
 - Adaptar os destinos ao celular sem esconder a ação principal.
 - Permitir que o modo foco esconda temporariamente essa navegação durante a escrita.
@@ -19,4 +19,4 @@ Dar acesso previsível às áreas do ciclo de prática.
 - [2A-1 · Criar a área Conta](2A-1-criar-area-conta.md)
 
 ## Observação
-Progresso entra na navegação quando 2D-1 for entregue.
+A tela de Progresso ficou fora deste ciclo. A navegação não reserva um destino para ela.

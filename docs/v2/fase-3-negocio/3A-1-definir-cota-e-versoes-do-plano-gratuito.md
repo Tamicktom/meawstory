@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa A — Oferta e cota** · Tipo: Decisão · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. Não há cota nem versões de plano gratuito neste ciclo. Os limites de abuso da Fase 0 continuam valendo. O texto abaixo fica como registro.
+
 ## Objetivo
 Fechar a oferta gratuita com base no custo observado, não em números arbitrários.
 

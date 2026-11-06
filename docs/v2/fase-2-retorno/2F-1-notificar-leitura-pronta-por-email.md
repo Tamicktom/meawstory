@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa F — Notificações** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A leitura pronta aparece no produto, sem e-mail neste ciclo. O texto abaixo fica como registro.
+
 ## Objetivo
 Trazer a pessoa de volta quando houver uma ação de valor disponível.
 

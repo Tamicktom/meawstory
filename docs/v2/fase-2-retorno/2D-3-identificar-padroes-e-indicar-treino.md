@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa D — Progresso** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. Padrões recorrentes e treino indicado ficam fora do MVP. O texto abaixo fica como registro.
+
 ## Objetivo
 Transformar histórico em uma recomendação compreensível e acionável.
 

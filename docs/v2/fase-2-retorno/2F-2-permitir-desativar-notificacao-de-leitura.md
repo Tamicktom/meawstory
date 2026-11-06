@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa F — Notificações** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. Não há e-mail de leitura pronta neste ciclo. O texto abaixo fica como registro.
+
 ## Objetivo
 Dar controle sobre os e-mails de retorno sem afetar mensagens essenciais da conta.
 

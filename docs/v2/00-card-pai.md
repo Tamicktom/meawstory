@@ -9,14 +9,26 @@ Este é o único lugar onde o andamento é marcado. Os cards descrevem o trabalh
 - Em um card cancelado por uma decisão, marque `[x]` e acrescente “não se aplica” e o motivo.
 - Marque a fase na visão geral quando todos os cards dela estiverem marcados e a condição de saída for verdadeira.
 
+## Recorte deste ciclo
+
+Decisão de 2026-11-06. Não há tempo para o plano inteiro. Este ciclo entrega o essencial do MVP e a interface para usá-lo: escrever, receber a leitura, revisar, comparar versões, e navegar entre Início, Exercícios, Minhas cenas e Conta.
+
+Ficam de fora, marcados como não se aplica:
+
+- Pagamento, cota de plano gratuito e plano pago.
+- Edição de dados, exportação, exclusão de conta e administração do catálogo.
+- Sugestão por ponto fraco, tela de Progresso, aviso de leitura pronta por e-mail, teste de foco específico, expansão do catálogo e eventos do funil.
+
+Os limites de abuso já definidos continuam valendo: de 100 a 2.000 palavras, 10 leituras em 24 horas e 3 envios em 10 minutos. Não existe cota de plano.
+
 ## Visão geral
 
 - [x] **[Fase 0 — Corrigir a base](#fase-0--corrigir-a-base)** (25 cards)
-- [ ] **[Fase 1 — Ciclo de revisão](#fase-1--ciclo-de-revisão)** (33 cards)
-- [ ] **[Fase 2 — Motivo para voltar](#fase-2--motivo-para-voltar)** (20 cards)
-- [ ] **[Fase 3 — Sustentar o negócio](#fase-3--sustentar-o-negócio)** (8 cards)
+- [ ] **[Fase 1 — Ciclo de revisão](#fase-1--ciclo-de-revisão)** (32 neste ciclo; 1 não se aplica)
+- [ ] **[Fase 2 — Motivo para voltar](#fase-2--motivo-para-voltar)** (11 neste ciclo; 9 não se aplicam)
+- [x] **[Fase 3 — Sustentar o negócio](#fase-3--sustentar-o-negócio)** — não se aplica (8 cards)
 
-Total: 86 cards.
+Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como registro.
 
 ## Fase 0 — Corrigir a base
 
@@ -78,9 +90,9 @@ Total: 86 cards.
 
 **Objetivo:** A pessoa escreve, lê, revisa e vê a diferença. É a fase que define o produto.
 
-**Condição de saída:** Uma revisão pode ser enviada e comparada com a versão anterior, sem inflar a pontuação, e o funil, os erros e o custo podem ser medidos.
+**Condição de saída:** Uma revisão pode ser enviada e comparada com a versão anterior, sem inflar a pontuação. Erros e custo já são medidos.
 
-**Ordem:** A → B → C → D. **D é o portão da fase:** F, G e H só começam depois dele. E pode começar assim que B terminar. Em I, a exclusão pode entrar a qualquer momento e os eventos do funil fecham a fase.
+**Ordem:** A → B → C → D. **D é o portão da fase:** F, G e H só começam depois dele. E pode começar assim que B terminar. Em I, a exclusão pode entrar a qualquer momento. A instrumentação do funil não se aplica neste ciclo.
 
 ### A. Referência e linha de base
 
@@ -148,15 +160,15 @@ Total: 86 cards.
 ### I. Controle e medição
 
 - [ ] [1I-1](fase-1-revisao/1I-1-excluir-cena-com-opcao-de-desfazer.md) — Excluir uma cena com opção de desfazer
-- [ ] [1I-2](fase-1-revisao/1I-2-instrumentar-eventos-do-funil.md) — Instrumentar os eventos do funil
+- [x] [1I-2](fase-1-revisao/1I-2-instrumentar-eventos-do-funil.md) — Instrumentar os eventos do funil — não se aplica; a medição do funil fica fora deste ciclo, e erros e custo já são medidos
 
 ## Fase 2 — Motivo para voltar
 
-**Objetivo:** Transformar exercícios soltos em prática contínua.
+**Objetivo:** A pessoa volta e encontra a próxima ação, o histórico e o exercício.
 
-**Condição de saída:** Ao voltar, a pessoa vê a próxima ação certa, encontra o histórico, acompanha a evolução por gênero e recebe uma sugestão com motivo.
+**Condição de saída:** Ao voltar, a pessoa vê uma próxima ação, abre o histórico e escolhe um exercício no catálogo, no computador e no celular.
 
-**Ordem:** A → B → C → D → E, porque o Início usa o histórico, as sugestões e o progresso. F pode correr em paralelo. G depende de dados de uso e fecha a fase.
+**Ordem:** A → B → C → E. A navegação usa a Conta. Minhas cenas e o catálogo usam o encerramento. O Início usa o histórico. 2G-1 espera o rascunho salvo e os trechos citados, e pode correr em paralelo com E. Sugestões, Progresso, e-mail de leitura pronta e expansão do catálogo não se aplicam neste ciclo.
 
 ### A. Conta e navegação
 
@@ -173,53 +185,53 @@ Total: 86 cards.
 
 - [ ] [2C-1](fase-2-retorno/2C-1-enriquecer-cards-do-catalogo.md) — Enriquecer os cards do catálogo de exercícios
 - [ ] [2C-2](fase-2-retorno/2C-2-filtrar-exercicios-por-genero-e-situacao.md) — Filtrar exercícios por gênero e situação
-- [ ] [2C-3](fase-2-retorno/2C-3-sugerir-exercicio-por-ponto-fraco.md) — Sugerir exercício a partir de pontos fracos
-- [ ] [2C-4](fase-2-retorno/2C-4-resumir-encerramento-e-sugerir-proximo-exercicio.md) — Resumir o encerramento e sugerir o próximo exercício
+- [x] [2C-3](fase-2-retorno/2C-3-sugerir-exercicio-por-ponto-fraco.md) — Sugerir exercício a partir de pontos fracos — não se aplica; a sugestão por diagnóstico fica fora deste ciclo
+- [x] [2C-4](fase-2-retorno/2C-4-resumir-encerramento-e-sugerir-proximo-exercicio.md) — Resumir o encerramento e sugerir o próximo exercício — não se aplica; o encerramento fica em 2B-1, sem sugestão de próximo exercício
 
 ### D. Progresso
 
-- [ ] [2D-1](fase-2-retorno/2D-1-exibir-resumo-de-progresso.md) — Exibir o resumo de progresso
-- [ ] [2D-2](fase-2-retorno/2D-2-exibir-evolucao-por-criterio-e-genero.md) — Exibir evolução por critério dentro de cada gênero
-- [ ] [2D-3](fase-2-retorno/2D-3-identificar-padroes-e-indicar-treino.md) — Identificar padrões recorrentes e indicar um treino
+- [x] [2D-1](fase-2-retorno/2D-1-exibir-resumo-de-progresso.md) — Exibir o resumo de progresso — não se aplica; a tela de Progresso fica fora deste ciclo
+- [x] [2D-2](fase-2-retorno/2D-2-exibir-evolucao-por-criterio-e-genero.md) — Exibir evolução por critério dentro de cada gênero — não se aplica; a tela de Progresso fica fora deste ciclo
+- [x] [2D-3](fase-2-retorno/2D-3-identificar-padroes-e-indicar-treino.md) — Identificar padrões recorrentes e indicar um treino — não se aplica; padrões e treino indicado ficam fora deste ciclo
 
 ### E. Início e primeira entrada
 
 - [ ] [2E-1](fase-2-retorno/2E-1-orientar-inicio-pela-proxima-acao.md) — Orientar o Início pela próxima ação
-- [ ] [2E-2](fase-2-retorno/2E-2-exibir-cenas-recentes-e-resumo-no-inicio.md) — Exibir cenas recentes e resumo no Início
+- [ ] [2E-2](fase-2-retorno/2E-2-exibir-cenas-recentes-e-resumo-no-inicio.md) — Exibir cenas recentes no Início
 - [ ] [2E-3](fase-2-retorno/2E-3-perguntar-objetivo-na-primeira-entrada.md) — Perguntar o objetivo na primeira entrada
 
 ### F. Notificações
 
-- [ ] [2F-1](fase-2-retorno/2F-1-notificar-leitura-pronta-por-email.md) — Notificar leitura pronta por e-mail
-- [ ] [2F-2](fase-2-retorno/2F-2-permitir-desativar-notificacao-de-leitura.md) — Permitir desativar a notificação de leitura pronta
+- [x] [2F-1](fase-2-retorno/2F-1-notificar-leitura-pronta-por-email.md) — Notificar leitura pronta por e-mail — não se aplica; a leitura pronta aparece no produto, sem e-mail neste ciclo
+- [x] [2F-2](fase-2-retorno/2F-2-permitir-desativar-notificacao-de-leitura.md) — Permitir desativar a notificação de leitura pronta — não se aplica; não há e-mail de leitura pronta neste ciclo
 
 ### G. Testes e expansão
 
 - [ ] [2G-1](fase-2-retorno/2G-1-manter-italico-no-editor-e-no-envio.md) — Manter itálico no editor e no envio
-- [ ] [2G-2](fase-2-retorno/2G-2-testar-pedido-de-foco-especifico.md) — Testar pedido de foco específico para a leitura
-- [ ] [2G-3](fase-2-retorno/2G-3-expandir-catalogo-por-generos-mais-usados.md) — Expandir o catálogo pelos gêneros mais usados
+- [x] [2G-2](fase-2-retorno/2G-2-testar-pedido-de-foco-especifico.md) — Testar pedido de foco específico para a leitura — não se aplica; o experimento fica fora deste ciclo
+- [x] [2G-3](fase-2-retorno/2G-3-expandir-catalogo-por-generos-mais-usados.md) — Expandir o catálogo pelos gêneros mais usados — não se aplica; seguem os exercícios atuais
 
 ## Fase 3 — Sustentar o negócio
 
-**Objetivo:** Operar com custo controlado, confiança e dados.
+**Não se aplica neste ciclo (2026-11-06).** Pagamento, cota de plano gratuito e plano pago ficam de fora. Junto com eles saem a gestão avançada da conta e a administração do catálogo, porque este ciclo fica no MVP e na interface da prática.
 
-**Condição de saída:** A cota é aplicada, o plano pago pode ser contratado e cancelado, a pessoa controla os próprios dados e o catálogo muda sem seed.
+**Objetivo original:** Operar com custo controlado, confiança e dados.
 
-**Ordem:** A vem primeiro. B e C são independentes entre si, exceto pela exclusão de conta, que precisa do plano pago para tratar assinaturas ativas.
+**Condição de saída original:** A cota é aplicada, o plano pago pode ser contratado e cancelado, a pessoa controla os próprios dados e o catálogo muda sem seed. Essa condição não será perseguida agora.
 
 ### A. Oferta e cota
 
-- [ ] [3A-1](fase-3-negocio/3A-1-definir-cota-e-versoes-do-plano-gratuito.md) — Definir cota e versões do plano gratuito
-- [ ] [3A-2](fase-3-negocio/3A-2-controlar-cota-de-leituras.md) — Controlar a cota de leituras
-- [ ] [3A-3](fase-3-negocio/3A-3-criar-plano-pago.md) — Criar o plano pago
+- [x] [3A-1](fase-3-negocio/3A-1-definir-cota-e-versoes-do-plano-gratuito.md) — Definir cota e versões do plano gratuito — não se aplica; não há cota nem plano neste ciclo
+- [x] [3A-2](fase-3-negocio/3A-2-controlar-cota-de-leituras.md) — Controlar a cota de leituras — não se aplica; os limites de abuso da Fase 0 continuam valendo
+- [x] [3A-3](fase-3-negocio/3A-3-criar-plano-pago.md) — Criar o plano pago — não se aplica; pagamento fica fora deste ciclo
 
 ### B. Conta e dados
 
-- [ ] [3B-1](fase-3-negocio/3B-1-editar-dados-da-conta.md) — Editar os dados da conta
-- [ ] [3B-2](fase-3-negocio/3B-2-exportar-cenas-e-leituras.md) — Exportar cenas e leituras
-- [ ] [3B-3](fase-3-negocio/3B-3-excluir-conta-e-dados.md) — Excluir a conta e os dados
+- [x] [3B-1](fase-3-negocio/3B-1-editar-dados-da-conta.md) — Editar os dados da conta — não se aplica; a Conta deste ciclo mostra nome, e-mail e sair
+- [x] [3B-2](fase-3-negocio/3B-2-exportar-cenas-e-leituras.md) — Exportar cenas e leituras — não se aplica; exportação fica fora deste ciclo
+- [x] [3B-3](fase-3-negocio/3B-3-excluir-conta-e-dados.md) — Excluir a conta e os dados — não se aplica; pedidos sobre dados seguem o canal já descrito na Fase 0
 
 ### C. Administração do catálogo
 
-- [ ] [3C-1](fase-3-negocio/3C-1-administrar-catalogo-e-rubricas.md) — Administrar o catálogo e as rubricas
-- [ ] [3C-2](fase-3-negocio/3C-2-retirar-exercicio-sem-apagar-historico.md) — Retirar um exercício sem apagar o histórico
+- [x] [3C-1](fase-3-negocio/3C-1-administrar-catalogo-e-rubricas.md) — Administrar o catálogo e as rubricas — não se aplica; o catálogo continua no seed
+- [x] [3C-2](fase-3-negocio/3C-2-retirar-exercicio-sem-apagar-historico.md) — Retirar um exercício sem apagar o histórico — não se aplica; não há administração do catálogo neste ciclo

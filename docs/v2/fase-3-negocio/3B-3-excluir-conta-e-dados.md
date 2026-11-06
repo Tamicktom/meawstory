@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa B — Conta e dados** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A exclusão de conta fica fora do MVP. Pedidos sobre dados seguem o canal já descrito na Fase 0. O texto abaixo fica como registro.
+
 ## Objetivo
 Atender ao controle dos próprios dados e à LGPD com um fluxo claro e seguro.
 

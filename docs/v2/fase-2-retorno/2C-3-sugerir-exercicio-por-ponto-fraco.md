@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa C — Catálogo e sugestões** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A sugestão por ponto fraco fica fora do MVP. O próximo exercício é escolhido no catálogo. O texto abaixo fica como registro.
+
 ## Objetivo
 Ligar o diagnóstico das leituras recentes à próxima prática.
 

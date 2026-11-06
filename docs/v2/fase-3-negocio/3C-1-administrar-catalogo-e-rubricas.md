@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa C — Administração do catálogo** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. O catálogo continua no seed. O texto abaixo fica como registro.
+
 ## Objetivo
 Permitir evoluir o conteúdo sem depender de seed ou alteração direta no banco.
 

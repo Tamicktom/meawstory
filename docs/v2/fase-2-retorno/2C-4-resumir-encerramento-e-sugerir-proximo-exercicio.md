@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa C — Catálogo e sugestões** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. O encerramento fica em 2B-1, sem resumo de evolução nem sugestão de próximo exercício. O texto abaixo fica como registro.
+
 ## Objetivo
 Fechar um ciclo e abrir o seguinte sem exigir pontuação alta.
 

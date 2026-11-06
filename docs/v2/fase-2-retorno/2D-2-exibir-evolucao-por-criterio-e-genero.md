@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa D — Progresso** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A evolução por critério fica fora do MVP, junto com a tela de Progresso. O texto abaixo fica como registro.
+
 ## Objetivo
 Mostrar evolução sem misturar rubricas incompatíveis.
 

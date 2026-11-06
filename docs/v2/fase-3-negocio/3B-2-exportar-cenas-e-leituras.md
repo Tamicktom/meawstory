@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa B — Conta e dados** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A exportação de cenas e leituras fica fora do MVP. O texto abaixo fica como registro.
+
 ## Objetivo
 Permitir que a pessoa obtenha uma cópia dos próprios dados e do histórico de trabalho.
 

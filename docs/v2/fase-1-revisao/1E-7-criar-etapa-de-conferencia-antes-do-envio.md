@@ -9,7 +9,6 @@ Evitar que uma leitura seja usada por engano.
 - Mostrar contagem de palavras e itens ainda não marcados no checklist.
 - Avisar sem bloquear quando a cena estiver fora da extensão pedida pelo exercício, com contagem, faixa e ação possível.
 - Aplicar os bloqueios absolutos de tamanho e os limites de envio da Fase 0.
-- Mostrar quantas leituras restam quando houver cota.
 - Manter ações claras para voltar a escrever ou confirmar o envio.
 
 ## Critérios de conclusão

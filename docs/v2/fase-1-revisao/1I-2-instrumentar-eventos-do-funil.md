@@ -2,6 +2,8 @@
 
 **Fase 1 · Etapa I — Controle e medição** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A medição do funil fica fora do MVP. Erros e custo já são medidos. O texto abaixo fica como registro.
+
 ## Objetivo
 Medir ativação, ciclo central, valor e retorno com dados reais.
 

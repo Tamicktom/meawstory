@@ -29,4 +29,4 @@ Definir como a pessoa conhece o produto antes do cadastro, sem abrir um caminho 
 
 **Atenção para 0B-1:** o card pede uma leitura real, mas o exemplo da seção 5.2 de `docs/produto-fluxo-novo.md` é inventado. O exemplo da landing precisa sair do motor atual, com uma cena que o Meawstory possa publicar.
 
-**Revisão:** reavaliar com os dados do funil de 1I-2, se o cadastro se mostrar uma barreira.
+**Revisão:** reavaliar se o cadastro se mostrar uma barreira. A instrumentação do funil (1I-2) ficou fora deste ciclo.

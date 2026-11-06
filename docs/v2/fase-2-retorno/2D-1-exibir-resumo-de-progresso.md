@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa D — Progresso** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. A tela de Progresso fica fora do MVP. O texto abaixo fica como registro.
+
 ## Objetivo
 Mostrar a prática realizada sem ranking nem punição por ausência.
 

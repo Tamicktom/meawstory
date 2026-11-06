@@ -12,13 +12,12 @@ Escolher uma única ação principal nesta ordem:
 3. Mostrar que uma leitura está em andamento.
 4. Continuar um rascunho, com palavras e data.
 5. Revisar com o foco já visível depois de uma leitura.
-6. Sugerir o próximo exercício, com o motivo.
+6. Abrir Exercícios para escolher o próximo.
 
 ## Critérios de conclusão
 - A prioridade é determinística quando mais de uma situação existe.
-- Quem está começando vê somente o primeiro exercício sugerido como ação principal.
+- Quem não tem cena em andamento vê a ação de escolher um exercício.
 
 ## Dependências
 - [1G-1 · Criar uma revisão e guardar as versões](../fase-1-revisao/1G-1-criar-revisao-e-guardar-versoes.md)
 - [2B-2 · Registrar quando a leitura foi aberta](2B-2-registrar-quando-a-leitura-foi-aberta.md)
-- [2C-3 · Sugerir exercício a partir de pontos fracos](2C-3-sugerir-exercicio-por-ponto-fraco.md)

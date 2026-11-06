@@ -1,8 +1,10 @@
 # Meawstory: proposta de produto e novo fluxo
 
-**Status:** proposta para discussão, nada implementado.
-**Data:** 2026-11-03.
+**Status:** proposta de produto. A execução deste ciclo está nos cards de `docs/v2/`.
+**Data:** 2026-11-03. Recorte do ciclo em 2026-11-06.
 **Público:** escritores de ficção praticando.
+
+**Recorte de 2026-11-06.** Este ciclo entrega escrever, receber a leitura, revisar, comparar versões, e a interface para voltar: Início, Exercícios, Minhas cenas e Conta. Ficam fora pagamento, cota de plano, plano pago, edição e exportação da conta, exclusão de conta, administração do catálogo, sugestão por ponto fraco, tela de Progresso, aviso de leitura pronta por e-mail, teste de foco específico, expansão do catálogo e eventos do funil. Os limites de abuso já definidos continuam valendo.
 
 ## 1. A ideia em uma frase
 
@@ -41,13 +43,13 @@ Pessoas que já escrevem ou querem escrever ficção e têm um destes problemas:
 | A home é um template, sem caminho para entrar | Landing com a promessa, um exemplo de leitura e um botão para começar |
 | Sem sessão aparece "Unauthorized" | A pessoa vai para o login e volta para onde estava |
 | O dashboard tem só dois botões | O Início mostra a próxima ação certa |
-| Temas sem gênero ou filtro | Exercícios por gênero, com o que cada um treina e seu progresso |
+| Temas sem gênero ou filtro | Exercícios por gênero, com o que cada um treina e a situação da pessoa |
 | Os critérios ficam escondidos | "O que será observado" aparece antes de escrever |
 | O editor abre com "Hello World!" e não salva rascunho | Editor limpo, com contador por tema e salvamento automático |
 | A nota é um número, com o detalhe preso em um texto corrido | A leitura é dividida por critério, com trechos marcados na cena |
 | O texto em correção aparece como "Nota 0 de 1000" | Cada estado tem sua própria tela |
 | A correção sugere revisar, mas não há como | "Revisar com esse foco" abre a versão seguinte |
-| Não há comparação nem evolução | Comparação entre versões e progresso por gênero |
+| Não há comparação entre versões | Comparação entre versões |
 
 ## 3. Linguagem do produto
 
@@ -62,7 +64,7 @@ A interface passa a ser toda em português e usa o vocabulário de quem escreve.
 | `score` | **Pontuação** | Fica em segundo plano |
 | Faixas da rubrica | **Ausente, Em esboço, Funciona, Forte** | Dizem mais que um número |
 
-A navegação principal fica assim: **Início, Exercícios, Minhas cenas, Progresso e Conta**.
+A navegação principal deste ciclo fica assim: **Início, Exercícios, Minhas cenas e Conta**.
 
 ## 4. O novo fluxo
 
@@ -117,16 +119,15 @@ O Início mostra uma ação principal, escolhida nesta ordem:
 | Tem uma leitura em andamento | **Sua cena está sendo lida** |
 | Tem um rascunho salvo | **Continuar escrevendo**, com o número de palavras e a data |
 | Leu, mas não revisou | **Revisar com o foco:** "...", com o foco já visível |
-| Nenhuma das anteriores | **Próximo exercício**, com o motivo da sugestão |
+| Nenhuma das anteriores | **Escolher um exercício** |
 
-Abaixo da ação ficam as cenas recentes e um resumo curto do progresso. Quem está começando vê só o primeiro exercício sugerido.
+Abaixo da ação ficam as cenas recentes. Quem está começando responde o que quer treinar, ou abre os exercícios.
 
 ### 4.4 Exercícios
 
 - **Cada card mostra:** gênero, título, o que treina, extensão pedida e situação da pessoa nele.
 - **Situações possíveis:** não escrito, rascunho, em revisão e encerrado.
 - **Filtros:** gênero e situação.
-- **Destaque:** uma sugestão baseada no ponto mais fraco que apareceu nas leituras recentes.
 
 ### 4.5 Briefing do exercício
 
@@ -153,15 +154,14 @@ Antes de usar uma leitura, uma etapa curta mostra:
 
 - Contagem de palavras e os itens do checklist ainda não marcados.
 - Aviso sem bloqueio quando a cena estiver fora da faixa: "Sua cena tem 310 palavras e o exercício pede de 400 a 900. Quer enviar mesmo assim?"
-- Bloqueio apenas abaixo de um mínimo e acima de um máximo definidos, para evitar leituras sem valor e abuso de custo.
-- Quantas leituras restam, quando houver cota.
+- Bloqueio apenas abaixo de um mínimo e acima de um máximo definidos, para evitar leituras sem valor e abuso de custo. Os tetos são os limites de abuso já definidos: tamanho da cena e leituras por dia. Não há cota de plano neste ciclo.
 
 ### 4.8 Leitura em andamento
 
 - Mensagem: "Sua cena está sendo lida. Pode sair desta página: ela vai ficar em Minhas cenas."
 - O texto enviado continua visível.
 - Se passar do tempo esperado, a tela avisa e oferece voltar depois.
-- A partir da Fase 2, a pessoa também é avisada por e-mail, enviado pelo Resend.
+- A leitura pronta aparece em Minhas cenas e no Início. O aviso por e-mail fica fora deste ciclo.
 
 ### 4.9 Leitura da cena
 
@@ -190,23 +190,17 @@ Para a comparação não contaminar a avaliação, são **duas etapas separadas*
 ### 4.12 Encerrar a cena
 
 - **Dar por encerrada** é uma decisão de quem escreve, e pode ser desfeita.
-- A pessoa recebe um pequeno resumo, como "De Em esboço para Funciona em Clareza em velocidade, em 3 versões", e uma sugestão de próximo exercício.
+- O próximo exercício é escolhido no catálogo.
 - Parar sem pontuação alta também é válido, e o texto da interface não pode tratar isso como desistência.
 
-### 4.13 Minhas cenas e Progresso
+### 4.13 Minhas cenas
 
 **Minhas cenas**
 
 - Lista por cena, com exercício, gênero, número de versões, faixa ou situação atual e data da última alteração.
 - Filtros por gênero e situação, e opção de excluir uma cena.
 
-**Progresso**
-
-- Quantas cenas e revisões foram feitas, e quantas palavras foram escritas.
-- Evolução por critério **dentro de cada gênero**, porque os critérios mudam entre as rubricas e uma média geral enganaria.
-- Pontos fortes e pontos recorrentes, como "Em 3 das últimas 4 cenas de luta, 'Espaço e recursos' ficou em Em esboço".
-- Ação ligada ao padrão: "Treinar isso em A cozinha estreita".
-- Sem ranking e sem sequência de dias que puna ausência.
+A tela de Progresso, a evolução por critério e os padrões recorrentes ficam fora deste ciclo. Ranking, medalhas e sequência de dias continuam fora do produto.
 
 ## 5. A leitura: o feedback da IA
 
@@ -366,7 +360,7 @@ Regras gerais:
 | Melhoria | Motivo |
 |---|---|
 | Conjunto de avaliação antes de trocar o formato da leitura | Mede se a mudança melhorou ou piorou as leituras |
-| Leitura estruturada por critério | É a base da faixa, dos trechos, da comparação e do progresso |
+| Leitura estruturada por critério | É a base da faixa, dos trechos e da comparação |
 | Soma, faixa e trechos validados pelo servidor | A nota não pode depender da conta feita pela IA |
 | Proteção contra instruções escritas dentro da cena | Evita manipular a nota |
 | Tela nova de leitura, com trechos marcados | Liga cada crítica ao texto |
@@ -377,33 +371,26 @@ Regras gerais:
 | Comparação entre versões, avaliada em duas etapas | Mostra o ganho sem inflar a pontuação |
 | Excluir uma cena | Já é previsto pelo banco, mas não existe no produto |
 | Avaliação da leitura por quem escreve | Mede qualidade e alimenta o conjunto de avaliação |
-| Eventos do funil e monitoramento de erros | A métrica principal e o teste com escritores dependem disso |
-| Medir o custo por leitura | Base para rever os limites e definir cota e preço |
+| Monitorar erros e medir o custo por leitura | Já entregues. Servem à operação e à revisão dos limites de abuso |
 
 ### Fase 2: motivo para voltar
 
-*Objetivo: transformar exercícios soltos em prática contínua.*
+*Objetivo: a pessoa volta, vê a próxima ação e encontra a cena e o exercício.*
 
 | Melhoria | Motivo |
 |---|---|
 | Início orientado pela próxima ação | Reduz a dúvida sobre o que fazer |
-| Primeira pergunta e exercício sugerido | Leva mais rápido à primeira cena |
+| Primeira pergunta e exercício do gênero escolhido | Leva mais rápido à primeira cena |
 | Catálogo com gênero, filtros, objetivo e situação | Facilita escolher o treino certo |
-| Tela de Progresso e padrões recorrentes | Mostra a evolução real |
-| Sugestão de exercício a partir de pontos fracos | Liga o diagnóstico à próxima prática |
-| Encerrar cena, com resumo | Dá sensação de conclusão |
-| Aviso de leitura pronta por e-mail, pelo Resend, com opção de desativar | Traz a pessoa de volta na hora certa |
-| Mais exercícios, com foco nos gêneros mais usados | 12 exercícios acabam rápido |
+| Encerrar e reabrir a cena | Dá conclusão sem bloquear a retomada |
+| Minhas cenas com versões, faixa e situação | O histórico fica recuperável |
+| Itálico no editor e no envio | A formatação útil à ficção sobrevive ao ciclo |
+
+Ficam fora deste ciclo: tela de Progresso, sugestão por ponto fraco, aviso de leitura pronta por e-mail e mais exercícios.
 
 ### Fase 3: sustentar o negócio
 
-*Objetivo: operar com custo controlado, confiança e dados.*
-
-| Melhoria | Motivo |
-|---|---|
-| Cota de leituras e plano pago | Controla o custo e testa a disposição de pagar |
-| Conta com alterar dados, exportar cenas e excluir conta | Controle sobre os próprios dados e atendimento à LGPD |
-| Administração do catálogo | Hoje o conteúdo só muda por seed |
+Fora deste ciclo. Pagamento, cota de plano, plano pago, edição e exportação da conta, exclusão de conta e administração do catálogo não entram no MVP.
 
 ## 8. Impacto nos dados
 
@@ -432,7 +419,7 @@ O modelo atual ajuda bastante, mas estas decisões precisam estar em `database/s
 | **Qualidade** | Respostas a "Essa leitura ajudou?" e discordâncias por critério |
 | **Operação** | Tempo até a leitura, taxa de falha e custo por leitura |
 
-As metas devem ser definidas depois de medir os primeiros usuários, para não partir de números inventados.
+As metas devem ser definidas depois de medir os primeiros usuários, para não partir de números inventados. A instrumentação desses eventos fica fora deste ciclo. Erros, tempo e custo já são medidos na operação da leitura.
 
 ## 10. Fora do escopo por enquanto
 
@@ -442,6 +429,9 @@ As metas devem ser definidas depois de medir os primeiros usuários, para não p
 - Ranking, medalhas e sequência de dias.
 - Exercícios gerados por IA, pois a curadoria do catálogo é parte do valor.
 - Avaliação por pessoas reais.
+- Pagamento, cota de plano gratuito e plano pago.
+- Edição de dados, exportação, exclusão de conta e administração do catálogo.
+- Sugestão de exercício por ponto fraco, tela de Progresso, aviso de leitura pronta por e-mail, pedido de foco específico, expansão do catálogo e eventos do funil.
 
 ## 11. Decisões
 
@@ -450,6 +440,8 @@ As metas devem ser definidas depois de medir os primeiros usuários, para não p
 - **Público:** escritores de ficção praticando.
 - **Envio de e-mails:** Resend, com o domínio `meawstory.com` e o remetente `Meawstory <nao-responda@meawstory.com>`. Uma caixa de contato fica para depois do MVP.
 - **Avaliação:** faixa em destaque, com a pontuação em segundo plano.
+- **Cota e plano pago:** fora deste ciclo. Permanecem os limites de abuso: de 100 a 2.000 palavras, 10 leituras em 24 horas e 3 envios em 10 minutos.
+- **Foco específico pedido por quem escreve:** fora deste ciclo.
 
 **Em aberto:**
 
@@ -459,10 +451,7 @@ As metas devem ser definidas depois de medir os primeiros usuários, para não p
 | Quais limites usar no início? | De 100 a 2.000 palavras por envio e até 10 leituras por dia por pessoa, revendo depois de medir o custo |
 | Quem avalia as cenas de referência? | Você e de 1 a 2 leitores experientes, começando com cerca de 30 cenas, 5 por gênero |
 | Testar antes de criar conta? | Não no início: mostrar um exemplo na landing e pedir conta antes da primeira leitura, para controlar o custo |
-| Quantas leituras e versões no plano gratuito? | Definir depois de medir o custo por leitura |
-| Qual formatação manter no editor? | Parágrafos na Fase 0 e itálico depois, por ser comum em ficção |
-| A pessoa pode pedir um foco específico à leitura? | Testar depois da Fase 1, sem alterar a pontuação |
-| Como tratar os dados enviados à OpenAI? | Confirmar os termos de retenção e uso antes de prometer algo na landing |
+| Qual formatação manter no editor? | Parágrafos na Fase 0 e itálico neste ciclo, por ser comum em ficção |
 
 ## 12. Sequência recomendada
 

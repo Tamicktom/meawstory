@@ -7,9 +7,9 @@ Estes cards dividem a proposta de `docs/produto-fluxo-novo.md` em entregas peque
 | Fase | Pasta | Objetivo | Cards |
 |---|---|---|---|
 | 0 — Corrigir a base | [`fase-0-base/`](fase-0-base/) | Uma pessoa consegue entrar e usar o ciclo atual sem encontrar estados falsos ou caminhos quebrados. | 25 |
-| 1 — Ciclo de revisão | [`fase-1-revisao/`](fase-1-revisao/) | A pessoa escreve, lê, revisa e vê a diferença. É a fase que define o produto. | 33 |
-| 2 — Motivo para voltar | [`fase-2-retorno/`](fase-2-retorno/) | Transformar exercícios soltos em prática contínua. | 20 |
-| 3 — Sustentar o negócio | [`fase-3-negocio/`](fase-3-negocio/) | Operar com custo controlado, confiança e dados. | 8 |
+| 1 — Ciclo de revisão | [`fase-1-revisao/`](fase-1-revisao/) | A pessoa escreve, lê, revisa e vê a diferença. É a fase que define o produto. | 32 neste ciclo |
+| 2 — Motivo para voltar | [`fase-2-retorno/`](fase-2-retorno/) | A pessoa volta, vê a próxima ação e encontra a cena e o exercício. | 11 neste ciclo |
+| 3 — Sustentar o negócio | [`fase-3-negocio/`](fase-3-negocio/) | Fora deste ciclo. | 0 |
 
 ## Como os cards se organizam
 
@@ -33,6 +33,17 @@ Todo card segue o mesmo formato: objetivo, escopo, critérios de conclusão e, q
 - Decisões de dados são registradas em `database/schema.md` antes das respectivas mudanças de tabela ou consulta.
 - Na Fase 1, o conjunto de referência, a medição e o teste com escritores (etapas A a D) vêm antes da construção completa da tela de leitura, da revisão e da comparação.
 
+## Recorte deste ciclo
+
+Decisão de 2026-11-06, registrada no [card pai](00-card-pai.md). O plano original tem 86 cards. Este ciclo implementa o essencial do MVP e a interface para usá-lo: escrever, receber a leitura, revisar, comparar versões, e navegar entre Início, Exercícios, Minhas cenas e Conta.
+
+Ficam de fora 18 cards, marcados como não se aplica:
+
+- Pagamento, cota de plano gratuito, plano pago, edição e exportação da conta, exclusão de conta e administração do catálogo.
+- Sugestão por ponto fraco, tela de Progresso, aviso de leitura pronta por e-mail, teste de foco específico, expansão do catálogo e eventos do funil.
+
+Os limites de abuso da Fase 0 continuam valendo: de 100 a 2.000 palavras por envio, 10 leituras em 24 horas e 3 envios em 10 minutos. Não há cota de plano.
+
 ## Limites do plano
 
-Não entram nestas etapas geração ou reescrita de cenas por IA, manuscritos longos, comunidade, ranking, medalhas, sequência de dias, exercícios gerados por IA ou avaliação humana como serviço.
+Não entram nestas etapas geração ou reescrita de cenas por IA, manuscritos longos, comunidade, ranking, medalhas, sequência de dias, exercícios gerados por IA, avaliação humana como serviço, pagamento, cota de plano ou plano pago.

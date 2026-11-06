@@ -2,6 +2,8 @@
 
 **Fase 2 · Etapa G — Testes e expansão** · Tipo: Conteúdo · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. O catálogo segue com os exercícios atuais. O texto abaixo fica como registro.
+
 ## Objetivo
 Aumentar a variedade sem perder a curadoria nem criar exercícios por IA.
 

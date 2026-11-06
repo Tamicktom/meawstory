@@ -2,6 +2,8 @@
 
 **Fase 3 · Etapa C — Administração do catálogo** · Tipo: Implementação · [Card pai](../00-card-pai.md)
 
+> **Fora deste ciclo (2026-11-06).** Não se aplica. Não há administração do catálogo neste ciclo. O texto abaixo fica como registro.
+
 ## Objetivo
 Remover conteúdo do catálogo ativo sem apagar cenas e leituras de quem já o praticou.
 

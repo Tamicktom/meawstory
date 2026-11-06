@@ -33,3 +33,5 @@ O custo da comparação é medido em 1H-1, no mesmo registro.
 - o custo por resultado da chamada, por modelo, por versão do prompt, por gênero e as cenas mais caras.
 
 "Versão" aqui é a versão do prompt; o custo por versão da cena entra quando 1G-1 criar as versões. O relatório da linha de base também calcula o custo com o mesmo preço, para comparar configurações antes de chegarem ao produto.
+
+**Uso posterior:** em 2026-11-06 a cota de plano e o preço pago saíram deste ciclo. A medição continua servindo à operação e à revisão dos limites de abuso.
