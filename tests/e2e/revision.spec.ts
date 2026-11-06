@@ -57,17 +57,50 @@ for (const width of [1280, 320]) {
       await expect(page).toHaveURL(/\/dashboard\/texts\/[^/?]+$/, {
         timeout: 45_000,
       })
-      await expect(page.getByText("Leitura · Versão 2")).toBeVisible({
-        timeout: 45_000,
+      await expect(
+        page.getByRole("main").getByText("Leitura · Versão 2", { exact: true })
+      ).toBeVisible({ timeout: 45_000 })
+      const comparison = page.getByRole("region", {
+        name: "Comparação com a versão anterior",
       })
+      await expect(comparison).toContainText(
+        "A versão nova mostra um gesto diante da chave."
+      )
+      await expect(comparison).toContainText(intention)
+      await expect(
+        comparison.getByRole("link", { name: "Revisar novamente", exact: true })
+      ).toBeVisible()
+      if (width < 768) {
+        await comparison
+          .getByRole("tab", { name: "Versão anterior", exact: true })
+          .click()
+        await expect(
+          comparison.getByRole("region", { name: "Versão anterior", exact: true })
+        ).toBeVisible()
+        await expect(
+          comparison.getByRole("region", { name: "Esta versão", exact: true })
+        ).toBeHidden()
+      } else {
+        await expect(
+          comparison.getByRole("region", { name: "Versão anterior", exact: true })
+        ).toBeVisible()
+        await expect(
+          comparison.getByRole("region", { name: "Esta versão", exact: true })
+        ).toBeVisible()
+      }
       await expect(
         page.getByRole("region", { name: "Contexto da revisão" })
       ).toContainText(intention)
       const sceneUrl = page.url()
       await page.goto(`${sceneUrl}?versao=1`)
-      await expect(page.getByText("Leitura · Versão 1")).toBeVisible()
+      await expect(
+        page.getByRole("main").getByText("Leitura · Versão 1", { exact: true })
+      ).toBeVisible()
       await expect(
         page.getByRole("region", { name: "Contexto da revisão" })
+      ).toHaveCount(0)
+      await expect(
+        page.getByRole("region", { name: "Comparação com a versão anterior" })
       ).toHaveCount(0)
       await expect(
         page.getByRole("link", { name: "Revisar com esse foco", exact: true })

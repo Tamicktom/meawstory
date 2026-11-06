@@ -1,6 +1,7 @@
 import { validateStructuredReading } from "@/lib/reading-contract"
+import { assertVersionComparison } from "@/lib/version-comparison"
 //* Libraries imports
-import { and, count, eq, gt, inArray, isNull, lte, sql } from "drizzle-orm"
+import { and, count, desc, eq, gt, inArray, isNull, lt, lte, sql } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
@@ -8,10 +9,13 @@ import {
   correction,
   readingCall,
   type CorrectionStatus,
+  type ReadingCallKind,
   type ReadingFailureStage,
 } from "@/database/schema"
 import { callCost, priceFor } from "@/lib/model-pricing"
 import type { GradingCall } from "@/workflows/correction-grading"
+
+type MeasuredCall = Omit<GradingCall, "rejection"> & { rejection: string | null }
 
 import { READING_TIMEOUT_MS } from "@/lib/reading-policy"
 import { expireReadings } from "@/services/reading"
@@ -151,9 +155,14 @@ async function updateCorrection(
   id: string,
   values: Partial<Omit<InsertCorrectionValues, "id">>
 ): Promise<CorrectionWriteResult | null> {
-  if (values.structuredResult) {
+  if (values.structuredResult || values.comparison) {
     const attempt = await findAttemptSnapshot(id)
-    validateStructuredCompletion(values, attempt)
+    if (values.structuredResult) validateStructuredCompletion(values, attempt)
+    if (values.comparison)
+      assertVersionComparison(
+        values.comparison,
+        values.textContent ?? attempt?.textContent ?? ""
+      )
   }
   const result = await db
     .update(correction)
@@ -181,7 +190,7 @@ async function updateCorrection(
 
 type CallConfiguration = { modelId: string; promptVersion: string }
 
-function usageColumns(call: GradingCall) {
+function usageColumns(call: MeasuredCall) {
   const usage = call.usage
   return {
     inputTokens: usage?.inputTokens ?? null,
@@ -191,7 +200,7 @@ function usageColumns(call: GradingCall) {
   }
 }
 
-function pricedCost(call: GradingCall, modelId: string) {
+function pricedCost(call: MeasuredCall, modelId: string) {
   const price = priceFor(modelId, call.startedAt)
   const cost = price && call.usage ? callCost(call.usage, price) : null
   return { price, costUsd: cost === null ? null : cost.toFixed(8) }
@@ -200,12 +209,14 @@ function pricedCost(call: GradingCall, modelId: string) {
 //* Keeps every model call with its tokens and cost, priced at the list price of its day (1C-6).
 async function recordCall(
   correctionId: string,
-  call: GradingCall,
-  configuration: CallConfiguration
+  call: MeasuredCall,
+  configuration: CallConfiguration,
+  kind: ReadingCallKind = "reading"
 ) {
   await db.insert(readingCall).values({
     id: crypto.randomUUID(),
     correctionId,
+    kind,
     sequence: call.sequence,
     outcome: call.outcome,
     rejection: call.rejection,
@@ -233,6 +244,7 @@ async function listCompletedVersions(textId: string) {
       rubricCriteria: true,
       source: true,
       revisionIntent: true,
+      comparison: true,
       status: true,
     },
     where: {
@@ -246,6 +258,24 @@ async function listCompletedVersions(textId: string) {
     ...reading,
     version: index + 1,
   }))
+}
+
+async function findPreviousCompletedReading(textId: string, before: Date) {
+  const [row] = await db
+    .select()
+    .from(correction)
+    .where(
+      and(
+        eq(correction.textId, textId),
+        eq(correction.status, "COMPLETED"),
+        isNull(correction.deletedAt),
+        lt(correction.createdAt, before)
+      )
+    )
+    .orderBy(desc(correction.createdAt))
+    .limit(1)
+
+  return row ?? null
 }
 
 async function completedVersion(textId: string, correctionId: string) {
@@ -268,6 +298,7 @@ async function completedVersion(textId: string, correctionId: string) {
 
 export const correctionService = {
   listCompletedVersions,
+  findPreviousCompletedReading,
   completedVersion,
   recordCall,
   findAttemptSnapshot,

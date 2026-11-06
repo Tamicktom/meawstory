@@ -14,6 +14,7 @@ import { correctionService } from "@/services/correction"
 import {
   actionCriteria,
   createIsolatedRows,
+  expectPostgresError,
 } from "@/tests/helpers/schema-fixtures"
 import {
   correctText,
@@ -61,7 +62,9 @@ type GenerateTextSpy = {
       ]
     >
   }
-  mockImplementation: (implementation: () => Promise<unknown>) => unknown
+  mockImplementation: (
+    implementation: (input?: { prompt?: string }) => Promise<unknown>
+  ) => unknown
   mockRestore: () => void
 }
 
@@ -741,6 +744,175 @@ describe("correctText", () => {
       status: "FAILED",
       failureStage: "saving",
     })
+  })
+
+  it("grades the next version without the previous score and then compares the two readings", async () => {
+    const graph = await insertOpenText()
+    const firstId = nextStepId()
+    await withStep(firstId, () => correctText(graph.textId))
+    const nextScene = `${SCENE} She paid for the leap.`
+    await db.update(text).set({ content: nextScene }).where(eq(text.id, graph.textId))
+    const prompts: string[] = []
+    generateTextSpy.mockImplementation(async (input) => {
+      const prompt = input?.prompt ?? ""
+      prompts.push(prompt)
+      if (prompt.includes("<versao-nova>"))
+        return {
+          output: {
+            met: true,
+            answer: "The leap now costs her.",
+            evidence: QUOTE,
+          },
+          usage: {
+            inputTokens: 500,
+            outputTokens: 200,
+            inputTokenDetails: { cacheReadTokens: 0 },
+            outputTokenDetails: { reasoningTokens: 0 },
+          },
+        }
+      return gradedModelResult([20, 190, 128, 180, 128])
+    })
+    const secondId = nextStepId()
+
+    await withStep(secondId, () => correctText(graph.textId))
+
+    const grading = prompts.filter((prompt) => !prompt.includes("<versao-nova>"))
+    const comparison = prompts.filter((prompt) => prompt.includes("<versao-nova>"))
+    expect(grading).toHaveLength(1)
+    expect(comparison).toHaveLength(1)
+    for (const prompt of prompts) expect(prompt).not.toContain("640")
+    expect(grading[0]).not.toContain("<versao-anterior>")
+    expect(grading[0]).toContain(nextScene)
+    expect(comparison[0]).toContain("Let the gap cost her something.")
+    expect(comparison[0]).not.toContain("revision intent")
+    const stored = await correctionService.findAttemptSnapshot(secondId)
+    expect(stored?.score).toBe("646.00")
+    expect(stored?.comparison).toMatchObject({
+      version: 1,
+      textUnchanged: false,
+      previousCorrectionId: firstId,
+      focus: { status: "met", evidence: QUOTE },
+    })
+    expect(
+      stored?.comparison?.criteria.find((item) => item.id === "fidelity")?.movement
+    ).toBe("regressed")
+    expect(
+      stored?.comparison?.criteria.find((item) => item.id === "shape")?.movement
+    ).toBe("improved")
+    const calls = await db
+      .select()
+      .from(readingCall)
+      .where(eq(readingCall.correctionId, secondId))
+    expect(calls.filter((call) => call.kind === "reading")).toHaveLength(1)
+    expect(calls.filter((call) => call.kind === "comparison")).toHaveLength(1)
+    expect((await correctionService.findAttemptSnapshot(firstId))?.comparison).toBeNull()
+    await expectPostgresError(
+      () =>
+        db
+          .update(correction)
+          .set({ comparison: null })
+          .where(eq(correction.id, secondId)),
+      "23514",
+      "correction_immutable_comparison"
+    )
+    await expectPostgresError(
+      () =>
+        db.update(correction).set({ score: "1.00" }).where(eq(correction.id, secondId)),
+      "23514",
+      "correction_immutable_result"
+    )
+  })
+
+  it("does not call the comparison model or count a gain when the text is unchanged", async () => {
+    const graph = await insertOpenText()
+    await withStep(nextStepId(), () => correctText(graph.textId))
+    const prompts: string[] = []
+    generateTextSpy.mockImplementation(async (input) => {
+      prompts.push(input?.prompt ?? "")
+      return gradedModelResult([140, 180, 180, 220, 180])
+    })
+    const secondId = nextStepId()
+
+    await withStep(secondId, () => correctText(graph.textId))
+
+    expect(prompts.some((prompt) => prompt.includes("<versao-nova>"))).toBe(false)
+    const stored = await correctionService.findAttemptSnapshot(secondId)
+    expect(stored?.score).toBe("900.00")
+    expect(stored?.comparison?.textUnchanged).toBe(true)
+    expect(stored?.comparison?.focus).toEqual({ status: "unchanged" })
+    expect(
+      stored?.comparison?.criteria.every((item) => item.movement === "unchanged")
+    ).toBe(true)
+    const calls = await db
+      .select()
+      .from(readingCall)
+      .where(eq(readingCall.correctionId, secondId))
+    expect(calls.every((call) => call.kind === "reading")).toBe(true)
+  })
+
+  it("compares a new reading with the previous completed version and skips a failed attempt", async () => {
+    const graph = await insertOpenText()
+    const firstId = nextStepId()
+    await withStep(firstId, () => correctText(graph.textId))
+    const nextScene = `${SCENE} She paid for the leap.`
+    await db.update(text).set({ content: nextScene }).where(eq(text.id, graph.textId))
+    let gradingAttempts = 0
+    generateTextSpy.mockImplementation(async (input) => {
+      const prompt = input?.prompt ?? ""
+      if (prompt.includes("<versao-nova>"))
+        return {
+          output: {
+            met: false,
+            answer: "The cost is still missing.",
+            evidence: QUOTE,
+          },
+          usage: {
+            inputTokens: 100,
+            outputTokens: 50,
+            inputTokenDetails: { cacheReadTokens: 0 },
+            outputTokenDetails: { reasoningTokens: 0 },
+          },
+        }
+      gradingAttempts += 1
+      if (gradingAttempts === 1) throw new Error("Provider unavailable")
+      return gradedModelResult([20, 190, 128, 180, 128])
+    })
+
+    await expect(
+      withStep(nextStepId(), () => correctText(graph.textId))
+    ).rejects.toThrow("Provider unavailable")
+    const secondId = nextStepId()
+    await withStep(secondId, () => correctText(graph.textId))
+
+    const stored = await correctionService.findAttemptSnapshot(secondId)
+    expect(stored?.status).toBe("COMPLETED")
+    expect(stored?.comparison?.previousCorrectionId).toBe(firstId)
+    expect(stored?.comparison?.focus).toMatchObject({ status: "unmet" })
+  })
+
+  it("keeps the reading when the comparison model fails", async () => {
+    const graph = await insertOpenText()
+    await withStep(nextStepId(), () => correctText(graph.textId))
+    await db
+      .update(text)
+      .set({ content: `${SCENE} She paid for the leap.` })
+      .where(eq(text.id, graph.textId))
+    generateTextSpy.mockImplementation(async (input) => {
+      const prompt = input?.prompt ?? ""
+      if (prompt.includes("<versao-nova>")) throw new Error("Comparison unavailable")
+      return gradedModelResult([20, 190, 128, 180, 128])
+    })
+    const secondId = nextStepId()
+
+    await withStep(secondId, () => correctText(graph.textId))
+
+    const stored = await correctionService.findAttemptSnapshot(secondId)
+    expect(stored?.status).toBe("COMPLETED")
+    expect(stored?.score).toBe("646.00")
+    expect(stored?.comparison?.focus).toEqual({ status: "unavailable" })
+    expect(
+      stored?.comparison?.criteria.find((item) => item.id === "fidelity")?.movement
+    ).toBe("regressed")
   })
 })
 

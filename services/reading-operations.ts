@@ -208,6 +208,10 @@ export type ReadingCosts = Window & {
   //* The scenes that cost the most, by id: retries of one scene add up here.
   topScenes: CostGroup[]
   prices: ModelPrice[]
+  //* The separate comparison stage (1H-1). It is not part of the cost per reading.
+  comparisonCostUsd: number
+  comparisonCalls: number
+  comparisonUnpricedCalls: number
 }
 
 function costGroups(
@@ -220,7 +224,7 @@ function costGroups(
       SELECT c.id, c.status, ${key} AS key, coalesce(sum(rc.cost_usd), 0) AS cost
       FROM correction c
       JOIN rubric r ON r.id = c.rubric_id
-      LEFT JOIN reading_call rc ON rc.correction_id = c.id
+      LEFT JOIN reading_call rc ON rc.correction_id = c.id AND rc.kind = 'reading'
       WHERE c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}
       GROUP BY c.id, c.status, ${key}
     )
@@ -253,6 +257,7 @@ export async function readingCosts(window: Window): Promise<ReadingCosts> {
     byGenre,
     topScenes,
     prices,
+    comparison,
   ] = await Promise.all([
     rows(sql`
         SELECT rc.outcome, count(*)::int AS calls,
@@ -261,12 +266,12 @@ export async function readingCosts(window: Window): Promise<ReadingCosts> {
           coalesce(sum(rc.input_tokens), 0) AS input_tokens,
           coalesce(sum(rc.output_tokens), 0) AS output_tokens
         FROM reading_call rc JOIN correction c ON c.id = rc.correction_id
-        WHERE c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}
+        WHERE rc.kind = 'reading' AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}
         GROUP BY 1 ORDER BY 1`),
     rows(sql`
         WITH own AS (
           SELECT c.id, coalesce(sum(rc.cost_usd), 0) AS cost
-          FROM correction c LEFT JOIN reading_call rc ON rc.correction_id = c.id
+          FROM correction c LEFT JOIN reading_call rc ON rc.correction_id = c.id AND rc.kind = 'reading'
           WHERE c.status = 'COMPLETED' AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}
           GROUP BY c.id
         )
@@ -278,14 +283,20 @@ export async function readingCosts(window: Window): Promise<ReadingCosts> {
     rows(sql`
         SELECT coalesce(sum(rc.cost_usd), 0) AS cost
         FROM reading_call rc JOIN correction c ON c.id = rc.correction_id
-        WHERE c.status = 'FAILED' AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}`),
+        WHERE rc.kind = 'reading' AND c.status = 'FAILED' AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}`),
     costGroups(window, sql`c.model_id`),
     costGroups(window, sql`c.prompt_version`),
     costGroups(window, sql`r.genre`),
     costGroups(window, sql`c.text_id`, 10),
     rows<{ price: ModelPrice }>(sql`
         SELECT DISTINCT rc.price FROM reading_call rc JOIN correction c ON c.id = rc.correction_id
-        WHERE rc.price IS NOT NULL AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}`),
+        WHERE rc.kind = 'reading' AND rc.price IS NOT NULL AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}`),
+    rows(sql`
+        SELECT count(*)::int AS calls,
+          count(*) FILTER (WHERE rc.cost_usd IS NULL)::int AS unpriced,
+          coalesce(sum(rc.cost_usd), 0) AS cost
+        FROM reading_call rc JOIN correction c ON c.id = rc.correction_id
+        WHERE rc.kind = 'comparison' AND c.created_at >= ${utc(window.since)} AND c.created_at < ${utc(window.until)}`),
   ])
 
   const outcomes = byOutcome.map((row) => ({
@@ -318,5 +329,8 @@ export async function readingCosts(window: Window): Promise<ReadingCosts> {
     byGenre,
     topScenes,
     prices: prices.map((row) => row.price),
+    comparisonCostUsd: num(comparison[0]?.cost) ?? 0,
+    comparisonCalls: num(comparison[0]?.calls) ?? 0,
+    comparisonUnpricedCalls: num(comparison[0]?.unpriced) ?? 0,
   }
 }

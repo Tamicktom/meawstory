@@ -222,8 +222,10 @@ problem alerts once per hour. It holds no personal data.
 rejected by validation, or failed with a provider error. Each row records the
 model, prompt version, token counts, the list price in force that day
 (`price`, frozen with the row) and `cost_usd`. Cost is null when the provider
-did not report usage; it is never counted as zero. `kind` is `reading`; the
-comparison of Phase 1-H will add its own kind to the same table.
+did not report usage; it is never counted as zero. `kind` is `reading` for the
+evaluation and `comparison` for the separate version comparison. The operations
+report counts those costs apart, so a comparison does not raise the cost per
+reading.
 
 `reading_call.correction_id` cascades: deleting a correction (and so a text or
 a user) deletes its calls. Soft-deleting a correction keeps them, so spend
@@ -286,5 +288,27 @@ telemetry. Reservation of a new version copies the current draft answer onto
 answer from the failed attempt, not from the cleared draft. The column then
 freezes with the rest of the correction snapshot. The answer is shown only
 with the completed version it belongs to. The first version has none.
-Comparison in Phase 1-H reads this frozen answer for that version and does not
-send it to the grader.
+The comparison reads this frozen answer for display and does not send it to
+the grader or to the comparison model.
+
+## Version comparison (Phase 1-H)
+
+The grader never receives the previous version's score. After that evaluation
+is fixed, a separate step compares it with the previous completed reading.
+A failed attempt is not a version and is not the baseline. The comparison is
+stored on the newer correction as `comparison` and freezes when that reading
+becomes completed; it does not change the score, the bands or the structured
+result.
+
+The stored comparison holds, for each shared criterion, both scores and bands
+and whether that criterion improved, regressed or stayed. A regression is kept
+even when another criterion or the total rose. When the two frozen texts are
+identical, every movement is `unchanged`: a higher score is not an improvement.
+The focus judgment is a separate model call. It sees the previous focus and
+both scenes, not the scores and not the revision intention. Its quotation must
+be a literal stretch of the new scene. One rejected reply is asked again. A
+second rejection, or a provider failure after the step retries, leaves the
+focus `unavailable` and still stores the score comparison. The reading itself
+stays completed. An identical text skips that call and records focus
+`unchanged`. The first completed version, and a previous version without a
+structured result, have no comparison.

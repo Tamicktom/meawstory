@@ -7,6 +7,7 @@ import type {
   PromptConfig,
   Genre,
 } from "@/lib/reading-contract"
+import type { VersionComparison } from "@/lib/version-comparison"
 //* Libraries imports
 import { defineRelations, sql } from "drizzle-orm"
 import * as p from "drizzle-orm/pg-core"
@@ -48,6 +49,8 @@ export type ReadingFailureStage = (typeof readingFailureStages)[number]
 
 export const readingCallOutcomes = ["accepted", "rejected", "error"] as const
 export type ReadingCallOutcome = (typeof readingCallOutcomes)[number]
+export const readingCallKinds = ["reading", "comparison"] as const
+export type ReadingCallKind = (typeof readingCallKinds)[number]
 
 export const correctionStatus = p.pgEnum(
   "correction_status",
@@ -228,6 +231,8 @@ export const correction = p.pgTable(
     failureReason: p.text("failure_reason"),
     //* What the writer tried to change in this version. Null on the first version and when omitted.
     revisionIntent: p.text("revision_intent"),
+    //* Comparison with the previous completed version. Null on the first version (1H-1).
+    comparison: p.jsonb("comparison").$type<VersionComparison>(),
 
     ...timestamps,
     ...softDelete,
@@ -248,6 +253,10 @@ export const correction = p.pgTable(
       "correction_revision_intent_length",
       sql`${table.revisionIntent} IS NULL OR length(${table.revisionIntent}) <= 2000`
     ),
+    p.check(
+      "correction_comparison_when_completed",
+      sql`${table.comparison} IS NULL OR ${table.status} = 'COMPLETED'`
+    ),
   ]
 )
 
@@ -261,7 +270,7 @@ export const readingCall = p.pgTable(
       .text("correction_id")
       .notNull()
       .references(() => correction.id, { onDelete: "cascade" }),
-    kind: p.text("kind").$type<"reading">().default("reading").notNull(),
+    kind: p.text("kind").$type<ReadingCallKind>().default("reading").notNull(),
     //* 1 for the first request of a grading run, 2 for its validation retry.
     sequence: p.integer("sequence").notNull(),
     outcome: p.text("outcome").$type<ReadingCallOutcome>().notNull(),
@@ -288,7 +297,10 @@ export const readingCall = p.pgTable(
       "reading_call_outcome",
       sql`${table.outcome} IN ('accepted', 'rejected', 'error')`
     ),
-    p.check("reading_call_kind", sql`${table.kind} IN ('reading')`),
+    p.check(
+      "reading_call_kind",
+      sql`${table.kind} IN ('reading', 'comparison')`
+    ),
   ]
 )
 

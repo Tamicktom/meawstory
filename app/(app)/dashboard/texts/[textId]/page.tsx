@@ -107,6 +107,7 @@ async function completedReading(
   const feedback = await loadReadingFeedback(selected.id)
   const path = `/dashboard/texts/${ownedText.id}`
   const links = readingLinks(ownedText, selected, latestVersion.id, path)
+  const previous = versions[selected.version - 2]
   return (
     <StructuredReadingView
       correctionId={selected.id}
@@ -128,6 +129,8 @@ async function completedReading(
       reviseHref={links.reviseHref}
       latestHref={links.latestHref}
       versions={versionLinks(versions, selected.id, latestVersion.id, path)}
+      comparison={selected.comparison ?? undefined}
+      previousScene={previous?.textContent}
     />
   )
 }

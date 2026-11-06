@@ -13,6 +13,11 @@ import type { CorrectionStatus, ReadingFailureStage } from "@/database/schema"
 import type { StructuredReading } from "@/lib/reading-contract"
 import { renderReadingMarkdown } from "@/lib/reading-markdown"
 import { logEvent } from "@/lib/telemetry"
+import {
+  assembleVersionComparison,
+  type FocusJudgment,
+  type VersionComparison,
+} from "@/lib/version-comparison"
 
 //* Local imports
 import {
@@ -23,6 +28,12 @@ import {
   type GradingCall,
 } from "@/workflows/correction-grading"
 import { readSavedCorrection } from "@/workflows/correction-stand-in"
+import {
+  compareVersionFocus,
+  comparisonCaller,
+  comparisonConfiguration,
+  type ComparisonCall,
+} from "@/workflows/version-comparison"
 
 type GradingSource = {
   themeTitle: string
@@ -42,6 +53,7 @@ type GradedCorrection = {
   content: string
   score: string
   structuredResult: StructuredReading
+  comparison: VersionComparison | null
   status: CorrectionStatus
 }
 
@@ -77,6 +89,7 @@ export async function correctText(textId: string, reservedId?: string) {
       rubricTitle: themeRubric.title,
       rubricContent: themeRubric.content,
     })
+    const comparison = await comparisonFor(correctionId, graded.structuredResult)
 
     stage = "saving"
     const saved = await updateCorrection(correctionId, {
@@ -87,6 +100,7 @@ export async function correctText(textId: string, reservedId?: string) {
       content: graded.content,
       score: graded.score,
       structuredResult: graded.structuredResult,
+      comparison,
       status: "COMPLETED",
     })
     await reportCompleted(saved.correctionId)
@@ -268,6 +282,123 @@ function modelCaller(): CallModel {
         requestCorrection(openAI, gradingSource, rejection)
 }
 
+function comparisonRecorder(correctionId: string) {
+  const config = comparisonConfiguration()
+
+  return async (call: ComparisonCall) => {
+    await correctionService.recordCall(correctionId, call, config, "comparison")
+    logEvent(call.outcome === "accepted" ? "info" : "warn", "comparison.call", {
+      correctionId,
+      sequence: call.sequence,
+      outcome: call.outcome,
+      detail: call.detail,
+      durationMs: call.durationMs,
+      modelId: config.modelId,
+      promptVersion: config.promptVersion,
+    })
+  }
+}
+
+function frozenPair(
+  attempt: Awaited<ReturnType<typeof correctionService.findAttemptSnapshot>>,
+  previous: Awaited<
+    ReturnType<typeof correctionService.findPreviousCompletedReading>
+  >,
+  next: StructuredReading,
+  focus: FocusJudgment
+) {
+  if (
+    !attempt?.rubricCriteria ||
+    !previous?.structuredResult ||
+    !previous.rubricCriteria
+  )
+    return null
+
+  return assembleVersionComparison({
+    previousCorrectionId: previous.id,
+    previous: previous.structuredResult,
+    next,
+    criteria: attempt.rubricCriteria,
+    previousText: previous.textContent,
+    nextText: attempt.textContent,
+    focus,
+  })
+}
+
+async function loadComparisonPair(correctionId: string) {
+  const attempt = await correctionService.findAttemptSnapshot(correctionId)
+  if (!attempt?.rubricCriteria) return null
+  const previous = await correctionService.findPreviousCompletedReading(
+    attempt.textId,
+    attempt.createdAt
+  )
+  if (!previous?.structuredResult || !previous.rubricCriteria) return null
+  return { attempt, previous }
+}
+
+//* Runs after grading. The new score is already fixed; this step never changes it.
+async function buildComparison(
+  correctionId: string,
+  next: StructuredReading
+): Promise<VersionComparison | null> {
+  "use step"
+
+  const pair = await loadComparisonPair(correctionId)
+  const previousReading = pair?.previous.structuredResult
+  if (!pair || !previousReading) return null
+  if (pair.attempt.textContent === pair.previous.textContent)
+    return frozenPair(pair.attempt, pair.previous, next, {
+      status: "unchanged",
+    })
+
+  const focus = await compareVersionFocus(
+    comparisonCaller(openAI),
+    {
+      previousFocus: previousReading.revision,
+      previousScene: pair.previous.textContent,
+      nextScene: pair.attempt.textContent,
+    },
+    comparisonRecorder(correctionId)
+  )
+
+  return frozenPair(pair.attempt, pair.previous, next, focus)
+}
+
+//* A comparison failure leaves the reading completed and still shows the score changes.
+async function buildComparisonWithoutModel(
+  correctionId: string,
+  next: StructuredReading,
+  error: unknown
+): Promise<VersionComparison | null> {
+  "use step"
+
+  logEvent("error", "comparison.failed", {
+    correctionId,
+    reason: error instanceof Error ? error.message : String(error),
+  })
+  const pair = await loadComparisonPair(correctionId)
+  if (!pair) return null
+  const unchanged = pair.attempt.textContent === pair.previous.textContent
+
+  return frozenPair(
+    pair.attempt,
+    pair.previous,
+    next,
+    unchanged ? { status: "unchanged" } : { status: "unavailable" }
+  )
+}
+
+async function comparisonFor(
+  correctionId: string,
+  next: StructuredReading
+): Promise<VersionComparison | null> {
+  try {
+    return await buildComparison(correctionId, next)
+  } catch (error) {
+    return await buildComparisonWithoutModel(correctionId, next, error)
+  }
+}
+
 function callRecorder(correctionId: string) {
   const config = correctionConfiguration()
 
@@ -349,6 +480,7 @@ async function updateCorrection(
     content: graded.content,
     score: graded.score,
     structuredResult: graded.structuredResult,
+    ...(graded.comparison ? { comparison: graded.comparison } : {}),
     textContent: currentText.content,
     rubricId: graded.rubricId,
     rubricContent: currentRubric.content,

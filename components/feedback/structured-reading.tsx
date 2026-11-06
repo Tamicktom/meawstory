@@ -5,8 +5,10 @@ import Link from "next/link"
 import { BAND_LABEL, type StructuredReading } from "@/lib/reading-contract"
 import { formatScore } from "@/lib/format-score"
 import { evidenceSegments } from "@/lib/reading-evidence"
+import type { VersionComparison } from "@/lib/version-comparison"
 import type { ReadingFeedback } from "@/services/reading-feedback"
 import { CriterionDisagreement, UsefulnessQuestion } from "./reading-opinion"
+import { VersionComparisonView } from "./version-comparison"
 
 export type StructuredReadingProps = {
   correctionId: string
@@ -28,6 +30,8 @@ export type StructuredReadingProps = {
   latestHref?: string
   revisionIntent?: string | null
   versions?: { version: number; href: string; current: boolean }[]
+  comparison?: VersionComparison
+  previousScene?: string
 }
 
 export function StructuredReadingView(props: StructuredReadingProps) {
@@ -92,6 +96,16 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           </nav>
         ) : null}
       </header>
+      {props.comparison && props.previousScene ? (
+        <VersionComparisonView
+          comparison={props.comparison}
+          criteria={props.criteria}
+          previousScene={props.previousScene}
+          nextScene={props.scene}
+          revisionIntent={props.revisionIntent}
+          reviseHref={props.reviseHref}
+        />
+      ) : null}
       <div
         role="tablist"
         aria-label="Leitura e cena"
@@ -138,7 +152,7 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           aria-label="Leitura da cena"
           className={`min-w-0 space-y-5 ${tab === "reading" ? "" : "hidden md:block"}`}
         >
-          {props.version > 1 && props.revisionIntent ? (
+          {props.version > 1 && props.revisionIntent && !props.comparison ? (
             <section
               aria-label="Contexto da revisão"
               className="flex flex-col gap-2"
