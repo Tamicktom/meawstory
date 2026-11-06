@@ -14,7 +14,7 @@ import { correctionConfiguration } from "@/workflows/correction-config"
 
 type IsolatedRows = ReturnType<typeof createIsolatedRows>
 
-export const STRUCTURED_EVIDENCE = "Uma cena."
+const STRUCTURED_EVIDENCE = "Uma cena."
 
 export function structuredReadingResult(): StructuredReading {
   return {
