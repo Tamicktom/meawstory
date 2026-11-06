@@ -46,5 +46,38 @@ const sceneRoutes = new Elysia({ prefix: "/scenes" })
     }
     return { restored: true }
   })
+  .post("/:textId/close", async ({ params, session, set }) => {
+    const closed = await textService.closeOwnedScene(
+      params.textId,
+      session.user.id
+    )
+    if (closed.status === "missing") {
+      set.status = 404
+      return { message: "Esta cena não está disponível para sua conta." }
+    }
+    if (closed.status === "unavailable") {
+      set.status = 409
+      return {
+        message:
+          "A cena só pode ser encerrada depois que a leitura atual estiver concluída.",
+      }
+    }
+    return { closedAt: closed.closedAt.toISOString() }
+  })
+  .post("/:textId/reopen", async ({ params, session, set }) => {
+    const reopened = await textService.reopenOwnedScene(
+      params.textId,
+      session.user.id
+    )
+    if (reopened.status === "missing") {
+      set.status = 404
+      return { message: "Esta cena não está disponível para sua conta." }
+    }
+    if (reopened.status === "open") {
+      set.status = 409
+      return { message: "Esta cena já está aberta." }
+    }
+    return { reopened: true }
+  })
 
 export { sceneRoutes }

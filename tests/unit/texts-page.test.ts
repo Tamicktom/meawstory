@@ -8,9 +8,12 @@ import { renderToStaticMarkup } from "react-dom/server"
 //* Local imports
 import TextsPage from "@/app/(app)/dashboard/texts/page"
 import { db } from "@/database"
-import { text } from "@/database/schema"
+import { correction, rubric, text, theme } from "@/database/schema"
 import { openSession } from "@/tests/helpers/open-session"
-import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
+import {
+  actionCriteria,
+  createIsolatedRows,
+} from "@/tests/helpers/schema-fixtures"
 
 const rows = createIsolatedRows()
 const headerBox = {
@@ -55,8 +58,12 @@ async function signIn() {
   return session
 }
 
-async function loadPage() {
-  return renderToStaticMarkup(await TextsPage())
+async function loadPage(searchParams?: { genero?: string; situacao?: string }) {
+  return renderToStaticMarkup(
+    await TextsPage({
+      searchParams: Promise.resolve(searchParams ?? {}),
+    })
+  )
 }
 
 async function expectRedirectToSignIn() {
@@ -114,11 +121,15 @@ describe("TextsPage", () => {
       .set({
         userId: session.userId,
         createdAt: new Date("2020-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2020-01-02T00:00:00.000Z"),
       })
       .where(eq(text.id, older.textId))
     await db
       .update(text)
-      .set({ createdAt: new Date("2024-06-01T00:00:00.000Z") })
+      .set({
+        createdAt: new Date("2024-06-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-06-01T00:00:00.000Z"),
+      })
       .where(eq(text.id, newerId))
 
     await rows.insertCorrection({
@@ -126,20 +137,25 @@ describe("TextsPage", () => {
       rubricId: older.rubricId,
       score: "640.00",
       status: "COMPLETED",
+      createdAt: new Date("2024-06-02T00:00:00.000Z"),
     })
 
     const markup = await loadPage()
-    const newerIndex = markup.indexOf(`Text ${newerId}`)
+    const newerIndex = markup.indexOf(`href="/dashboard/texts/${newerId}"`)
     const olderIndex = markup.indexOf(`Text ${older.textId}`)
 
     expect(newerIndex).toBeGreaterThan(-1)
     expect(olderIndex).toBeGreaterThan(newerIndex)
-    expect(markup).toContain("The newer draft names the missing key.")
-    expect(markup).toContain("The older draft stays on the desk.")
-    expect(markup).toContain('dateTime="2024-06-01T00:00:00.000Z"')
-    expect(markup).toContain("31 de mai. de 2024")
-    expect(markup).toContain("Pontuação: 640 de 1000")
-    expect(markup).toContain("Rascunho salvo")
+    const newerCard = markup.slice(newerIndex, olderIndex)
+    expect(newerCard).toContain("Exercício: Newer theme")
+    expect(newerCard).toContain("1 versão")
+    expect(newerCard).toContain('dateTime="2024-06-02T00:00:00.000Z"')
+    expect(newerCard).toContain("1 de jun. de 2024")
+    expect(newerCard).toContain("Funciona")
+    expect(newerCard).toContain("Nova")
+    expect(markup.slice(olderIndex)).toContain("Nenhuma versão")
+    expect(markup.slice(olderIndex)).toContain("Rascunho salvo")
+    expect(markup).not.toContain("The newer draft names the missing key.")
     expect(markup).not.toContain("This draft belongs to someone else.")
     expect(markup).not.toContain("Você ainda não tem cenas.")
     expect(markup).toContain(`id="delete-scene-${newerId}"`)
@@ -262,5 +278,110 @@ describe("TextsPage", () => {
     expect(markup).not.toContain("Cena excluída.")
     expect(markup).not.toContain("This retirement is already final.")
     expect(markup).toContain("Você ainda não tem cenas.")
+  })
+
+  it("filters by genre and situation without duplicating a failed attempt", async () => {
+    const session = await signIn()
+    const graph = await rows.insertActiveText({
+      themeTitle: "A letter that arrives late",
+    })
+    await db
+      .update(text)
+      .set({ userId: session.userId })
+      .where(eq(text.id, graph.textId))
+    await db
+      .update(rubric)
+      .set({ genre: "romance", criteria: actionCriteria })
+      .where(eq(rubric.id, graph.rubricId))
+    await db
+      .update(theme)
+      .set({
+        genre: "romance",
+        objective: "Treinar um encontro entre duas pessoas adultas.",
+        minWords: 100,
+        maxWords: 400,
+        briefing: {
+          situation: "Dois adultos se encontram no fim do dia.",
+          alreadyTrue: ["Eles já se conhecem."],
+          mustInclude: ["Uma escolha visível."],
+          youDecide: "Como a cena termina.",
+          doNotPenalize: ["Um final aberto."],
+        },
+      })
+      .where(eq(theme.id, graph.themeId))
+    await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      score: "900.00",
+      status: "COMPLETED",
+      createdAt: new Date("2024-06-01T00:00:00.000Z"),
+    })
+    await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      score: "0.00",
+      status: "FAILED",
+      createdAt: new Date(),
+    })
+
+    const markup = await loadPage({ genero: "romance", situacao: "failed" })
+    const hidden = await loadPage({ genero: "action", situacao: "failed" })
+
+    const card = markup.slice(
+      markup.indexOf(`href="/dashboard/texts/${graph.textId}"`)
+    )
+    expect(card.match(/Leitura com falha/g)).toHaveLength(1)
+    expect(card).toContain("Gênero: Romance")
+    expect(card).toContain("1 versão")
+    expect(card).not.toContain("Forte")
+    expect(markup.match(/<li /g)).toHaveLength(1)
+    expect(hidden).toContain("Nenhuma cena corresponde a esses filtros.")
+    expect(hidden).toContain('id="scenes-clear-filters-empty"')
+  })
+
+  it("shows a closed scene as closed at a low band and offers reopening", async () => {
+    const session = await signIn()
+    const graph = await rows.insertActiveText({ themeTitle: "Low band" })
+    await db
+      .update(text)
+      .set({ userId: session.userId, closedAt: new Date() })
+      .where(eq(text.id, graph.textId))
+    await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      score: "10.00",
+      status: "COMPLETED",
+    })
+
+    const markup = await loadPage()
+
+    expect(markup).toContain("Encerrada · Ausente")
+    expect(markup).not.toContain("Desist")
+    expect(markup).toContain(`id="reopen-scene-${graph.textId}"`)
+    expect(markup).toContain(`id="delete-scene-${graph.textId}"`)
+  })
+
+  it("leaves a ready reading unopened when the scene is only listed", async () => {
+    const session = await signIn()
+    const graph = await rows.insertActiveText()
+    await db
+      .update(text)
+      .set({ userId: session.userId })
+      .where(eq(text.id, graph.textId))
+    const correctionId = await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      score: "640.00",
+      status: "COMPLETED",
+    })
+
+    await loadPage()
+
+    const [stored] = await db
+      .select({ openedAt: correction.openedAt, score: correction.score })
+      .from(correction)
+      .where(eq(correction.id, correctionId))
+    expect(stored?.openedAt).toBeNull()
+    expect(stored?.score).toBe("640.00")
   })
 })

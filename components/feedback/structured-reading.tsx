@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type RefObject } from "react"
 import Link from "next/link"
 
 //* Components imports
+import { CloseSceneButton } from "@/components/scenes/close-scene-button"
 import { DeleteSceneButton } from "@/components/scenes/delete-scene-button"
 
 //* Local imports
@@ -39,6 +40,7 @@ export type StructuredReadingProps = {
   comparison?: VersionComparison
   previousScene?: string
   textId?: string
+  closed?: boolean
 }
 
 type ReadingTab = "reading" | "scene"
@@ -83,6 +85,7 @@ export function StructuredReadingView(props: StructuredReadingProps) {
         version={props.version}
         versions={props.versions}
         textId={props.textId}
+        closed={props.closed}
       />
       {props.comparison && props.previousScene ? (
         <VersionComparisonView
@@ -91,7 +94,9 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           previousScene={props.previousScene}
           nextScene={props.scene}
           revisionIntent={props.revisionIntent}
-          reviseHref={props.reviseHref}
+          reviseHref={props.closed ? undefined : props.reviseHref}
+          closed={props.closed}
+          textId={props.textId}
         />
       ) : null}
       <ReadingTabs tab={tab} onChange={setTab} />
@@ -108,6 +113,7 @@ export function StructuredReadingView(props: StructuredReadingProps) {
           latestHref={props.latestHref}
           revisionIntent={props.revisionIntent}
           compared={Boolean(props.comparison)}
+          closed={props.closed}
           onLocate={locate}
         />
         <SceneColumn
@@ -135,6 +141,7 @@ function ReadingHeader(props: {
   version: number
   versions: StructuredReadingProps["versions"]
   textId?: string
+  closed?: boolean
 }) {
   return (
     <header className="space-y-2">
@@ -146,11 +153,18 @@ function ReadingHeader(props: {
           <h1 className="font-heading text-2xl font-medium">{props.title}</h1>
         </div>
         {props.textId ? (
-          <DeleteSceneButton
-            id="delete-scene"
-            textId={props.textId}
-            redirectTo="/dashboard/texts"
-          />
+          <div className="flex min-w-0 flex-col gap-2">
+            <CloseSceneButton
+              id={props.closed ? "reopen-scene" : "close-scene"}
+              textId={props.textId}
+              closed={Boolean(props.closed)}
+            />
+            <DeleteSceneButton
+              id="delete-scene"
+              textId={props.textId}
+              redirectTo="/dashboard/texts"
+            />
+          </div>
         ) : null}
       </div>
       <p className="text-sm text-muted-foreground">
@@ -245,6 +259,7 @@ function ReadingColumn(props: {
   latestHref?: string
   revisionIntent?: string | null
   compared: boolean
+  closed?: boolean
   onLocate: (quote: number) => void
 }) {
   return (
@@ -274,8 +289,9 @@ function ReadingColumn(props: {
         </h2>
         <p className="whitespace-pre-wrap">{props.result.revision}</p>
         <RevisionLink
-          reviseHref={props.reviseHref}
+          reviseHref={props.closed ? undefined : props.reviseHref}
           latestHref={props.latestHref}
+          closed={props.closed}
         />
       </section>
       <section className="space-y-2">
@@ -331,7 +347,12 @@ function ReadingColumn(props: {
   )
 }
 
-function RevisionLink(props: { reviseHref?: string; latestHref?: string }) {
+function RevisionLink(props: {
+  reviseHref?: string
+  latestHref?: string
+  closed?: boolean
+}) {
+  if (props.closed) return <p>Reabra a cena para revisar.</p>
   if (props.reviseHref)
     return (
       <Link

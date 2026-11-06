@@ -195,9 +195,11 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### B. Histórico e encerramento
 
-- [ ] [2B-1](fase-2-retorno/2B-1-encerrar-e-reabrir-uma-cena.md) — Encerrar e reabrir uma cena
-- [ ] [2B-2](fase-2-retorno/2B-2-registrar-quando-a-leitura-foi-aberta.md) — Registrar quando a leitura foi aberta
-- [ ] [2B-3](fase-2-retorno/2B-3-evoluir-tela-minhas-cenas.md) — Evoluir a tela Minhas cenas
+- [x] [2B-1](fase-2-retorno/2B-1-encerrar-e-reabrir-uma-cena.md) — Encerrar e reabrir uma cena
+- [x] [2B-2](fase-2-retorno/2B-2-registrar-quando-a-leitura-foi-aberta.md) — Registrar quando a leitura foi aberta
+- [x] [2B-3](fase-2-retorno/2B-3-evoluir-tela-minhas-cenas.md) — Evoluir a tela Minhas cenas
+
+**Validação da etapa B (2026-11-06):** “Dar a cena por encerrada” aparece na leitura e na comparação, em qualquer faixa, inclusive Ausente. Encerrar grava `text.closed_at` e não apaga nem altera versões; reabrir limpa esse campo a qualquer momento. Enquanto a cena está encerrada, o rascunho e uma nova leitura são recusados, e a escrita volta para a leitura. A primeira abertura de cada leitura concluída grava `correction.opened_at` sem mexer no que ela congelou; listar a cena não abre a leitura. Leituras já concluídas antes desta entrega foram marcadas como abertas na migração. Minhas cenas mostra cada cena uma vez, com exercício, gênero, número de versões concluídas e data da última alteração. A faixa aparece quando a leitura está pronta; nos outros estados aparece a situação. Dá para filtrar por gênero e situação, e uma leitura pronta ainda não aberta fica marcada como Nova. A exclusão da Fase 1 continua na lista e na cena. A migração `20261106162647_scene_history` acrescenta as duas colunas, protege a primeira abertura e foi aplicada ao banco local. Passaram 403 testes unitários, os testes de componentes da leitura, da comparação, do encerramento e da exclusão, e as jornadas de produto, revisão e exclusão em 320, 390 e 1280 px, além de `bun run typecheck` e `bun run build`. React Doctor nas alterações: 100/100. Sem alteração de modelo, prompt ou chamadas à OpenAI; os testes de ponta a ponta usam a leitura salva.
 
 ### C. Catálogo e sugestões
 

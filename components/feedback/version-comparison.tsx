@@ -3,6 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 
+//* Components imports
+import { CloseSceneButton } from "@/components/scenes/close-scene-button"
+
 //* Local imports
 import { diffTexts, type DiffSegment } from "@/lib/text-diff"
 import { BAND_LABEL } from "@/lib/reading-contract"
@@ -25,15 +28,21 @@ export type VersionComparisonProps = {
   nextScene: string
   revisionIntent?: string | null
   reviseHref?: string
+  closed?: boolean
+  textId?: string
 }
 
 export function VersionComparisonView(props: VersionComparisonProps) {
   const [tab, setTab] = useState<"previous" | "current">("current")
   const diff = diffTexts(props.previousScene, props.nextScene)
-  const names = new Map(props.criteria.map((criterion) => [criterion.id, criterion]))
+  const names = new Map(
+    props.criteria.map((criterion) => [criterion.id, criterion])
+  )
   const regressions = props.comparison.textUnchanged
     ? []
-    : props.comparison.criteria.filter((criterion) => criterion.movement === "regressed")
+    : props.comparison.criteria.filter(
+        (criterion) => criterion.movement === "regressed"
+      )
   const previousTotal = props.comparison.criteria.reduce(
     (sum, criterion) => sum + criterion.previousScore,
     0
@@ -52,7 +61,10 @@ export function VersionComparisonView(props: VersionComparisonProps) {
         Comparação com a versão anterior
       </h2>
       {props.revisionIntent ? (
-        <section aria-label="Contexto da revisão" className="flex flex-col gap-2">
+        <section
+          aria-label="Contexto da revisão"
+          className="flex flex-col gap-2"
+        >
           <h3 className="font-heading font-medium">O que você tentou mudar</h3>
           <p className="whitespace-pre-wrap">{props.revisionIntent}</p>
         </section>
@@ -82,7 +94,10 @@ export function VersionComparisonView(props: VersionComparisonProps) {
         </section>
       ) : null}
       {props.comparison.criteria.length > 0 ? (
-        <section aria-label="Mudança por critério" className="flex flex-col gap-3">
+        <section
+          aria-label="Mudança por critério"
+          className="flex flex-col gap-3"
+        >
           <h3 className="font-heading font-medium">Critérios</h3>
           {props.comparison.criteria.map((criterion) => (
             <article
@@ -99,7 +114,8 @@ export function VersionComparisonView(props: VersionComparisonProps) {
             </article>
           ))}
           <p className="text-sm text-muted-foreground">
-            A pontuação total foi de {points(previousTotal)} para {points(nextTotal)}.
+            A pontuação total foi de {points(previousTotal)} para{" "}
+            {points(nextTotal)}.
           </p>
         </section>
       ) : null}
@@ -152,7 +168,9 @@ export function VersionComparisonView(props: VersionComparisonProps) {
           />
         </div>
       </section>
-      {props.reviseHref ? (
+      {props.closed ? (
+        <p>Reabra a cena para revisar.</p>
+      ) : props.reviseHref ? (
         <Link
           id="revise-again"
           href={props.reviseHref}
@@ -160,6 +178,15 @@ export function VersionComparisonView(props: VersionComparisonProps) {
         >
           Revisar novamente
         </Link>
+      ) : null}
+      {props.textId ? (
+        <CloseSceneButton
+          id={
+            props.closed ? "reopen-scene-comparison" : "close-scene-comparison"
+          }
+          textId={props.textId}
+          closed={Boolean(props.closed)}
+        />
       ) : null}
     </section>
   )
@@ -185,10 +212,14 @@ function FocusResult(props: { comparison: VersionComparison }) {
   return (
     <section aria-label="Foco da revisão" className="flex flex-col gap-2">
       <h3 className="font-heading font-medium">
-        {focus.status === "met" ? "O foco foi atendido" : "O foco não foi atendido"}
+        {focus.status === "met"
+          ? "O foco foi atendido"
+          : "O foco não foi atendido"}
       </h3>
       <p>{focus.answer}</p>
-      <blockquote className="border-l-2 py-1 pl-3 italic">“{focus.evidence}”</blockquote>
+      <blockquote className="border-l-2 py-1 pl-3 italic">
+        “{focus.evidence}”
+      </blockquote>
     </section>
   )
 }
@@ -229,7 +260,9 @@ function TextColumn(props: {
   hiddenOnMobile: boolean
 }) {
   const visible = props.segments.filter((segment) =>
-    props.side === "previous" ? segment.kind !== "added" : segment.kind !== "removed"
+    props.side === "previous"
+      ? segment.kind !== "added"
+      : segment.kind !== "removed"
   )
 
   return (
@@ -239,7 +272,7 @@ function TextColumn(props: {
       className={`min-w-0 flex-col gap-2 ${props.hiddenOnMobile ? "hidden md:flex" : "flex"}`}
     >
       <h4 className="hidden font-medium md:block">{props.label}</h4>
-      <p className="rounded-lg border p-4 leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
+      <p className="rounded-lg border p-4 leading-relaxed [overflow-wrap:anywhere] whitespace-pre-wrap">
         {visible.map((segment, index) => (
           <span
             key={`${segment.kind}-${index}`}
