@@ -59,6 +59,7 @@ The rubric in force for a text is the theme's rubric (`theme.rubric_id`). The ru
 | `text.user_id`         | cascade  | Deleting a user deletes that user's texts                  |
 | `correction.text_id`   | cascade  | Deleting a text deletes its corrections                    |
 | `correction.rubric_id` | restrict | Deleting a rubric does not delete corrections that used it |
+| `reading_call.correction_id` | cascade | Deleting a correction deletes its model calls |
 
 Hard delete of `rubric` or `theme` stays blocked while a reference exists. The normal way to take a catalog item out of circulation is soft delete, under the rules above.
 
@@ -140,8 +141,8 @@ must fail rather than record one configuration while calling another.
 
 `structured_result` is a versioned JSON document containing the opening, one highlight with its quotation, criterion
 results (id, score, band, evidence, strengths and gaps) and revision suggestion.
-It is optional while the existing markdown engine remains in use; Phase 1-C will
-produce it directly. Structured completion requires a frozen rubric and model
+Readings completed before Phase 1-C keep it null; since 1-C every completed
+reading has it (see below). Structured completion requires a frozen rubric and model
 configuration, all five matching criterion ids, bounded scores/bands and a total
 matching `score`. Band ceilings apply to hundredths too: e.g. 30.01 out of
 150 belongs to the second band, just as in the evaluation reports. Evidence and prose remain frozen verbatim, never reconstructed
@@ -153,3 +154,78 @@ The database freezes snapshot fields after insertion and result fields after
 completion/failure, allowing soft deletion. On insert it captures the current
 structured rubric and verifies supplied snapshots. Retry admission also compares
 criteria and briefing snapshots, so catalog edits cannot silently change a retry.
+
+## Reading engine, monitoring and cost (Phase 1-C)
+
+Every new reading is structured. The model returns, for each of the five frozen
+criteria, a score, strengths, gaps and one or two quotations, plus an opening,
+one highlight with its quotation and one revision focus. The server, not the
+model, decides what is stored:
+
+- Coverage: exactly the five frozen criterion ids, none missing, repeated or
+  invented. A missing revision focus, opening, highlight, strengths or gaps is
+  rejected.
+- Scores: each criterion from 0 to its frozen maximum, rounded to hundredths.
+  A score outside that range is rejected, never clamped.
+- Bands: computed from the frozen bands, never taken from the model.
+- Total: `score` is the sum of the stored criterion scores, computed on the
+  server. The model is not asked for a total.
+- Quotations: kept only when they are a literal, contiguous stretch of the
+  frozen `text_content` (whitespace runs, quote marks, dash and ellipsis
+  variants and letter case may differ; accents and words may not, and an
+  omission marked with "..." does not match). The stored evidence is the scene's
+  own substring, so it can be located in the scene. A quotation not found in the
+  scene is discarded. When the highlight, or any criterion, is left with no
+  valid quotation, the reading is rejected.
+- A rejected reply is asked again once, with the reason. A second rejection
+  fails the attempt at the `validation` stage; it stays retryable like any
+  failed attempt. Transient provider errors are retried by the workflow step.
+- `content` is markdown rendered from `structured_result` for the current
+  reading screen. Nothing parses it back; the structure is the source.
+
+The database enforces the last line of defense: one or two quotations per
+criterion (`valid_structured_reading`) and every stored quotation present in
+`text_content` (`correction_evidence_in_scene`).
+
+A reading needs frozen `rubric_criteria`. An attempt without them, from a
+pre-catalog rubric, fails at the `grading` stage before any model call; no
+structure is invented for it.
+
+The prompt keeps instructions and material apart: system instructions hold
+every rule, and the user prompt delimits `<tema>`, `<rubrica>`, `<criterios>`
+and `<cena>`, with the scene last. Delimiter-like text inside the scene is
+neutralized, so a scene cannot close its own part or open another. The
+rubric's old markdown output section is left out of the prompt; the frozen
+`rubric_content` is unchanged.
+
+### Monitoring
+
+`correction.started_at` is when the workflow moved the attempt to
+IN_PROGRESS; `finished_at` is when it completed or failed. Queue time is
+`started_at - created_at`; time to reading is `finished_at - created_at`.
+`failure_stage` records where a FAILED attempt stopped: `dispatch` (the
+workflow could not be started), `queue_timeout` and `processing_timeout`
+(expired after 10 minutes while PENDING or IN_PROGRESS), `admission` (scene,
+rubric or reservation no longer valid), `grading` (configuration mismatch,
+missing criteria or provider failure), `validation` (two rejected replies) and
+`saving` (scene or rubric changed, or the deadline passed, before the write).
+`failure_reason` is the internal message. Older failed rows keep both null.
+These fields freeze with the terminal result and are never selected for the
+writing UI.
+
+`operation_alert` keeps the last time each alert kind was sent, so an ongoing
+problem alerts once per hour. It holds no personal data.
+
+### Cost
+
+`reading_call` holds one row per model call made for an attempt: accepted,
+rejected by validation, or failed with a provider error. Each row records the
+model, prompt version, token counts, the list price in force that day
+(`price`, frozen with the row) and `cost_usd`. Cost is null when the provider
+did not report usage; it is never counted as zero. `kind` is `reading`; the
+comparison of Phase 1-H will add its own kind to the same table.
+
+`reading_call.correction_id` cascades: deleting a correction (and so a text or
+a user) deletes its calls. Soft-deleting a correction keeps them, so spend
+stays measurable.
+

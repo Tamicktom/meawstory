@@ -18,6 +18,16 @@ export const GENRE_LABEL = {
   turning_point: "Virada",
 } as const
 export const BAND_IDS = ["missing", "thin", "working", "strong"] as const
+export type BandId = (typeof BAND_IDS)[number]
+//* Public names from docs/produto-fluxo-novo.md, section 5.4.
+export const BAND_LABEL: Record<BandId, string> = {
+  missing: "Ausente",
+  thin: "Em esboço",
+  working: "Funciona",
+  strong: "Forte",
+}
+//* Each criterion carries one or two literal quotations from the scene (1C-3).
+export const MAX_CRITERION_EVIDENCE = 2
 const nonempty = z.string().trim().min(1)
 const bandSchema = z.object({
   id: z.enum(BAND_IDS),
@@ -84,7 +94,7 @@ const structuredReadingSchema = z.object({
         id: nonempty,
         score: z.number().nonnegative().multipleOf(0.01),
         band: z.enum(BAND_IDS),
-        evidence: z.array(nonempty),
+        evidence: z.array(nonempty).min(1).max(MAX_CRITERION_EVIDENCE),
         strengths: nonempty,
         gaps: nonempty,
       })
@@ -106,7 +116,21 @@ export type PromptConfig = {
   outputSchema: unknown
   outputName: string
   outputDescription: string
+  rubricOutputSection?: string
+  validationAttempts?: number
+  retryNotice?: readonly string[]
   providerOptions: { openai: { store: false } }
+}
+
+//* A score belongs to the first band whose ceiling it does not pass, hundredths included:
+//* 30.01 out of 150 is past the 0–30 band, so it is "thin".
+export function bandForCriterionScore(
+  score: number,
+  criterion: RubricCriteria[number]
+): BandId {
+  const band = criterion.bands.find((item) => score <= item.max)
+  if (!band || score < 0) throw new Error("Score is outside the criterion.")
+  return band.id
 }
 
 export function validateStructuredReading(

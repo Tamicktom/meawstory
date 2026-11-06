@@ -24,7 +24,11 @@ async function emailsTo(address: string): Promise<OutboxEmail[]> {
 
   return Promise.all(
     files
-      .filter((file) => file.startsWith(`${encodeURIComponent(address)}-`))
+      .filter(
+        (file) =>
+          file.startsWith(`${encodeURIComponent(address)}-`) &&
+          file.endsWith(".json")
+      )
       .sort()
       .map(async (file) => {
         const content = await readFile(path.join(outboxPath, file), "utf8")
@@ -42,7 +46,9 @@ async function waitForEmails(
   const matching = async () =>
     (await emailsTo(address)).filter((email) => email.subject === subject)
 
-  await expect.poll(async () => (await matching()).length).toBeGreaterThanOrEqual(count)
+  await expect
+    .poll(async () => (await matching()).length)
+    .toBeGreaterThanOrEqual(count)
 
   return matching()
 }

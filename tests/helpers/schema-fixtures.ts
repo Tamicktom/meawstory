@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
+import { rubricSeeds } from "@/database/seed/catalog"
 import {
   account,
   correction,
@@ -41,6 +42,9 @@ type CorrectionInput = {
   status?: CorrectionStatus
   createdAt?: Date
   deletedAt?: Date
+  startedAt?: Date
+  finishedAt?: Date
+  failureStage?: (typeof correction.$inferInsert)["failureStage"]
 }
 
 function newId(): string {
@@ -228,16 +232,29 @@ async function insertVerification(ids: TrackedIds, identifier: string) {
   return id
 }
 
-async function insertRubric(
-  ids: TrackedIds,
-  input?: { title?: string; content?: string; deletedAt?: Date }
-) {
+type RubricInput = {
+  title?: string
+  content?: string
+  deletedAt?: Date
+  //* Gives the rubric the action genre and the catalog's five action criteria.
+  structured?: boolean
+}
+
+//* The catalog's action criteria: fidelity 150, shape 200, world 200, people 250, prose 200.
+export const actionCriteria = rubricSeeds.find(
+  (item) => item.id === "rubric_action"
+)!.criteria
+
+async function insertRubric(ids: TrackedIds, input?: RubricInput) {
   const id = remember(ids.rubricIds)
 
   await db.insert(rubric).values({
     id,
     title: input?.title ?? `Rubric ${id}`,
     content: input?.content ?? `Rubric body ${id}`,
+    ...(input?.structured
+      ? { genre: "action" as const, criteria: actionCriteria }
+      : {}),
     ...(input?.deletedAt ? { deletedAt: input.deletedAt } : {}),
   })
 
@@ -300,6 +317,11 @@ async function correctionSnapshot(
   return suppliedContent ?? (await currentBody(table, id)) ?? fallback
 }
 
+function monitoringColumns(input: CorrectionInput) {
+  const { startedAt, finishedAt, failureStage } = input
+  return { startedAt, finishedAt, failureStage }
+}
+
 async function insertCorrection(ids: TrackedIds, input: CorrectionInput) {
   const id = input.id ?? newId()
 
@@ -328,6 +350,7 @@ async function insertCorrection(ids: TrackedIds, input: CorrectionInput) {
     status: input.status ?? "PENDING",
     ...(input.createdAt ? { createdAt: input.createdAt } : {}),
     ...(input.deletedAt ? { deletedAt: input.deletedAt } : {}),
+    ...monitoringColumns(input),
   })
 
   return id
@@ -390,11 +413,7 @@ export function createIsolatedRows() {
     insertVerification(identifier: string) {
       return insertVerification(ids, identifier)
     },
-    insertRubric(input?: {
-      title?: string
-      content?: string
-      deletedAt?: Date
-    }) {
+    insertRubric(input?: RubricInput) {
       return insertRubric(ids, input)
     },
     insertTheme(rubricId: string, input?: ThemeInput) {

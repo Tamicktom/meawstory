@@ -3,10 +3,11 @@
 import { ErrorView } from "@/components/system/error-view"
 
 export default function DashboardError({
+  error,
   retry,
 }: {
   error: unknown
   retry: () => void
 }) {
-  return <ErrorView retry={retry} savedScenes />
+  return <ErrorView error={error} retry={retry} savedScenes />
 }

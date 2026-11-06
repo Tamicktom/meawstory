@@ -2,14 +2,19 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useReportError } from "@/hooks/use-report-error"
 
 export function ErrorView({
+  error,
   retry,
   savedScenes = false,
 }: {
+  error?: unknown
   retry: () => void
   savedScenes?: boolean
 }) {
+  useReportError(error)
+
   return (
     <div className="mx-auto flex w-full max-w-3xl min-w-0 flex-col items-start gap-4 p-4 [overflow-wrap:anywhere]">
       <h1 className="font-heading text-2xl font-medium">

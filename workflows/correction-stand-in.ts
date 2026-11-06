@@ -2,31 +2,20 @@
 import { existsSync, readFileSync } from "node:fs"
 import path from "node:path"
 
-export type SavedCorrection = {
-  content: string
-  score: number
-}
+//* Local imports
+import {
+  correctionOutputSchema,
+  type CorrectionModelOutput,
+} from "@/workflows/correction-config"
+
+//* The stand-in is a model reply, not a finished reading: it goes through the same validation.
+export type SavedCorrection = CorrectionModelOutput
 
 export function savedCorrectionStandInPath() {
   return path.join(process.cwd(), "tests/helpers/.saved-correction.json")
 }
 
-function isSavedCorrection(value: unknown): value is SavedCorrection {
-  if (!value || typeof value !== "object") {
-    return false
-  }
-
-  const content = "content" in value ? value.content : undefined
-  const score = "score" in value ? value.score : undefined
-
-  return (
-    typeof content === "string" &&
-    content.trim() !== "" &&
-    typeof score === "number"
-  )
-}
-
-//* Outside production, a JSON file written by the product-loop test replaces the model call.
+//* Outside production, a JSON file written by the end-to-end setup replaces the model call.
 //* A real user still goes through generateText.
 export function readSavedCorrection(): SavedCorrection | null {
   if (process.env.NODE_ENV === "production") {
@@ -39,14 +28,13 @@ export function readSavedCorrection(): SavedCorrection | null {
     return null
   }
 
-  const parsed: unknown = JSON.parse(readFileSync(standInPath, "utf8"))
+  const parsed = correctionOutputSchema.safeParse(
+    JSON.parse(readFileSync(standInPath, "utf8"))
+  )
 
-  if (!isSavedCorrection(parsed)) {
+  if (!parsed.success) {
     throw new Error("Saved correction stand-in is invalid.")
   }
 
-  return {
-    content: parsed.content,
-    score: parsed.score,
-  }
+  return parsed.data
 }

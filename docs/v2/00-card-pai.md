@@ -101,12 +101,14 @@ Total: 86 cards.
 
 ### C. Motor e operação da leitura
 
-- [ ] [1C-1](fase-1-revisao/1C-1-gerar-leitura-estruturada.md) — Gerar a leitura estruturada por critério
-- [ ] [1C-2](fase-1-revisao/1C-2-calcular-pontuacao-e-faixas-no-servidor.md) — Calcular pontuação e faixas no servidor
-- [ ] [1C-3](fase-1-revisao/1C-3-validar-trechos-citados.md) — Validar os trechos citados pela leitura
-- [ ] [1C-4](fase-1-revisao/1C-4-proteger-leitura-contra-instrucoes-da-cena.md) — Proteger a leitura contra instruções dentro da cena
-- [ ] [1C-5](fase-1-revisao/1C-5-monitorar-erros-e-operacao-da-leitura.md) — Monitorar erros e operação da leitura
-- [ ] [1C-6](fase-1-revisao/1C-6-medir-custo-por-leitura.md) — Medir o custo por leitura
+- [x] [1C-1](fase-1-revisao/1C-1-gerar-leitura-estruturada.md) — Gerar a leitura estruturada por critério
+- [x] [1C-2](fase-1-revisao/1C-2-calcular-pontuacao-e-faixas-no-servidor.md) — Calcular pontuação e faixas no servidor
+- [x] [1C-3](fase-1-revisao/1C-3-validar-trechos-citados.md) — Validar os trechos citados pela leitura
+- [x] [1C-4](fase-1-revisao/1C-4-proteger-leitura-contra-instrucoes-da-cena.md) — Proteger a leitura contra instruções dentro da cena
+- [x] [1C-5](fase-1-revisao/1C-5-monitorar-erros-e-operacao-da-leitura.md) — Monitorar erros e operação da leitura
+- [x] [1C-6](fase-1-revisao/1C-6-medir-custo-por-leitura.md) — Medir o custo por leitura
+
+**Validação da etapa C (2026-11-05):** a leitura passa a ser estruturada. O modelo devolve, para cada critério, pontuação, o que funciona, o que falta e citações; depois, ponto forte, leitura geral e foco. O servidor confere a cobertura dos cinco critérios congelados e os máximos, calcula faixas e total, e descarta as citações que não estão literalmente na cena. Quando o ponto forte ou algum critério fica sem citação, ou a resposta é rejeitada por outro motivo, a leitura é pedida de novo uma vez, com o motivo. A segunda rejeição vira falha recuperável. Por decisão de Tamicktom, registrada em 1C-3 e 1C-5, a regra das citações é "descartar e refazer se faltar", e o monitoramento é próprio, no banco, sem fornecedor novo. A migração `20261106024107_reading_engine` cria `reading_call` (custo por chamada) e `operation_alert`, acrescenta etapa, tempos e motivo da falha a `correction`, congela esses campos no resultado terminal e faz o banco recusar citação fora da cena ou critério sem citação. Logs estruturados cobrem workflow, API, servidor e páginas de erro. `bun run ops:report` mostra tempo até a leitura, taxa de falha por etapa e custo por leitura concluída, com as tentativas descartadas. Os alertas saem por e-mail e no log; um cron diário da Vercel reconcilia os tempos esgotados. O preço registrado do `gpt-5-mini` é US$ 0,25, 0,025 e 2,00 por milhão de tokens (entrada, cache e saída), conferido em 2026-11-05. O conjunto de referência foi para a versão 3, com três sondas de instrução. A medição de 1C-4 (40 leituras, US$ 0,22) não teve nenhuma nota 1000, nenhum foco ditado pela cena e nenhuma instrução citada; a inflação de `luta-05` caiu de +50 para +15 pontos, dentro do ruído. As quatro diferenças ainda apontam para cima, e 1D-1 deve medi-las com mais leituras. Uma leitura custou em média US$ 0,0054, com 2,8 mil tokens de entrada e 2,6 mil de saída, em 28 s. Passaram 310 testes unitários, 62 testes E2E e 69 testes de componentes, além de `bun run typecheck`, `bun run build`, a auditoria Fallow 3.34.1 nos arquivos alterados (sem achados) e o React Doctor nas alterações (97/100, sem diagnósticos). Migração aplicada do zero no PostgreSQL local da porta 5432, seguida de seed. A tela estruturada (1F-1) e a avaliação completa no conjunto (1D-1) ficam para as próximas etapas. A interface atual mostra um markdown gerado a partir da estrutura. **Para produção:** aplicar a migração e configurar `OPS_ALERT_EMAIL` e `CRON_SECRET` na Vercel. O build usou uma chave Resend fictícia apenas para validação do ambiente, sem envio de e-mail.
 
 ### D. Portão de validação
 

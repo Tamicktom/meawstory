@@ -25,6 +25,8 @@ Configure `.env` a partir de [example.env](example.env):
 | `OPENAI_API_KEY`          | Chave do projeto da OpenAI para leituras reais. A validação do ambiente exige um valor; o placeholder do exemplo não gera leituras. |
 | `RESEND_API_KEY`          | Obrigatória em produção; dispensada no desenvolvimento e nos testes.                                                                |
 | `WORKFLOW_WEBHOOK_SECRET` | Pode ficar vazia no desenvolvimento local; configure conforme o ambiente de execução do Workflow quando ele a exigir.               |
+| `OPS_ALERT_EMAIL`         | Opcional. Recebe os alertas de falha e de atraso das leituras; sem ela, os alertas ficam só no log.                                 |
+| `CRON_SECRET`             | Opcional, com pelo menos 16 caracteres. A Vercel a envia ao cron diário de saúde das leituras (`/api/ops/reading-health`).          |
 
 Não versione `.env` nem chaves. Em produção na Vercel (`VERCEL_ENV=production`), a autenticação e os links de e-mail usam `https://meawstory.com`. Fora dela, usam a URL configurada.
 
@@ -95,7 +97,11 @@ bun run start
 
 ## Avaliação das leituras
 
-O conjunto de referência em [`evaluation/reference`](evaluation/reference/README.md) tem 37 cenas, 6 revisões e 1 controle, nos seis gêneros da rubrica. Antes de trocar modelo, prompt ou formato da leitura, meça a configuração nova com `bun run eval:baseline` e compare o relatório gerado por `bun run eval:report` com a [linha de base atual](evaluation/reference/baselines/2026-11-05-atual-v2/report.md). `bun run eval:forms` gera o material da avaliação humana.
+O conjunto de referência em [`evaluation/reference`](evaluation/reference/README.md) tem 37 cenas, 6 revisões, 1 controle e 3 casos com instruções ao corretor, nos seis gêneros da rubrica. Antes de trocar modelo, prompt ou formato da leitura, meça a configuração nova com `bun run eval:baseline` e compare o relatório gerado por `bun run eval:report` com a [linha de base atual](evaluation/reference/baselines/2026-11-05-atual-v2/report.md). `bun run eval:forms` gera o material da avaliação humana.
+
+## Operação das leituras
+
+A leitura é estruturada por critério: o servidor confere a cobertura dos critérios e as citações, calcula faixas e total e pede de novo uma vez quando rejeita a resposta. Cada tentativa registra fila, processamento, etapa da falha e o custo de cada chamada ao modelo. `bun run ops:report --since 7d` mostra tempo até a leitura, taxa de falha por etapa e custo por leitura concluída. Os logs saem como JSON, uma linha por evento, sem texto das cenas. Alertas de falha e atraso vão para `OPS_ALERT_EMAIL`. As regras estão em [database/schema.md](database/schema.md#reading-engine-monitoring-and-cost-phase-1-c).
 
 ## Banco de dados
 

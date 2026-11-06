@@ -6,6 +6,7 @@ import path from "node:path"
 //* Local imports
 import { rubricSeeds, themeSeeds } from "@/database/seed/catalog"
 import type { RubricDefinition } from "@/database/seed/render-rubric"
+import type { RubricCriteria } from "@/lib/reading-contract"
 import { rubricDefinitions } from "@/database/seed/rubrics"
 import { BANDS, type Band } from "@/evaluation/bands"
 import {
@@ -28,6 +29,7 @@ export type ReferenceCase = ReferenceCaseDefinition & {
     id: string
     title: string
     content: string
+    criteria: RubricCriteria
     definition: RubricDefinition
   }
 }
@@ -120,7 +122,10 @@ function genreProblems(cases: ReferenceCase[]): string[] {
   for (const rubric of rubricDefinitions) {
     const scenes = cases.filter(
       (item) =>
-        item.rubric.id === rubric.id && !item.revision && !item.controlOf
+        item.rubric.id === rubric.id &&
+        !item.revision &&
+        !item.controlOf &&
+        !item.injectedInto
     )
     const bands = new Set<Band>(scenes.map((item) => item.intendedBand))
     const themes = new Set(scenes.map((item) => item.theme.id))
@@ -199,12 +204,31 @@ function sceneFileProblems(root: string, cases: ReferenceCase[]): string[] {
     .map((id) => `Scene file "${id}.txt" has no reference case.`)
 }
 
+//* An injection probe copies a case of the same theme and adds the instruction.
+function injectionProblems(
+  item: ReferenceCase,
+  casesById: Map<string, ReferenceCase>
+): string[] {
+  if (!item.injectedInto) return []
+  const base = casesById.get(item.injectedInto)
+
+  if (!base || base.theme.id !== item.theme.id)
+    return [
+      `${item.id} injects into "${item.injectedInto}", which is not a case of the same theme.`,
+    ]
+  if (!item.text.includes(base.text.trim().split("\n")[0]))
+    return [`${item.id} does not copy the text of ${base.id}.`]
+  return []
+}
+
 export function validateReferenceSet(
   set: ReferenceSet,
   root: string = REFERENCE_ROOT
 ): string[] {
   const problems: string[] = []
   const seen = new Set<string>()
+
+  const casesById = new Map(set.cases.map((entry) => [entry.id, entry]))
 
   for (const item of set.cases) {
     if (seen.has(item.id))
@@ -221,6 +245,8 @@ export function validateReferenceSet(
     ) {
       problems.push(`${item.id} controls unknown case "${item.controlOf}".`)
     }
+
+    problems.push(...injectionProblems(item, casesById))
 
     //* The product only reads scenes inside this range; see lib/reading-policy.ts.
     if (item.wordCount < 100 || item.wordCount > 2000) {

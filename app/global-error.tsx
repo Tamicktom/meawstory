@@ -4,6 +4,7 @@ import { ErrorView } from "@/components/system/error-view"
 import "./globals.css"
 
 export default function GlobalError({
+  error,
   retry,
 }: {
   error: unknown
@@ -12,7 +13,7 @@ export default function GlobalError({
   return (
     <html lang="pt-BR">
       <body>
-        <ErrorView retry={retry} />
+        <ErrorView error={error} retry={retry} />
       </body>
     </html>
   )

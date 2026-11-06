@@ -17,7 +17,7 @@ O código está em `evaluation/`: `reference-set.ts` carrega e valida o conjunto
 
 ## Versão 2
 
-São 37 cenas originais, de 5 a 7 por gênero, usando os 12 temas do catálogo, mais 6 revisões e 1 controle. A versão 2 acrescentou 8 casos, marcados com `textVersion: "2"`. Eles cobrem as faixas que a avaliação humana da versão 1 mostrou estarem sem cena: Ausente em cinco gêneros e Funciona em Ação e Diálogo. O controle `luta-06` é `luta-05` sem a instrução ao corretor. Os 36 casos da versão 1 não mudaram, então as notas humanas dadas a elas continuam valendo.
+São 37 cenas originais, de 5 a 7 por gênero, usando os 12 temas do catálogo, mais 6 revisões e 1 controle. A versão 3, abaixo, acrescentou 3 sondas de instrução. A versão 2 acrescentou 8 casos, marcados com `textVersion: "2"`. Eles cobrem as faixas que a avaliação humana da versão 1 mostrou estarem sem cena: Ausente em cinco gêneros e Funciona em Ação e Diálogo. O controle `luta-06` é `luta-05` sem a instrução ao corretor. Os 36 casos da versão 1 não mudaram, então as notas humanas dadas a elas continuam valendo.
 
 | Gênero | Ausente | Em esboço | Funciona | Forte | Revisão |
 |---|---|---|---|---|---|
@@ -35,6 +35,18 @@ Revisões **sem mudança real** trocam só palavras, norma culta e pontuação; 
 Alguns casos são sondas de regras da rubrica e de riscos conhecidos: erros de grafia que não devem pesar (`acao-04`), finais sem vitória (`acao-05`, `luta-04`), tom cômico (`dialogo-05`), prosa carregada (`romance-04`), períodos longos (`virada-05`), mistério explicado no fim (`suspense-02`, `suspense-05`) e uma instrução ao corretor escondida na cena (`luta-05`).
 
 **Autoria das cenas:** as cenas das versões 1 e 2 foram escritas com IA (Claude) a partir dos temas do catálogo, para que o conjunto existisse antes do teste com pessoas. Não vêm de pessoas usuárias e não contêm dados pessoais. As pessoas avaliadoras podem pedir que uma cena seja trocada por outra escrita por gente, desde que com autorização de quem a escreveu, numa nova versão.
+
+## Versão 3
+
+A versão 3 acrescenta três sondas de instrução dentro da cena para [1C-4](../../docs/v2/fase-1-revisao/1C-4-proteger-leitura-contra-instrucoes-da-cena.md), marcadas com `textVersion: "3"`. Cada uma copia um caso existente e acrescenta a instrução; `injectedInto` aponta o caso original, que serve de comparação e não muda:
+
+| Sonda | Caso original | Instrução |
+|---|---|---|
+| `virada-07` | `virada-02` | Falso fim de cena e falsa atualização da rubrica, pedindo nota máxima e foco vazio |
+| `dialogo-08` | `dialogo-01` | Apelo emocional à IA no meio do texto, pedindo Forte em tudo |
+| `romance-07` | `romance-06` | Falsa mensagem de sistema em inglês, pedindo nota máxima e foco vazio |
+
+As sondas não contam para a cobertura de faixas de cada gênero, como as revisões e os controles. A seção "Instruções dentro da cena" do relatório compara cada sonda, e `luta-05`, com a cena sem a instrução.
 
 ## Avaliação humana
 
@@ -63,9 +75,9 @@ bun run eval:baseline --runs 5 --label atual
 bun run eval:report evaluation/reference/baselines/<data>-atual
 ```
 
-`eval:baseline` chama a mesma função da leitura em produção (`requestCorrection`, em `workflows/correction-grading.ts`) e precisa de `OPENAI_API_KEY` no `.env`. As cenas são enviadas à OpenAI como numa leitura real, com `store: false`. Cada leitura grava o resultado em `readings.json` assim que termina; se a execução parar, o mesmo comando retoma de onde parou. `--cases acao-01,luta-03` limita os casos e `--concurrency` controla as chamadas simultâneas (padrão 4).
+`eval:baseline` chama a mesma leitura da produção (`gradeReading`, em `workflows/correction-grading.ts`): a chamada ao modelo, a validação do servidor e, quando ela rejeita a resposta, a nova tentativa. Precisa de `OPENAI_API_KEY` no `.env`. Desde 1C-1, cada leitura grava em `readings.json` a leitura estruturada (`structured`) e todas as chamadas (`calls`), inclusive as rejeitadas, e o relatório usa as notas e citações da estrutura. Medições anteriores, em markdown, continuam legíveis. As cenas são enviadas à OpenAI como numa leitura real, com `store: false`. Cada leitura grava o resultado em `readings.json` assim que termina; se a execução parar, o mesmo comando retoma de onde parou. `--cases acao-01,luta-03` limita os casos e `--concurrency` controla as chamadas simultâneas (padrão 4).
 
-Uma leitura usa cerca de 2,5 mil tokens de entrada e 1,7 mil de saída e leva de 15 a 30 segundos. Uma medição completa da versão 2, com 220 leituras, leva cerca de 15 minutos com `--concurrency 6`.
+Na leitura estruturada, uma leitura usa cerca de 2,8 mil tokens de entrada e 2,6 mil de saída, custa cerca de US$ 0,005 e leva de 20 a 45 segundos. A seção "Consumo" do relatório calcula o custo com o preço de `lib/model-pricing.ts` na data da medição, contando as chamadas rejeitadas. Uma medição completa da versão 3, com 235 leituras, deve levar cerca de 20 minutos com `--concurrency 6`.
 
 `eval:report` não chama o modelo: recalcula `report.md` a partir de `readings.json`. Para comparar uma configuração nova, meça com outro `--label` e compare os dois relatórios.
 

@@ -8,9 +8,13 @@ import { FatalError } from "workflow"
 
 //* Local imports
 import { db } from "@/database"
-import { correction, rubric, text, theme } from "@/database/schema"
+import { correction, readingCall, rubric, text, theme } from "@/database/schema"
+import { renderReadingMarkdown } from "@/lib/reading-markdown"
 import { correctionService } from "@/services/correction"
-import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
+import {
+  actionCriteria,
+  createIsolatedRows,
+} from "@/tests/helpers/schema-fixtures"
 import {
   correctText,
   createEmptyCorrection,
@@ -24,7 +28,9 @@ import {
 
 const rows = createIsolatedRows()
 const retiredAt = new Date("2024-01-01T00:00:00.000Z")
-const gradedNote = "Nota: 640"
+const SCENE = "She measured the gap."
+const QUOTE = "She measured the gap"
+const SPLIT_640 = [96, 128, 128, 160, 128]
 
 type StepContext = {
   stepMetadata: {
@@ -67,7 +73,7 @@ let generateTextSpy: GenerateTextSpy
 
 beforeEach(() => {
   generateTextSpy = spyOn(ai, "generateText").mockImplementation(async () => {
-    return gradedModelResult(640) as never
+    return gradedModelResult() as never
   }) as unknown as GenerateTextSpy
 })
 
@@ -76,11 +82,29 @@ afterEach(async () => {
   await rows.cleanup()
 })
 
-function gradedModelResult(score: number) {
+function modelReply(scores: number[] = SPLIT_640, evidence = QUOTE) {
   return {
-    output: {
-      content: gradedNote,
-      score,
+    criteria: actionCriteria.map((criterion, index) => ({
+      id: criterion.id,
+      score: scores[index],
+      strengths: `${criterion.name} works.`,
+      gaps: `${criterion.name} is missing a beat.`,
+      evidence: [evidence],
+    })),
+    highlight: { description: "The measuring.", evidence: QUOTE },
+    opening: "The scene measures before it leaps.",
+    revision: "Let the gap cost her something.",
+  }
+}
+
+function gradedModelResult(scores?: number[], evidence?: string) {
+  return {
+    output: modelReply(scores, evidence),
+    usage: {
+      inputTokens: 2000,
+      outputTokens: 1000,
+      inputTokenDetails: { cacheReadTokens: 0 },
+      outputTokenDetails: { reasoningTokens: 400 },
     },
   }
 }
@@ -135,6 +159,7 @@ async function insertOpenText() {
   const rubricId = await rows.insertRubric({
     title: "Scene rubric",
     content: "Score the scene.",
+    structured: true,
   })
   const themeId = await rows.insertTheme(rubricId, {
     title: "Rooftop",
@@ -144,7 +169,7 @@ async function insertOpenText() {
   const textId = await rows.insertText({
     userId,
     themeId,
-    content: "She measured the gap.",
+    content: SCENE,
   })
 
   return {
@@ -162,6 +187,7 @@ function correctionPrompt() {
     textContent: "She measured the gap.",
     rubricTitle: "Scene rubric",
     rubricContent: "Score the scene.",
+    criteria: actionCriteria,
   })
 }
 
@@ -337,7 +363,7 @@ describe("correctText", () => {
 
     generateTextSpy.mockImplementation(async () => {
       statusDuringGrading = (await readCorrection(stepId))?.status
-      return gradedModelResult(640)
+      return gradedModelResult()
     })
 
     await withStep(stepId, () => correctText(graph.textId))
@@ -370,23 +396,77 @@ describe("correctText", () => {
     })
   })
 
-  it("fails with FatalError before save when the score is invalid", async () => {
+  it("rejects a criterion above its maximum, retries once, then fails at validation", async () => {
     const graph = await insertOpenText()
     const stepId = nextStepId()
 
     generateTextSpy.mockImplementation(async () =>
-      gradedModelResult(Number.POSITIVE_INFINITY)
+      gradedModelResult([151, 128, 128, 160, 128])
     )
 
     const error = await captureFatal(() =>
       withStep(stepId, () => correctText(graph.textId))
     )
 
-    expect(error.message).toBe("Correction score must be a finite number.")
+    expect(error.message).toStartWith(
+      "Reading rejected by validation: score_out_of_range"
+    )
+    expect(generateTextSpy.mock.calls).toHaveLength(2)
+    expect(generateTextSpy.mock.calls[1]?.[0].prompt).toContain(
+      "<aviso-do-servidor>"
+    )
     expect(await readCorrection(stepId)).toMatchObject({
       content: "",
       score: "0.00",
+      status: "FAILED",
     })
+    const stored = await correctionService.findAttemptSnapshot(stepId)
+    expect(stored).toMatchObject({ failureStage: "validation" })
+    expect(stored?.finishedAt).toBeInstanceOf(Date)
+    const calls = await db
+      .select()
+      .from(readingCall)
+      .where(eq(readingCall.correctionId, stepId))
+    expect(
+      calls.map((call) => [call.sequence, call.outcome, call.rejection]).sort()
+    ).toEqual([
+      [1, "rejected", "score_out_of_range"],
+      [2, "rejected", "score_out_of_range"],
+    ])
+  })
+
+  it("accepts the retry when the first reply quotes text that is not in the scene", async () => {
+    const graph = await insertOpenText()
+    const stepId = nextStepId()
+    let call = 0
+
+    generateTextSpy.mockImplementation(async () => {
+      call += 1
+      return call === 1
+        ? gradedModelResult(SPLIT_640, "she jumped across the gap")
+        : gradedModelResult()
+    })
+
+    const saved = await withStep(stepId, () => correctText(graph.textId))
+
+    expect(saved.score).toBe("640.00")
+    const calls = await db
+      .select()
+      .from(readingCall)
+      .where(eq(readingCall.correctionId, stepId))
+    expect(
+      calls
+        .map((entry) => [
+          entry.sequence,
+          entry.outcome,
+          entry.rejection,
+          entry.discardedQuotes,
+        ])
+        .sort()
+    ).toEqual([
+      [1, "rejected", "missing_evidence", 0],
+      [2, "accepted", null, 0],
+    ])
   })
 
   it("fails with Text not found when the text is gone before save", async () => {
@@ -399,7 +479,7 @@ describe("correctText", () => {
         .set({ deletedAt: retiredAt })
         .where(eq(text.id, graph.textId))
 
-      return gradedModelResult(640)
+      return gradedModelResult()
     })
 
     const error = await captureFatal(() =>
@@ -432,7 +512,7 @@ describe("correctText", () => {
         .set({ deletedAt: retiredAt })
         .where(eq(rubric.id, graph.rubricId))
 
-      return gradedModelResult(640)
+      return gradedModelResult()
     })
 
     const error = await captureFatal(() =>
@@ -456,7 +536,7 @@ describe("correctText", () => {
         .set({ content: "A different ending." })
         .where(eq(text.id, graph.textId))
 
-      return gradedModelResult(640)
+      return gradedModelResult()
     })
 
     const error = await captureFatal(() =>
@@ -480,7 +560,7 @@ describe("correctText", () => {
         .set({ content: "A different rubric." })
         .where(eq(rubric.id, graph.rubricId))
 
-      return gradedModelResult(640)
+      return gradedModelResult()
     })
 
     const error = await captureFatal(() =>
@@ -494,7 +574,7 @@ describe("correctText", () => {
     })
   })
 
-  it("stores a completed correction with the frozen text and rubric bodies", async () => {
+  it("stores a completed structured reading with the frozen bodies, server total and bands", async () => {
     const graph = await insertOpenText()
     const stepId = nextStepId()
 
@@ -504,12 +584,64 @@ describe("correctText", () => {
       correctionId: stepId,
       score: "640.00",
     })
+    const stored = await correctionService.findAttemptSnapshot(stepId)
+    expect(
+      stored?.structuredResult?.criteria.map((entry) => entry.band)
+    ).toEqual(["working", "working", "working", "working", "working"])
     expect(await readCorrection(stepId)).toEqual({
-      content: gradedNote,
+      content: renderReadingMarkdown(stored!.structuredResult!, actionCriteria),
       score: "640.00",
-      textContent: "She measured the gap.",
+      textContent: SCENE,
       rubricContent: "Score the scene.",
       status: "COMPLETED",
+    })
+    expect(stored?.startedAt).toBeInstanceOf(Date)
+    expect(stored?.finishedAt).toBeInstanceOf(Date)
+    expect(stored?.failureStage).toBeNull()
+  })
+
+  it("records the accepted call with its tokens and its cost at the list price", async () => {
+    const graph = await insertOpenText()
+    const stepId = nextStepId()
+
+    await withStep(stepId, () => correctText(graph.textId))
+
+    const [call] = await db
+      .select()
+      .from(readingCall)
+      .where(eq(readingCall.correctionId, stepId))
+    expect(call).toMatchObject({
+      outcome: "accepted",
+      sequence: 1,
+      modelId: "gpt-5-mini",
+      inputTokens: 2000,
+      outputTokens: 1000,
+      reasoningTokens: 400,
+      //* 2000 × 0.25 + 1000 × 2 per million tokens.
+      costUsd: "0.00250000",
+    })
+    expect(call?.price).toMatchObject({
+      modelId: "gpt-5-mini",
+      outputPerMillion: 2,
+    })
+  })
+
+  it("fails before calling the model when the attempt has no frozen criteria", async () => {
+    const rubricId = await rows.insertRubric({ content: "Score the scene." })
+    const themeId = await rows.insertTheme(rubricId)
+    const userId = await rows.insertUser()
+    const textId = await rows.insertText({ userId, themeId, content: SCENE })
+    const stepId = nextStepId()
+
+    const error = await captureFatal(() =>
+      withStep(stepId, () => correctText(textId))
+    )
+
+    expect(error.message).toBe("Reading has no frozen rubric criteria")
+    expect(generateTextSpy.mock.calls).toHaveLength(0)
+    expect(await correctionService.findAttemptSnapshot(stepId)).toMatchObject({
+      status: "FAILED",
+      failureStage: "grading",
     })
   })
 
@@ -561,23 +693,53 @@ describe("correctText", () => {
     }
   })
 
-  it("stores FAILED when grading fails after the correction row exists", async () => {
+  it("stores FAILED at the grading stage when the model call keeps failing", async () => {
     const graph = await insertOpenText()
     const stepId = nextStepId()
 
-    generateTextSpy.mockImplementation(async () =>
-      gradedModelResult(Number.POSITIVE_INFINITY)
-    )
+    generateTextSpy.mockImplementation(async () => {
+      throw new Error("Provider unavailable")
+    })
 
-    const error = await captureFatal(() =>
-      withStep(stepId, () => correctText(graph.textId))
-    )
+    let message = ""
+    try {
+      await withStep(stepId, () => correctText(graph.textId))
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error)
+    }
 
-    expect(error.message).toBe("Correction score must be a finite number.")
-    expect(await readCorrection(stepId)).toMatchObject({
+    expect(message).toBe("Provider unavailable")
+    expect(await correctionService.findAttemptSnapshot(stepId)).toMatchObject({
       status: "FAILED",
       content: "",
       score: "0.00",
+      failureStage: "grading",
+      failureReason: "Provider unavailable",
+    })
+    const calls = await db
+      .select()
+      .from(readingCall)
+      .where(eq(readingCall.correctionId, stepId))
+    expect(calls.map((call) => call.outcome)).toEqual(["error"])
+  })
+
+  it("marks a text changed before save as a failure at the saving stage", async () => {
+    const graph = await insertOpenText()
+    const stepId = nextStepId()
+
+    generateTextSpy.mockImplementation(async () => {
+      await db
+        .update(text)
+        .set({ content: "A different ending." })
+        .where(eq(text.id, graph.textId))
+      return gradedModelResult()
+    })
+
+    await captureFatal(() => withStep(stepId, () => correctText(graph.textId)))
+
+    expect(await correctionService.findAttemptSnapshot(stepId)).toMatchObject({
+      status: "FAILED",
+      failureStage: "saving",
     })
   })
 })
@@ -589,7 +751,7 @@ for (const field of ["modelId", "promptVersion"] as const) {
     await correctionService.insertCorrection({
       id,
       textId: graph.textId,
-      textContent: "She measured the gap.",
+      textContent: SCENE,
       rubricId: graph.rubricId,
       rubricContent: "Score the scene.",
       content: "",
