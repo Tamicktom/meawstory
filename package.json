@@ -25,7 +25,8 @@
     "eval:report": "bun scripts/reading-report.ts",
     "eval:gate": "bun scripts/validation-gate.ts",
     "eval:prototype": "bun scripts/reading-prototype.ts",
-    "ops:report": "bun scripts/reading-ops.ts"
+    "ops:report": "bun scripts/reading-ops.ts",
+    "ops:quality": "bun scripts/reading-quality.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.109",

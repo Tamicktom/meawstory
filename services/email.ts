@@ -59,7 +59,10 @@ async function writeToOutbox(message: EmailMessage) {
 }
 
 export async function sendEmail(message: EmailMessage) {
-  if (process.env.NODE_ENV === "production") {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.MEAWSTORY_E2E !== "1"
+  ) {
     await deliverWithResend(message)
     return
   }

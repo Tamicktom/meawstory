@@ -7,9 +7,9 @@ export const serverEnv = createEnv({
     DATABASE_URL: z.string(),
     BETTER_AUTH_SECRET: z.string(),
     OPENAI_API_KEY: z.string(),
-    //* Outside production, emails go to .email-outbox instead of Resend.
+    //* Local development and explicit E2E runs write emails to .email-outbox.
     RESEND_API_KEY:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === "production" && process.env.MEAWSTORY_E2E !== "1"
         ? z.string().min(1)
         : z.string().optional(),
     //* Where reading alerts go (1C-5). Without it, alerts are only logged.

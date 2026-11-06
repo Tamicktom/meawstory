@@ -38,7 +38,7 @@ Bring the database up, then migrate, then seed:
 
 ## Local email
 
-Outside production, `services/email.ts` writes each email to `.email-outbox/` as JSON and logs its path. It does not call Resend, so local accounts with made-up addresses never reach the provider. Production sends through Resend and requires `RESEND_API_KEY`.
+Outside production and during explicit Playwright runs (`MEAWSTORY_E2E=1`), `services/email.ts` writes each email to `.email-outbox/` as JSON and logs its path. It does not call Resend, so local accounts with made-up addresses never reach the provider. Production without that test flag sends through Resend and requires `RESEND_API_KEY`. Keep `MEAWSTORY_E2E` unset in deployments.
 
 `bun run email:test person@example.com` sends one real email through Resend, using the key in `.env`.
 
@@ -62,7 +62,7 @@ Accounts created by tests start with an unverified email. To start a reading in 
 
 Playwright projects are declared in `playwright.config.ts`:
 
-- `e2e` (`bun run test:e2e`): `tests/e2e`, app at `http://localhost:3000`. The config starts `bun run dev` when that server is down. Sign-up and sign-in write to the migrated database.
+- `e2e` (`bun run test:e2e`): `tests/e2e`, app at `http://localhost:3000`. The config runs `bun run build && bun run start` with `MEAWSTORY_E2E=1`. Port 3000 must be free; an existing server is not reused. Start and migrate the database before running tests. Sign-up and sign-in write to the migrated database.
 - `components` (`bun run test:ct`): `tests/components`, served by the Vite gallery at `http://localhost:3100`.
 
 ## Cursor Cloud

@@ -366,3 +366,41 @@ export const relations = defineRelations(
     },
   })
 )
+
+export const readingFeedback = p.pgTable(
+  "reading_feedback",
+  {
+    correctionId: p
+      .text("correction_id")
+      .primaryKey()
+      .references(() => correction.id, { onDelete: "cascade" }),
+    usefulness: p.text("usefulness").$type<"yes" | "partly" | "no">().notNull(),
+    updatedAt: p.timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    p.check(
+      "reading_feedback_choice",
+      sql`${table.usefulness} IN ('yes', 'partly', 'no')`
+    ),
+  ]
+)
+
+export const readingDisagreement = p.pgTable(
+  "reading_disagreement",
+  {
+    correctionId: p
+      .text("correction_id")
+      .notNull()
+      .references(() => correction.id, { onDelete: "cascade" }),
+    criterionId: p.text("criterion_id").notNull(),
+    reason: p.text("reason").notNull().default(""),
+    updatedAt: p.timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    p.primaryKey({ columns: [table.correctionId, table.criterionId] }),
+    p.check(
+      "reading_disagreement_reason_length",
+      sql`length(${table.reason}) <= 2000`
+    ),
+  ]
+)

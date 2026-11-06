@@ -31,7 +31,7 @@ Todo card segue o mesmo formato: objetivo, escopo, critérios de conclusão e, q
 - Um card só começa quando as dependências dele estiverem marcadas no card pai.
 - O resultado de um card de decisão ou pesquisa é registrado no próprio card, em uma seção `## Resultado`.
 - Decisões de dados são registradas em `database/schema.md` antes das respectivas mudanças de tabela ou consulta.
-- Na Fase 1, o conjunto de referência, a medição e o teste com escritores (etapas A a D) vêm antes da construção completa da tela de leitura, da revisão e da comparação.
+- Na Fase 1, o conjunto de referência, a medição e o teste com escritores (etapas A a D) são o portão para revisão e comparação. Por pedido explícito de Tamicktom em 2026-11-06, a implementação da tela de leitura (1F) foi antecipada; a exceção está registrada no card pai e não encerra as pendências de D.
 
 ## Recorte deste ciclo
 

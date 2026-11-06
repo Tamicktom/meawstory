@@ -1,6 +1,6 @@
 import { validateStructuredReading } from "@/lib/reading-contract"
 //* Libraries imports
-import { and, eq, gt, inArray, sql } from "drizzle-orm"
+import { and, count, eq, gt, inArray, isNull, lte, sql } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
@@ -97,6 +97,9 @@ async function findLatestActiveCorrection(textId: string) {
       content: true,
       score: true,
       textContent: true,
+      structuredResult: true,
+      rubricCriteria: true,
+      source: true,
       status: true,
     },
     where: {
@@ -217,7 +220,26 @@ async function recordCall(
   })
 }
 
+async function completedVersion(textId: string, correctionId: string) {
+  const [row] = await db
+    .select({ value: count() })
+    .from(correction)
+    .where(
+      and(
+        eq(correction.textId, textId),
+        eq(correction.status, "COMPLETED"),
+        isNull(correction.deletedAt),
+        lte(
+          correction.createdAt,
+          sql`(select created_at from correction where id = ${correctionId})`
+        )
+      )
+    )
+  return row.value
+}
+
 export const correctionService = {
+  completedVersion,
   recordCall,
   findAttemptSnapshot,
   insertCorrection,

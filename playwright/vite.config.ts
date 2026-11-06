@@ -23,10 +23,22 @@ export default defineConfig({
     "process.env.__NEXT_LINK_NO_TOUCH_START": "false",
   },
   resolve: {
-    alias: {
-      "@": rootDirectory,
-      "next/navigation": nextNavigationMock,
-    },
+    alias: [
+      {
+        find: "@/app/reading-feedback-actions",
+        replacement: fileURLToPath(
+          new URL("./mocks/reading-feedback-actions.ts", import.meta.url)
+        ),
+      },
+      {
+        find: "@/app/auth-actions",
+        replacement: fileURLToPath(
+          new URL("./mocks/auth-actions.ts", import.meta.url)
+        ),
+      },
+      { find: "@", replacement: rootDirectory },
+      { find: "next/navigation", replacement: nextNavigationMock },
+    ],
     dedupe: ["react", "react-dom"],
   },
   optimizeDeps: {
