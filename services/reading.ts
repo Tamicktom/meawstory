@@ -30,7 +30,7 @@ export function canReviseReading(
 }
 
 //* Blank means the writer omitted the answer. It never becomes part of the grade.
-export function normalizeRevisionIntent(value: string | null | undefined) {
+function normalizeRevisionIntent(value: string | null | undefined) {
   if (value == null) return null
   const trimmed = value.trim()
   if (!trimmed) return null
