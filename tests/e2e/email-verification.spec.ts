@@ -83,6 +83,7 @@ test.describe("email verification", () => {
     await expect(page.getByText(savedCorrection.opening)).toBeVisible({
       timeout: 45_000,
     })
+    await page.getByText("Ver pontuação total", { exact: true }).click()
     await expect(page.getByText("Pontuação: 640 de 1000")).toBeVisible()
     await expect(page.getByText(scene)).toBeVisible()
   })

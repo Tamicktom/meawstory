@@ -243,3 +243,18 @@ correction exists. Submission checks its confirmed content again inside the
 reservation transaction, so an intervening edit from another tab cannot silently
 change what is submitted. The UI serializes autosaves and waits for them before
 submission. Once reserved, the frozen text remains visible in the reading state.
+
+## Reading feedback (Phase 1-F)
+
+Only the author of an active scene can give feedback on its active, completed,
+structured reading. `reading_feedback` has one mutable usefulness choice per
+correction (`yes`, `partly`, `no`). `reading_disagreement` has one mutable optional
+reason (at most 2,000 characters) per correction and frozen criterion id. An empty
+reason still records a disagreement. These records refer to the immutable reading,
+so its model, prompt version and criterion snapshots remain available for analysis.
+They never update the correction, its score, or start another reading. Legacy
+markdown readings have no criterion feedback. Foreign keys cascade on hard delete
+of the correction; soft deletion preserves feedback but hides it from active quality
+reports. Quality reports aggregate by model/prompt; an explicit candidate export
+provides reading and criterion ids for investigation, never automatically changes
+the reference set. Feedback contains user-supplied text and must not enter telemetry.

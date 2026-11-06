@@ -38,7 +38,7 @@ type SidebarContextProps = {
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
-  isMobile: boolean
+  isMobile: boolean | undefined
   toggleSidebar: () => void
 }
 
@@ -258,7 +258,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
+  const { isMobile, toggleSidebar } = useSidebar()
 
   return (
     <Button
@@ -266,6 +266,7 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon-sm"
+      disabled={isMobile === undefined}
       className={cn(className)}
       onClick={(event) => {
         onClick?.(event)

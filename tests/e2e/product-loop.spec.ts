@@ -96,7 +96,9 @@ for (const width of [1280, 320, 390]) {
       ).toBeVisible()
       await privacy.close()
       await expect(editor).toHaveValue(submittedText)
-      await expect(page.getByRole("status")).toContainText("Salvo há instantes")
+      await expect(page.getByRole("status")).toContainText("Salvo há instantes", {
+        timeout: 15_000,
+      })
       const firstItem = page.getByRole("checkbox").first()
       await firstItem.check()
       await expect(page.getByRole("status")).toContainText("Salvo há instantes")
@@ -114,9 +116,57 @@ for (const width of [1280, 320, 390]) {
       await expect(
         page.getByRole("heading", { name: themeTitle })
       ).toBeVisible()
-      await expect(page.getByText(savedCorrection.opening)).toBeVisible()
-      await expect(page.getByText("Pontuação: 640 de 1000")).toBeVisible()
-      await expect(page.getByText(submittedText)).toBeVisible()
+      await expect(page.getByText(savedCorrection.opening)).toBeVisible({
+        timeout: 45_000,
+      })
+      await expect(
+        page.getByText("Pontuação: 640 de 1000", { exact: true })
+      ).not.toBeVisible()
+      await page.getByText("Ver pontuação total", { exact: true }).click()
+      await expect(
+        page.getByText("Pontuação: 640 de 1000", { exact: true })
+      ).toBeVisible()
+      const criterion = page.getByRole("article").first()
+      await criterion
+        .getByRole("button", { name: /Ver trecho 1 na cena/ })
+        .click()
+      const scene = page.getByRole("region", { name: "Sua cena", exact: true })
+      await expect(scene).toBeVisible()
+      await expect(scene.locator(".whitespace-pre-wrap")).toHaveText(
+        submittedText
+      )
+      await expect(scene.locator("mark:focus")).toBeVisible()
+      if (width < 768)
+        await scene.getByRole("button", { name: "Voltar à leitura" }).click()
+      const utility = page.getByRole("region", { name: "Utilidade da leitura" })
+      await utility.getByRole("button", { name: "Sim", exact: true }).click()
+      await expect(utility.getByRole("status")).toContainText("Resposta salva")
+      await utility.getByRole("button", { name: "Em parte" }).click()
+      await expect(
+        utility.getByRole("button", { name: "Em parte" })
+      ).toHaveAttribute("aria-pressed", "true")
+      await criterion
+        .getByText("Discordo deste critério", { exact: true })
+        .click()
+      await criterion
+        .getByRole("textbox")
+        .fill("Quero investigar esse comentário.")
+      await criterion
+        .getByRole("button", { name: "Registrar discordância" })
+        .click()
+      await expect(criterion.getByRole("status")).toContainText(
+        "Discordância registrada"
+      )
+      await page.reload()
+      await expect(
+        utility.getByRole("button", { name: "Em parte" })
+      ).toHaveAttribute("aria-pressed", "true")
+      await criterion
+        .getByText("Discordo deste critério — registrada", { exact: true })
+        .click()
+      await expect(criterion.getByRole("textbox")).toHaveValue(
+        "Quero investigar esse comentário."
+      )
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth)
       ).toBeLessThanOrEqual(width)

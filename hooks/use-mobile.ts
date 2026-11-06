@@ -15,5 +15,6 @@ export function useIsMobile() {
     return () => mql.removeEventListener("change", onChange)
   }, [])
 
-  return !!isMobile
+  // Keep the unknown state until the viewport is measured after hydration.
+  return isMobile
 }

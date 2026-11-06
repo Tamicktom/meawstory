@@ -29,6 +29,8 @@ function runAfterResponse(task: Promise<unknown>) {
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
+  //* Parallel E2E accounts share localhost; keep the production default outside tests.
+  rateLimit: process.env.MEAWSTORY_E2E === "1" ? { enabled: false } : undefined,
   baseURL: publicBaseUrl(process.env.VERCEL_ENV, clientEnv.NEXT_PUBLIC_VERCEL_URL),
   //* Sign-in from the public site stays valid when the configured host is a Vercel deployment URL.
   trustedOrigins: [productionSiteUrl],

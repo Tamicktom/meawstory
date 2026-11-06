@@ -81,10 +81,10 @@ bun run test:ct
 
 `bun test` executa a suíte em `tests/unit`, incluindo testes que acessam o PostgreSQL. `bun run test` executa essa suíte e os dois projetos Playwright, declarados em [playwright.config.ts](playwright.config.ts):
 
-- `bun run test:e2e`: jornadas em `tests/e2e`, contra `http://localhost:3000`. O Playwright inicia `bun run dev` se não houver um servidor nessa URL; sem Docker, inicie o Next.js manualmente antes.
+- `bun run test:e2e`: jornadas em `tests/e2e`, contra `http://localhost:3000`. O Playwright executa `bun run build` e inicia `bun run start`. A porta 3000 deve estar livre; um servidor de desenvolvimento existente não é reutilizado. O PostgreSQL deve estar iniciado, migrado e com seed aplicado.
 - `bun run test:ct`: componentes em `tests/components`, servidos pela galeria Vite na porta 3100.
 
-O Playwright inicia os servidores declarados na configuração quando necessário. As jornadas criam uma conta nova a cada execução. Para iniciar leituras, os testes confirmam o e-mail com `tests/helpers/email-outbox.ts`. Durante o Playwright, uma leitura salva substitui a chamada ao modelo, sem alcançar a OpenAI.
+O Playwright inicia os servidores declarados na configuração quando necessário. As jornadas criam uma conta nova a cada execução. Para iniciar leituras, os testes confirmam o e-mail com `tests/helpers/email-outbox.ts`. Durante o Playwright, `MEAWSTORY_E2E=1` mantém os e-mails em `.email-outbox` e uma leitura salva substitui a chamada ao modelo, mesmo com `NODE_ENV=production`. Esse modo também desativa o limite de requisições da autenticação para as contas paralelas no localhost. É definido apenas no servidor iniciado pela configuração de testes; não o configure no deploy. Se a leitura simulada estiver ausente, o teste falha em vez de alcançar a OpenAI.
 
 Para validar e executar um build de produção:
 
@@ -102,6 +102,10 @@ O conjunto de referência em [`evaluation/reference`](evaluation/reference/READM
 ## Operação das leituras
 
 A leitura é estruturada por critério: o servidor confere a cobertura dos critérios e as citações, calcula faixas e total e pede de novo uma vez quando rejeita a resposta. Cada tentativa registra fila, processamento, etapa da falha e o custo de cada chamada ao modelo. `bun run ops:report --since 7d` mostra tempo até a leitura, taxa de falha por etapa e custo por leitura concluída. Os logs saem como JSON, uma linha por evento, sem texto das cenas. Alertas de falha e atraso vão para `OPS_ALERT_EMAIL`. As regras estão em [database/schema.md](database/schema.md#reading-engine-monitoring-and-cost-phase-1-c).
+
+A tela usa o resultado e os critérios congelados para mostrar leitura geral, foco, faixas e citações localizáveis na cena. Leituras antigas continuam com markdown e pontuação originais. A criação da revisão pelo botão “Revisar com esse foco” entra na etapa 1G.
+
+`bun run ops:quality --since 7d` agrega utilidade e discordâncias por modelo e versão do prompt, sem tratar ausência de resposta como avaliação negativa. `bun run ops:quality --since 7d --candidates /tmp/reading-candidates.json` exporta ids de leituras, critérios e motivos para investigação local; o conjunto de referência só muda após revisão humana. Os motivos não entram na telemetria. A migração `20261106111144_reading_feedback` é necessária para coletar essas respostas.
 
 ## Banco de dados
 

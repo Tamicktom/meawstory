@@ -10,6 +10,7 @@ import { useAppForm } from "@/components/auth/form-hook"
 
 //* Local imports
 import { authClient } from "@/lib/auth-client"
+import { refreshAuthenticatedRoutes } from "@/app/auth-actions"
 import { signInErrorMessage } from "@/lib/auth-error-message"
 import {
   signInDefaultValues,
@@ -40,8 +41,9 @@ function useSignInForm(destination: string) {
 
       return data
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.clear() //* Clear the query client to avoid showing the previous user's data
+      await refreshAuthenticatedRoutes()
       router.push(destination)
     },
   })

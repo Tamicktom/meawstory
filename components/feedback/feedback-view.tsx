@@ -21,6 +21,16 @@ function FeedbackView(props: FeedbackViewProps) {
   return (
     <div className="flex w-full max-w-3xl min-w-0 flex-col gap-4 p-4 [overflow-wrap:anywhere]">
       <p className="text-sm text-muted-foreground">Leitura</p>
+      {correction ? (
+        <p className="text-sm text-muted-foreground">
+          Leitura no formato original. Esta avaliação histórica não possui dados
+          estruturados por critério.
+        </p>
+      ) : null}
+      <p className="text-sm text-muted-foreground">
+        Esta leitura de IA serve para treino e não define o valor da sua
+        escrita.
+      </p>
       <h1 className="font-heading text-lg font-medium">{props.themeTitle}</h1>
       {correction ? (
         <div className="flex flex-col gap-4">

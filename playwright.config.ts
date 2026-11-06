@@ -34,10 +34,12 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "bun run dev",
+      command: "bun run build && bun run start",
+      env: { MEAWSTORY_E2E: "1" },
+      stdout: "pipe",
       url: "http://localhost:3000",
-      reuseExistingServer: !isCI,
-      timeout: 120_000,
+      reuseExistingServer: false,
+      timeout: 180_000,
     },
     {
       command: "bunx vite --config playwright/vite.config.ts",

@@ -1,3 +1,5 @@
+import { StructuredReadingView } from "@/components/feedback/structured-reading"
+import { loadReadingFeedback } from "@/services/reading-feedback"
 import { sceneTitle } from "@/lib/scene-title"
 import { ReadingState } from "@/components/reading/reading-state"
 //* Libraries imports
@@ -65,6 +67,38 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
         textContent={latestCorrection.textContent}
         status={latestCorrection.status}
         createdAt={latestCorrection.createdAt.toISOString()}
+      />
+    )
+  }
+  if (latestCorrection.structuredResult && latestCorrection.rubricCriteria) {
+    const [version, feedback] = await Promise.all([
+      correctionService.completedVersion(ownedText.id, latestCorrection.id),
+      loadReadingFeedback(latestCorrection.id),
+    ])
+    return (
+      <StructuredReadingView
+        correctionId={latestCorrection.id}
+        title={sceneTitle(
+          ownedText.title,
+          latestCorrection.source?.themeTitle ?? ownedText.theme.title
+        )}
+        exerciseTitle={
+          latestCorrection.source?.themeTitle ?? ownedText.theme.title
+        }
+        createdAt={latestCorrection.createdAt.toISOString()}
+        version={version}
+        score={latestCorrection.score}
+        scene={latestCorrection.textContent}
+        result={latestCorrection.structuredResult}
+        criteria={latestCorrection.rubricCriteria.map(
+          ({ id, name, maxScore, publicDescription }) => ({
+            id,
+            name,
+            maxScore,
+            publicDescription,
+          })
+        )}
+        feedback={feedback}
       />
     )
   }
