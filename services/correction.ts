@@ -17,24 +17,38 @@ type CorrectionWriteResult = {
   status: CorrectionStatus
 }
 
+type CompletionValues = Partial<
+  Pick<InsertCorrectionValues, "status" | "score" | "structuredResult">
+>
+type CompletionSnapshot = Pick<
+  InsertCorrectionValues,
+  "score" | "rubricCriteria" | "modelId" | "promptVersion" | "promptConfig"
+>
+
+function validateStructuredCompletion(
+  values: CompletionValues,
+  snapshot: CompletionSnapshot | undefined
+) {
+  if (!values.structuredResult) return
+  if (
+    values.status !== "COMPLETED" ||
+    !snapshot?.rubricCriteria ||
+    !snapshot.modelId ||
+    !snapshot.promptVersion ||
+    !snapshot.promptConfig
+  )
+    throw new Error(
+      "Structured completion requires frozen rubric and configuration."
+    )
+  validateStructuredReading(
+    values.structuredResult,
+    snapshot.rubricCriteria,
+    values.score ?? snapshot.score
+  )
+}
+
 async function insertCorrection(values: InsertCorrectionValues) {
-  if (values.structuredResult) {
-    if (
-      values.status !== "COMPLETED" ||
-      !values.rubricCriteria ||
-      !values.modelId ||
-      !values.promptVersion ||
-      !values.promptConfig
-    )
-      throw new Error(
-        "Structured completion requires frozen rubric and configuration."
-      )
-    validateStructuredReading(
-      values.structuredResult,
-      values.rubricCriteria,
-      values.score
-    )
-  }
+  validateStructuredCompletion(values, values)
   const inserted = await db
     .insert(correction)
     .values(values)
@@ -110,21 +124,7 @@ async function updateCorrection(
 ): Promise<CorrectionWriteResult | null> {
   if (values.structuredResult) {
     const attempt = await findAttemptSnapshot(id)
-    if (
-      values.status !== "COMPLETED" ||
-      !attempt?.rubricCriteria ||
-      !attempt.modelId ||
-      !attempt.promptVersion ||
-      !attempt.promptConfig
-    )
-      throw new Error(
-        "Structured completion requires frozen rubric and configuration."
-      )
-    validateStructuredReading(
-      values.structuredResult,
-      attempt.rubricCriteria,
-      values.score ?? attempt.score
-    )
+    validateStructuredCompletion(values, attempt)
   }
   const result = await db
     .update(correction)

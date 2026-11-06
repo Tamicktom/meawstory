@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const genreSchema = z.enum([
+const genreSchema = z.enum([
   "action",
   "fight",
   "romance",
@@ -25,7 +25,7 @@ const bandSchema = z.object({
   max: z.number().int().nonnegative(),
   description: nonempty,
 })
-export const criterionSchema = z
+const criterionSchema = z
   .object({
     id: nonempty,
     name: nonempty,
@@ -74,7 +74,7 @@ export const briefingSchema = z.object({
   youDecide: nonempty,
   doNotPenalize: z.array(nonempty).min(1),
 })
-export const structuredReadingSchema = z.object({
+const structuredReadingSchema = z.object({
   version: z.literal(1),
   opening: nonempty,
   highlight: z.object({ description: nonempty, evidence: nonempty }),

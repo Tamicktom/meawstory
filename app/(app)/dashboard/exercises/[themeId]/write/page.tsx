@@ -28,15 +28,10 @@ export default async function WritePage(props: WritePageProps) {
     notFound()
   }
 
-  const textId = (await props.searchParams)?.textId
-  let draft
-  if (textId) {
-    const session = await requireSession()
-    draft = await textService.findOwnedText(textId, session.user.id)
-    if (!draft || draft.themeId !== params.themeId) notFound()
-    if (await correctionService.findLatestActiveCorrection(textId))
-      redirect(`/dashboard/texts/${textId}`)
-  }
+  const draft = await findEditableDraft(
+    params.themeId,
+    (await props.searchParams)?.textId
+  )
   const parsedDescription = parseMarkdown(thisTheme.description)
 
   return (
@@ -72,4 +67,14 @@ export default async function WritePage(props: WritePageProps) {
       </div>
     </div>
   )
+}
+
+async function findEditableDraft(themeId: string, textId?: string) {
+  if (!textId) return
+  const session = await requireSession()
+  const draft = await textService.findOwnedText(textId, session.user.id)
+  if (!draft || draft.themeId !== themeId) notFound()
+  if (await correctionService.findLatestActiveCorrection(textId))
+    redirect(`/dashboard/texts/${textId}`)
+  return draft
 }

@@ -47,6 +47,15 @@ export const themeSeeds = themeDefinitions.map((definition) => ({
   }),
 }))
 
+function assertThemeMetadata(item: (typeof themeSeeds)[number]): void {
+  if (
+    rubricSeeds.find((r) => r.id === item.rubricId)?.genre !== item.genre ||
+    item.minWords < 1 ||
+    item.maxWords < item.minWords
+  )
+    throw new Error(`Invalid metadata for ${item.id}.`)
+}
+
 export function assertNarrativeCatalog(): void {
   const rubricIds = new Set<string>()
 
@@ -79,12 +88,7 @@ export function assertNarrativeCatalog(): void {
       )
     }
 
-    if (
-      rubricSeeds.find((r) => r.id === item.rubricId)?.genre !== item.genre ||
-      item.minWords < 1 ||
-      item.maxWords < item.minWords
-    )
-      throw new Error(`Invalid metadata for ${item.id}.`)
+    assertThemeMetadata(item)
     themeIds.add(item.id)
   }
 }
