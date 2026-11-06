@@ -188,8 +188,10 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### A. Conta e navegação
 
-- [ ] [2A-1](fase-2-retorno/2A-1-criar-area-conta.md) — Criar a área Conta
-- [ ] [2A-2](fase-2-retorno/2A-2-organizar-navegacao-principal.md) — Organizar a navegação principal
+- [x] [2A-1](fase-2-retorno/2A-1-criar-area-conta.md) — Criar a área Conta
+- [x] [2A-2](fase-2-retorno/2A-2-organizar-navegacao-principal.md) — Organizar a navegação principal
+
+**Validação da etapa A (2026-11-06):** a Conta mostra o nome e o e-mail da pessoa autenticada e oferece sair. A navegação principal fica em Início, Exercícios, Minhas cenas e Conta, com a área ativa marcada. No celular, os quatro destinos ficam numa barra fixa, sem o menu que cobria a página, e a ação principal permanece acessível. O modo foco esconde essa navegação durante a escrita e a devolve ao sair. Edição de dados, exportação, exclusão de conta e preferência de notificação continuam fora. Não há tabela nem migração nova. Passaram 375 testes unitários, 91 testes de componentes e 69 testes E2E, inclusive a jornada em 320, 390 e 1280 px e a navegação no celular, além de `bun run typecheck`. React Doctor nas alterações: 100/100. Sem alteração de modelo, prompt ou chamadas à OpenAI.
 
 ### B. Histórico e encerramento
 

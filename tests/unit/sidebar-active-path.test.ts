@@ -35,4 +35,17 @@ describe("isActivePath", () => {
       expect(isActivePath("/dashboard/themes", "/dashboard/texts")).toBe(false)
     })
   })
+
+  describe("account", () => {
+    it("stays active on the account path and leaves Início inactive there", () => {
+      expect(isActivePath("/dashboard/account", "/dashboard/account")).toBe(
+        true
+      )
+      expect(isActivePath("/dashboard", "/dashboard/account")).toBe(false)
+      expect(isActivePath("/dashboard/account", "/dashboard")).toBe(false)
+      expect(isActivePath("/dashboard/themes", "/dashboard/account")).toBe(
+        false
+      )
+    })
+  })
 })
