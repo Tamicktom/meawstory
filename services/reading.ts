@@ -176,6 +176,39 @@ function assertExpectedContent(content: string, expectedContent?: string) {
     )
 }
 
+type ActiveAttempt = Awaited<ReturnType<typeof latestActiveAttempt>>
+
+function prepareRetry(
+  scene: Parameters<typeof assertRetrySnapshot>[0],
+  previous: ActiveAttempt
+) {
+  if (previous?.status === "FAILED") assertRetrySnapshot(scene, previous)
+}
+
+function rejectBlockedReading(previous: ActiveAttempt, revising: boolean) {
+  if (!previous || previous.status === "FAILED" || revising) return
+  throw new ReadingError(
+    409,
+    "A leitura já foi iniciada. Abra a cena em Minhas cenas."
+  )
+}
+
+function contentForAttempt(previous: ActiveAttempt, current: string) {
+  if (previous && previous.status === "FAILED") return previous.textContent
+  return current
+}
+
+function intentForAttempt(
+  previous: ActiveAttempt,
+  revising: boolean,
+  currentIntent: string | null
+) {
+  if (previous && previous.status === "FAILED")
+    return previous.revisionIntent ?? null
+  if (!revising) return null
+  return normalizeRevisionIntent(currentIntent)
+}
+
 // A retry must still match both frozen bodies before another attempt is reserved.
 function assertRetrySnapshot(
   scene: {
@@ -246,23 +279,17 @@ export async function reserveReading(
     assertExpectedContent(scene.scene.content, expectedContent)
     const previous = await latestActiveAttempt(tx, textId)
     const revising = canReviseReading(previous)
-    if (previous?.status === "FAILED") assertRetrySnapshot(scene, previous)
-    else if (previous && !revising)
-      throw new ReadingError(
-        409,
-        "A leitura já foi iniciada. Abra a cena em Minhas cenas."
-      )
-    const content =
-      previous?.status === "FAILED" ? previous.textContent : scene.scene.content
+    prepareRetry(scene, previous)
+    rejectBlockedReading(previous, revising)
+    const content = contentForAttempt(previous, scene.scene.content)
     const sizeError = sceneSizeError(content)
     if (sizeError) throw new ReadingError(400, sizeError)
     //* The intention is context for this version. The prompt is built only from the frozen scene.
-    const revisionIntent =
-      previous?.status === "FAILED"
-        ? (previous.revisionIntent ?? null)
-        : revising
-          ? normalizeRevisionIntent(scene.scene.revisionIntent)
-          : null
+    const revisionIntent = intentForAttempt(
+      previous,
+      revising,
+      scene.scene.revisionIntent
+    )
     const attempts = await tx
       .select({ createdAt: correction.createdAt })
       .from(correction)

@@ -34,6 +34,7 @@ export default async function WritePage(props: WritePageProps) {
     params.themeId,
     (await props.searchParams)?.textId
   )
+  const copy = writeModeCopy(Boolean(editable.revision))
   const parsedDescription = editable.revision
     ? null
     : parseMarkdown(thisTheme.description)
@@ -41,15 +42,13 @@ export default async function WritePage(props: WritePageProps) {
   return (
     <div className="flex w-full max-w-6xl min-w-0 flex-col gap-6 p-4">
       <header className="flex flex-col gap-2 [overflow-wrap:anywhere]">
-        <p className="text-sm text-muted-foreground">
-          {editable.revision ? "Revisão" : "Escrita"}
-        </p>
+        <p className="text-sm text-muted-foreground">{copy.eyebrow}</p>
         <h1 className="font-heading text-2xl font-medium">{thisTheme.title}</h1>
         <a
           href="#exercise-information"
           className="w-fit py-2 underline lg:hidden"
         >
-          {editable.revision ? "Consultar o foco" : "Consultar exercício"}
+          {copy.link}
         </a>
       </header>
       <div className="min-w-0">
@@ -60,40 +59,63 @@ export default async function WritePage(props: WritePageProps) {
           {...draftEditorProps(editable.draft)}
           revision={editable.revision}
           checklistItems={thisTheme.briefing?.mustInclude}
-          briefing={
-            parsedDescription ? (
-              <Markdown>{parsedDescription}</Markdown>
-            ) : undefined
-          }
+          briefing={themeBriefing(parsedDescription)}
         />
       </div>
     </div>
   )
 }
 
+function writeModeCopy(revision: boolean) {
+  if (revision) return { eyebrow: "Revisão", link: "Consultar o foco" }
+  return { eyebrow: "Escrita", link: "Consultar exercício" }
+}
+
+function themeBriefing(
+  parsedDescription: ReturnType<typeof parseMarkdown> | null
+) {
+  if (!parsedDescription) return undefined
+  return <Markdown>{parsedDescription}</Markdown>
+}
+
 async function findEditableDraft(themeId: string, textId?: string) {
   const session = await requireSession()
-  if (!textId) {
-    const draft = await textService.findDraftForTheme(session.user.id, themeId)
-    return { draft: draft ?? undefined, revision: undefined }
-  }
-  const draft = await textService.findOwnedText(textId, session.user.id)
+  if (!textId) return openFreshDraft(session.user.id, themeId)
+  return openRevisionDraft(session.user.id, themeId, textId)
+}
+
+async function openFreshDraft(userId: string, themeId: string) {
+  const draft = await textService.findDraftForTheme(userId, themeId)
+  return { draft: draft ?? undefined, revision: undefined }
+}
+
+async function openRevisionDraft(
+  userId: string,
+  themeId: string,
+  textId: string
+) {
+  const draft = await textService.findOwnedText(textId, userId)
   if (!draft || draft.themeId !== themeId) notFound()
   const latest = await correctionService.findLatestActiveCorrection(textId)
   if (latest && !canReviseReading(latest))
     redirect(`/dashboard/texts/${textId}`)
-  if (!latest || !latest.structuredResult || !latest.rubricCriteria)
-    return { draft, revision: undefined }
+  return { draft, revision: await revisionContext(textId, latest) }
+}
+
+async function revisionContext(
+  textId: string,
+  latest: Awaited<
+    ReturnType<typeof correctionService.findLatestActiveCorrection>
+  >
+) {
+  if (!latest || !latest.structuredResult || !latest.rubricCriteria) return
   const version =
     Number(await correctionService.completedVersion(textId, latest.id)) + 1
   return {
-    draft,
-    revision: {
-      version,
-      focus: latest.structuredResult.revision,
-      quotes: citedExcerpts(latest.structuredResult, latest.rubricCriteria),
-      readingHref: `/dashboard/texts/${textId}`,
-    },
+    version,
+    focus: latest.structuredResult.revision,
+    quotes: citedExcerpts(latest.structuredResult, latest.rubricCriteria),
+    readingHref: `/dashboard/texts/${textId}`,
   }
 }
 

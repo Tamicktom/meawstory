@@ -78,6 +78,10 @@ type OwnedScene = NonNullable<
   Awaited<ReturnType<typeof textService.findOwnedText>>
 >
 
+type CompletedVersion = Awaited<
+  ReturnType<typeof correctionService.listCompletedVersions>
+>[number]
+
 async function completedReading(
   ownedText: OwnedScene,
   requested: number | null
@@ -85,12 +89,9 @@ async function completedReading(
   if (Number.isNaN(requested)) notFound()
   const versions = await correctionService.listCompletedVersions(ownedText.id)
   const latestVersion = versions.at(-1)
-  const selected =
-    requested == null
-      ? latestVersion
-      : versions.find((item) => item.version === requested)
+  const selected = selectedVersion(versions, requested)
   if (!selected || !latestVersion) notFound()
-  if (!selected.structuredResult || !selected.rubricCriteria) {
+  if (!hasStructuredReading(selected)) {
     return (
       <FeedbackView
         themeTitle={sceneTitle(ownedText.title, ownedText.theme.title)}
@@ -102,39 +103,70 @@ async function completedReading(
       />
     )
   }
-  const exerciseTitle = selected.source?.themeTitle ?? ownedText.theme.title
+  const title = exerciseTitle(selected, ownedText)
   const feedback = await loadReadingFeedback(selected.id)
   const path = `/dashboard/texts/${ownedText.id}`
-  const latest = selected.id === latestVersion.id
+  const links = readingLinks(ownedText, selected, latestVersion.id, path)
   return (
     <StructuredReadingView
       correctionId={selected.id}
-      title={sceneTitle(ownedText.title, exerciseTitle)}
-      exerciseTitle={exerciseTitle}
+      title={sceneTitle(ownedText.title, title)}
+      exerciseTitle={title}
       createdAt={selected.createdAt.toISOString()}
       version={selected.version}
       score={selected.score}
       scene={selected.textContent}
       result={selected.structuredResult}
-      criteria={selected.rubricCriteria.map(
-        ({ id, name, maxScore, publicDescription }) => ({
-          id,
-          name,
-          maxScore,
-          publicDescription,
-        })
-      )}
+      criteria={selected.rubricCriteria.map((criterion) => ({
+        id: criterion.id,
+        name: criterion.name,
+        maxScore: criterion.maxScore,
+        publicDescription: criterion.publicDescription,
+      }))}
       feedback={feedback}
-      revisionIntent={selected.version > 1 ? selected.revisionIntent : null}
-      reviseHref={
-        latest
-          ? `/dashboard/exercises/${ownedText.themeId}/write?textId=${ownedText.id}`
-          : undefined
-      }
-      latestHref={latest ? undefined : path}
+      revisionIntent={links.revisionIntent}
+      reviseHref={links.reviseHref}
+      latestHref={links.latestHref}
       versions={versionLinks(versions, selected.id, latestVersion.id, path)}
     />
   )
+}
+
+function selectedVersion(
+  versions: CompletedVersion[],
+  requested: number | null
+) {
+  if (requested == null) return versions.at(-1)
+  return versions.find((item) => item.version === requested)
+}
+
+function hasStructuredReading(
+  selected: CompletedVersion
+): selected is CompletedVersion & {
+  structuredResult: NonNullable<CompletedVersion["structuredResult"]>
+  rubricCriteria: NonNullable<CompletedVersion["rubricCriteria"]>
+} {
+  return Boolean(selected.structuredResult && selected.rubricCriteria)
+}
+
+function exerciseTitle(selected: CompletedVersion, ownedText: OwnedScene) {
+  return selected.source?.themeTitle ?? ownedText.theme.title
+}
+
+function readingLinks(
+  ownedText: OwnedScene,
+  selected: CompletedVersion,
+  latestId: string,
+  path: string
+) {
+  const latest = selected.id === latestId
+  return {
+    revisionIntent: selected.version > 1 ? selected.revisionIntent : null,
+    reviseHref: latest
+      ? `/dashboard/exercises/${ownedText.themeId}/write?textId=${ownedText.id}`
+      : undefined,
+    latestHref: latest ? undefined : path,
+  }
 }
 
 function versionLinks(
