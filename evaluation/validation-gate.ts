@@ -6,8 +6,14 @@ import {
   parseCriterionScores,
   summarize,
 } from "@/evaluation/reading-metrics"
-import { sha256, type ReferenceSet } from "@/evaluation/reference-set"
-import { validateStructuredReading } from "@/lib/reading-contract"
+import {
+  measuredSourcesMatch,
+  type ReferenceSet,
+} from "@/evaluation/reference-set"
+import {
+  validateStructuredReading,
+  type StructuredReading,
+} from "@/lib/reading-contract"
 
 function successful(run: BaselineRun, id: string) {
   return run.readings.filter(
@@ -54,7 +60,8 @@ export function criterionVariation(
   let pairs = 0
   let split = 0
   let distant = 0
-  for (const item of set.cases.filter((c) => ids.includes(c.id))) {
+  const wanted = new Set(ids)
+  for (const item of set.cases.filter((c) => wanted.has(c.id))) {
     const readings = successful(run, item.id)
     for (const criterion of item.rubric.criteria) {
       const scores = readings.flatMap((r) => {
@@ -85,8 +92,9 @@ export function humanAgreement(
   ids: string[]
 ) {
   const { current } = currentScores(scores, set)
+  const wanted = new Set(ids)
   const compared = set.cases
-    .filter((c) => ids.includes(c.id))
+    .filter((c) => wanted.has(c.id))
     .flatMap((item) => {
       const own = current.filter((s) => s.caseId === item.id)
       const totals = [...new Set(own.map((s) => s.evaluator))].flatMap(
@@ -152,80 +160,148 @@ export function pairDifference(
   }
 }
 
-export function structuredIntegrity(run: BaselineRun, set: ReferenceSet) {
+type ReferenceItem = ReferenceSet["cases"][number]
+
+function sourceProblems(
+  run: BaselineRun,
+  itemsById: Map<string, ReferenceItem>
+): string[] {
   const problems: string[] = []
-  let accepted = 0
-  let quotes = 0
-  let focus = 0
-  const slots = new Set<string>()
-  if (new Set(run.cases.map((c) => c.id)).size !== run.cases.length)
-    problems.push("plano com casos duplicados")
-  if (run.runsPerCase < 1 || !Number.isInteger(run.runsPerCase))
-    problems.push("número de repetições inválido")
   for (const recorded of run.cases) {
-    const item = set.cases.find((c) => c.id === recorded.id)
-    if (
-      !item ||
-      sha256(item.text) !== recorded.textSha256 ||
-      sha256(item.theme.description) !== recorded.themeSha256 ||
-      sha256(item.rubric.content) !== recorded.rubricSha256
-    )
+    if (!measuredSourcesMatch(itemsById.get(recorded.id), recorded))
       problems.push(
         `${recorded.id}: fontes atuais diferentes das fontes medidas`
       )
   }
-  for (const r of run.readings) {
-    const key = `${r.caseId} #${r.run}`
-    if (slots.has(key)) problems.push(`${key}: repetição duplicada`)
-    slots.add(key)
-    if (
-      !run.cases.some((c) => c.id === r.caseId) ||
-      r.run < 1 ||
-      r.run > run.runsPerCase ||
-      !Number.isInteger(r.run)
-    )
-      problems.push(`${key}: fora do plano da medição`)
-    if (!r.ok) continue
-    accepted++
-    const item = set.cases.find((c) => c.id === r.caseId)
-    if (
-      !item ||
-      !r.structured ||
-      r.score === null ||
-      !Number.isFinite(r.score)
-    ) {
-      problems.push(`${key}: sem estrutura, nota ou cena`)
-      continue
-    }
-    try {
-      validateStructuredReading(
-        r.structured,
-        item.rubric.criteria,
-        String(r.score)
-      )
-    } catch {
-      problems.push(`${key}: contrato, cobertura, soma ou faixa inválida`)
-    }
-    if (r.structured.revision.trim()) focus++
-    const evidence = [
-      r.structured.highlight.evidence,
-      ...r.structured.criteria.flatMap((c) => c.evidence),
-    ]
-    quotes += evidence.length
-    if (
-      evidence.some(
-        (q) => q.trim().split(/\s+/).length < 3 || !item.text.includes(q)
-      )
-    )
-      problems.push(`${key}: citação armazenada não literal ou curta`)
+  return problems
+}
+
+function planProblems(
+  run: BaselineRun,
+  itemsById: Map<string, ReferenceItem>
+): string[] {
+  const problems: string[] = []
+  if (new Set(run.cases.map((c) => c.id)).size !== run.cases.length)
+    problems.push("plano com casos duplicados")
+  if (run.runsPerCase < 1 || !Number.isInteger(run.runsPerCase))
+    problems.push("número de repetições inválido")
+  return [...problems, ...sourceProblems(run, itemsById)]
+}
+
+function contractCheck(
+  key: string,
+  structured: StructuredReading,
+  score: number,
+  item: ReferenceItem
+) {
+  const problems: string[] = []
+  try {
+    validateStructuredReading(structured, item.rubric.criteria, String(score))
+  } catch {
+    problems.push(`${key}: contrato, cobertura, soma ou faixa inválida`)
   }
-  const expected = run.cases.length * run.runsPerCase
+  const evidence = [
+    structured.highlight.evidence,
+    ...structured.criteria.flatMap((c) => c.evidence),
+  ]
+  if (
+    evidence.some(
+      (q) => q.trim().split(/\s+/).length < 3 || !item.text.includes(q)
+    )
+  )
+    problems.push(`${key}: citação armazenada não literal ou curta`)
+  return { problems, quotes: evidence.length }
+}
+
+type ReadingAudit = {
+  problems: string[]
+  accepted: boolean
+  focused: boolean
+  quotes: number
+}
+
+const inPlan = (r: RecordedReading, run: BaselineRun) =>
+  run.cases.some((c) => c.id === r.caseId) &&
+  Number.isInteger(r.run) &&
+  r.run >= 1 &&
+  r.run <= run.runsPerCase
+
+function slotProblems(
+  key: string,
+  r: RecordedReading,
+  run: BaselineRun,
+  slots: Set<string>
+): string[] {
+  const problems: string[] = []
+  if (slots.has(key)) problems.push(`${key}: repetição duplicada`)
+  slots.add(key)
+  if (!inPlan(r, run)) problems.push(`${key}: fora do plano da medição`)
+  return problems
+}
+
+const finiteScore = (score: number | null): score is number =>
+  score !== null && Number.isFinite(score)
+
+function auditTarget(
+  r: RecordedReading,
+  itemsById: Map<string, ReferenceItem>
+) {
+  const item = itemsById.get(r.caseId)
+  const structured = r.structured
+  const score = r.score
+  if (!item || !structured || !finiteScore(score)) return null
+  return { item, structured, score }
+}
+
+function auditReading(
+  r: RecordedReading,
+  run: BaselineRun,
+  itemsById: Map<string, ReferenceItem>,
+  slots: Set<string>
+): ReadingAudit {
+  const key = `${r.caseId} #${r.run}`
+  const problems = slotProblems(key, r, run, slots)
+  if (!r.ok) return { problems, accepted: false, focused: false, quotes: 0 }
+  const target = auditTarget(r, itemsById)
+  if (!target) {
+    problems.push(`${key}: sem estrutura, nota ou cena`)
+    return { problems, accepted: true, focused: false, quotes: 0 }
+  }
+  const check = contractCheck(key, target.structured, target.score, target.item)
+  return {
+    problems: [...problems, ...check.problems],
+    accepted: true,
+    focused: Boolean(target.structured.revision.trim()),
+    quotes: check.quotes,
+  }
+}
+
+function missingSlotProblems(run: BaselineRun, slots: Set<string>): string[] {
+  const problems: string[] = []
   for (const c of run.cases)
     for (let number = 1; number <= run.runsPerCase; number++)
       if (!slots.has(`${c.id} #${number}`))
         problems.push(`${c.id} #${number}: leitura ausente`)
+  return problems
+}
+
+export function structuredIntegrity(run: BaselineRun, set: ReferenceSet) {
+  const itemsById = new Map(set.cases.map((c) => [c.id, c]))
+  const problems = planProblems(run, itemsById)
+  const slots = new Set<string>()
+  let accepted = 0
+  let quotes = 0
+  let focus = 0
+  for (const r of run.readings) {
+    const audit = auditReading(r, run, itemsById, slots)
+    problems.push(...audit.problems)
+    if (audit.accepted) accepted++
+    if (audit.focused) focus++
+    quotes += audit.quotes
+  }
+  problems.push(...missingSlotProblems(run, slots))
   return {
-    expected,
+    expected: run.cases.length * run.runsPerCase,
     accepted,
     failed: run.readings.filter((r) => !r.ok).length,
     quotes,

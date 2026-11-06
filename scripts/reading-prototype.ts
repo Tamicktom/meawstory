@@ -1,8 +1,18 @@
 // Produces a portable, disposable study artifact. No API, database or model call.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import path from "node:path"
-import { readBaselineRun } from "@/evaluation/baseline-run"
-import { loadReferenceSet, sha256 } from "@/evaluation/reference-set"
+import {
+  readBaselineRun,
+  type BaselineRun,
+  type RecordedReading,
+} from "@/evaluation/baseline-run"
+import {
+  loadReferenceSet,
+  measuredSourcesMatch,
+  sha256,
+  type RecordedSourceHashes,
+  type ReferenceCase,
+} from "@/evaluation/reference-set"
 import { GENRE_LABEL, validateStructuredReading } from "@/lib/reading-contract"
 
 const directory = process.argv[2]
@@ -21,21 +31,35 @@ const selected: Array<[string, number]> = [
   ["suspense-02", 1],
   ["virada-02", 1],
 ]
+type CompletedReading = RecordedReading & {
+  structured: NonNullable<RecordedReading["structured"]>
+  score: number
+}
+
+const completed = (r: RecordedReading): r is CompletedReading =>
+  r.ok && Boolean(r.structured) && r.score !== null
+
+function completedReading(run: BaselineRun, id: string, number: number) {
+  const reading = run.readings
+    .filter(completed)
+    .find((r) => r.caseId === id && r.run === number)
+  if (!reading)
+    throw new Error(`${id} #${number} has no completed structured reading`)
+  return reading
+}
+
+function assertMeasuredSources(
+  recorded: RecordedSourceHashes | undefined,
+  item: ReferenceCase
+) {
+  if (!measuredSourcesMatch(item, recorded))
+    throw new Error(`${item.id}: sources differ from the measurement`)
+}
+
 const data = selected.map(([id, number]) => {
   const item = set.cases.find((c) => c.id === id)!
-  const reading = run.readings.find(
-    (r) => r.caseId === id && r.run === number && r.ok && r.structured
-  )
-  const recorded = run.cases.find((c) => c.id === id)
-  if (!reading?.structured || reading.score === null)
-    throw new Error(`${id} #${number} has no completed structured reading`)
-  if (
-    !recorded ||
-    recorded.textSha256 !== sha256(item.text) ||
-    recorded.themeSha256 !== sha256(item.theme.description) ||
-    recorded.rubricSha256 !== sha256(item.rubric.content)
-  )
-    throw new Error(`${id}: sources differ from the measurement`)
+  const reading = completedReading(run, id, number)
+  assertMeasuredSources(run.cases.find((c) => c.id === id), item)
   validateStructuredReading(
     reading.structured,
     item.rubric.criteria,

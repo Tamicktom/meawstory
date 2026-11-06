@@ -560,12 +560,12 @@
         text("walk-note", "Percurso terminado. Continue explorando livremente.")
       } else $("walk-step").textContent = walk[walkIndex][0]
     }
-    window.onbeforeunload = (e) => {
+    addEventListener("beforeunload", (e) => {
       if (state.draft !== null && state.draft !== DATA[state.index].text) {
         e.preventDefault()
         e.returnValue = ""
       }
-    }
+    })
     render()
   </script>
 </html>

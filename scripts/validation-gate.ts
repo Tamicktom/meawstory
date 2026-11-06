@@ -1,7 +1,7 @@
 // Recomputes the quantitative evidence of 1D-1 without calling a model.
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { readBaselineRun } from "@/evaluation/baseline-run"
+import { readBaselineRun, type BaselineRun } from "@/evaluation/baseline-run"
 import {
   comparableCaseIds,
   criterionVariation,
@@ -11,7 +11,10 @@ import {
   unfinishedTextCandidates,
   variation,
 } from "@/evaluation/validation-gate"
-import { loadReferenceSet } from "@/evaluation/reference-set"
+import {
+  loadReferenceSet,
+  type ReferenceSet,
+} from "@/evaluation/reference-set"
 import { loadHumanEvaluations } from "@/evaluation/human-evaluations"
 
 const [beforeDir, afterDir] = process.argv.slice(2)
@@ -43,47 +46,73 @@ const versions = [before, after].map((run) => ({
   criteria: criterionVariation(run, set, ids),
   agreement: humanAgreement(run, set, human.scores, ids),
 }))
-const rows = set.cases.flatMap((item) => {
-  const original =
-    item.revision?.of ??
-    item.injectedInto ??
-    set.cases.find((c) => c.controlOf === item.id)?.id
+type ReferenceItem = ReferenceSet["cases"][number]
+type PairResult = NonNullable<ReturnType<typeof pairDifference>>
+
+const controlOf = (cases: ReferenceItem[], id: string) =>
+  cases.find((c) => c.controlOf === id)?.id
+
+const originalOf = (item: ReferenceItem, cases: ReferenceItem[]) =>
+  item.revision?.of ?? item.injectedInto ?? controlOf(cases, item.id)
+
+function injectionQuotesOutsideBase(
+  after: BaselineRun,
+  item: ReferenceItem,
+  base: ReferenceItem | undefined
+) {
+  if (item.revision || !base) return null
+  return after.readings
+    .filter((r) => r.caseId === item.id && r.ok && r.structured)
+    .flatMap((r) => [
+      r.structured!.highlight.evidence,
+      ...r.structured!.criteria.flatMap((c) => c.evidence),
+    ])
+    .filter((q) => !base.text.includes(q)).length
+}
+
+const revisionKind = (item: ReferenceItem, real: boolean) =>
+  item.revision ? (real ? "mudança real" : "cosmética") : "instrução"
+
+const pairCells = (pair: PairResult | null) =>
+  pair
+    ? [
+        fmt(pair.difference),
+        fmt(pair.standardError),
+        fmt(pair.tolerance),
+        String(pair.meanBandDistance),
+      ]
+    : ["—", "—", "—", "—"]
+
+const gainLabel = (pair: PairResult) =>
+  pair.separatedGain ? "ganho separado" : "ganho não separado"
+
+const noiseLabel = (pair: PairResult) =>
+  pair.withinNoise ? "dentro do ruído" : "fora do ruído"
+
+function triageLabel(pair: PairResult | null, real: boolean) {
+  if (!pair) return "inconclusivo"
+  return real ? gainLabel(pair) : noiseLabel(pair)
+}
+
+function revisionRow(after: BaselineRun, set: ReferenceSet, item: ReferenceItem) {
+  const original = originalOf(item, set.cases)
   if (!original) return []
-  const pair = pairDifference(after, original, item.id)
   const real = item.revision?.change === "real"
+  const pair = pairDifference(after, original, item.id)
   const base = set.cases.find((c) => c.id === original)
-  const injectionQuotes =
-    !item.revision && base
-      ? after.readings
-          .filter((r) => r.caseId === item.id && r.ok && r.structured)
-          .flatMap((r) => [
-            r.structured!.highlight.evidence,
-            ...r.structured!.criteria.flatMap((c) => c.evidence),
-          ])
-          .filter((q) => !base.text.includes(q)).length
-      : null
+  const injectionQuotes = injectionQuotesOutsideBase(after, item, base)
   return [
     [
       item.id,
       original,
-      item.revision ? (real ? "mudança real" : "cosmética") : "instrução",
-      pair ? fmt(pair.difference) : "—",
-      pair ? fmt(pair.standardError) : "—",
-      pair ? fmt(pair.tolerance) : "—",
-      pair ? String(pair.meanBandDistance) : "—",
+      revisionKind(item, real),
+      ...pairCells(pair),
       injectionQuotes === null ? "—" : String(injectionQuotes),
-      !pair
-        ? "inconclusivo"
-        : real
-          ? pair.separatedGain
-            ? "ganho separado"
-            : "ganho não separado"
-          : pair.withinNoise
-            ? "dentro do ruído"
-            : "fora do ruído",
+      triageLabel(pair, real),
     ],
   ]
-})
+}
+const rows = set.cases.flatMap((item) => revisionRow(after, set, item))
 const report = [
   "# Evidência quantitativa do portão 1D-1",
   "",

@@ -45,6 +45,31 @@ export function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex")
 }
 
+export type RecordedSourceHashes = {
+  textSha256: string
+  themeSha256: string
+  rubricSha256: string
+}
+
+//* A measurement is comparable only when the current sources hash to what was measured.
+export function measuredSourcesMatch(
+  item: ReferenceCase | undefined,
+  recorded: RecordedSourceHashes | undefined
+): boolean {
+  if (!item || !recorded) return false
+  const current = [
+    sha256(item.text),
+    sha256(item.theme.description),
+    sha256(item.rubric.content),
+  ]
+  const measured = [
+    recorded.textSha256,
+    recorded.themeSha256,
+    recorded.rubricSha256,
+  ]
+  return current.every((hash, index) => hash === measured[index])
+}
+
 function sceneFilePath(root: string, caseId: string): string {
   return path.join(root, "scenes", `${caseId}.txt`)
 }
