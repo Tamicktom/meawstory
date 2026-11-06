@@ -60,7 +60,7 @@ export const comparisonInstructions = [
   "- Do not rewrite the scene and do not hand the writer finished sentences to copy.",
 ].join("\n")
 
-export const COMPARISON_PROMPT_CONFIG = {
+const COMPARISON_PROMPT_CONFIG = {
   instructions: comparisonInstructions,
   template: [
     "<foco-anterior>",
