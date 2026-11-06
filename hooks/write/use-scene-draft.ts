@@ -1,10 +1,11 @@
 "use client"
 //* Libraries imports
 import {
-  useCallback,
   useEffect,
+  useReducer,
   useRef,
   useState,
+  type Dispatch,
   type RefObject,
 } from "react"
 import { useRouter } from "next/navigation"
@@ -23,6 +24,66 @@ type DraftSnapshot = {
 type SaveInput = {
   snapshot: string
   draftOnly: boolean
+}
+
+type SaveResult = {
+  textId?: string
+  message?: string
+}
+
+type SaveAsync = (input: SaveInput) => Promise<SaveResult>
+
+type UiState = {
+  pending: boolean
+  error: string
+  saved: string
+  expired: boolean
+  locked: boolean
+  focus: boolean
+  review: boolean
+  retry: number
+}
+
+type UiAction =
+  | { type: "pending"; value: boolean }
+  | { type: "error"; value: string }
+  | { type: "saved"; value: string }
+  | { type: "expired"; value: boolean }
+  | { type: "locked"; value: boolean }
+  | { type: "focus"; value: boolean }
+  | { type: "review"; value: boolean }
+  | { type: "retry" }
+
+const initialUi: UiState = {
+  pending: false,
+  error: "",
+  saved: "",
+  expired: false,
+  locked: false,
+  focus: false,
+  review: false,
+  retry: 0,
+}
+
+function uiReducer(state: UiState, action: UiAction): UiState {
+  switch (action.type) {
+    case "pending":
+      return { ...state, pending: action.value }
+    case "error":
+      return { ...state, error: action.value }
+    case "saved":
+      return { ...state, saved: action.value }
+    case "expired":
+      return { ...state, expired: action.value }
+    case "locked":
+      return { ...state, locked: action.value }
+    case "focus":
+      return { ...state, focus: action.value }
+    case "review":
+      return { ...state, review: action.value }
+    case "retry":
+      return { ...state, retry: state.retry + 1 }
+  }
 }
 
 const saveFailureMessage = "Não foi possível salvar. Seu texto continua aqui."
@@ -62,7 +123,7 @@ async function saveScene(
   themeId: string,
   input: SaveInput,
   textId: RefObject<string | undefined>
-) {
+): Promise<SaveResult> {
   const response = await fetch(`/api/write/${themeId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -73,10 +134,7 @@ async function saveScene(
     }),
   })
   if (response.status >= 500) throw new Error(saveFailureMessage)
-  const data = (await response.json()) as {
-    textId?: string
-    message?: string
-  }
+  const data = (await response.json()) as SaveResult
   rememberTextId(textId, data.textId)
   if (!response.ok) {
     throw new SaveRejected(
@@ -87,45 +145,66 @@ async function saveScene(
   return data
 }
 
+type SaveState = {
+  confirmed: RefObject<string>
+  dispatch: Dispatch<UiAction>
+}
+
+function applySaveSuccess(state: SaveState, input: SaveInput) {
+  state.confirmed.current = input.snapshot
+  state.dispatch({ type: "saved", value: "Salvo há instantes" })
+  state.dispatch({ type: "error", value: "" })
+  state.dispatch({ type: "expired", value: false })
+}
+
+function applySaveError(state: SaveState, cause: unknown) {
+  if (!(cause instanceof SaveRejected)) return
+  state.dispatch({ type: "expired", value: cause.status === 401 })
+  if (cause.status === 409) state.dispatch({ type: "locked", value: true })
+}
+
+// Scoped mutations run one at a time in call order, so an older response
+// never replaces a newer draft and submission waits for the pending save.
+function useSaveScene(
+  themeId: string,
+  textId: RefObject<string | undefined>,
+  state: SaveState
+) {
+  // Draft saves are never read back through a query, so there is nothing to invalidate.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
+  return useMutation({
+    mutationFn: (input: SaveInput) => saveScene(themeId, input, textId),
+    scope: { id: `scene-draft:${themeId}` },
+    onSuccess: (_data, input) => applySaveSuccess(state, input),
+    onError: (cause) => applySaveError(state, cause),
+  })
+}
+
 type AutosaveOptions = {
   snapshot: string
   dirty: boolean
-  pending: boolean
-  locked: boolean
-  retry: number
+  ui: UiState
   submitted: RefObject<boolean>
-  saveAsync: (
-    input: SaveInput
-  ) => Promise<{ textId?: string; message?: string }>
-  setSaved: (message: string) => void
-  setError: (message: string) => void
+  saveAsync: SaveAsync
+  dispatch: Dispatch<UiAction>
 }
 
 function useAutosave(options: AutosaveOptions) {
-  const {
-    snapshot,
-    dirty,
-    pending,
-    locked,
-    retry,
-    submitted,
-    saveAsync,
-    setSaved,
-    setError,
-  } = options
+  const { snapshot, dirty, ui, submitted, saveAsync, dispatch } = options
   useEffect(() => {
-    if (!dirty || pending || locked || submitted.current) return
-    setSaved("Alterações ainda não salvas")
+    if (!dirty || ui.pending || ui.locked || submitted.current) return
+    dispatch({ type: "saved", value: "Alterações ainda não salvas" })
     const timer = window.setTimeout(() => {
       if (submitted.current) return
       saveAsync({ snapshot, draftOnly: true }).catch((cause: unknown) => {
-        setError(
-          `${cause instanceof Error ? cause.message : "Não foi possível salvar."} Mantenha esta página aberta. Vamos tentar novamente; você também pode copiar o texto.`
-        )
+        dispatch({
+          type: "error",
+          value: `${cause instanceof Error ? cause.message : "Não foi possível salvar."} Mantenha esta página aberta. Vamos tentar novamente; você também pode copiar o texto.`,
+        })
       })
     }, 1000)
     return () => window.clearTimeout(timer)
-  }, [snapshot, dirty, pending, locked, retry, submitted, saveAsync, setSaved, setError])
+  }, [snapshot, dirty, ui.pending, ui.locked, ui.retry, submitted, saveAsync, dispatch])
 }
 
 function useUnsavedChangesWarning(dirty: boolean) {
@@ -140,97 +219,88 @@ function useUnsavedChangesWarning(dirty: boolean) {
 }
 
 function useSaveRetry(
-  error: string,
-  locked: boolean,
-  pending: boolean,
-  retry: number,
-  onRetry: () => void
+  ui: UiState,
+  submitted: RefObject<boolean>,
+  dispatch: Dispatch<UiAction>
 ) {
   useEffect(() => {
-    if (!error || locked || pending) return
-    const timer = window.setTimeout(onRetry, 10000)
+    if (!ui.error || ui.locked || ui.pending) return
+    const timer = window.setTimeout(() => {
+      if (!submitted.current) dispatch({ type: "retry" })
+    }, 10000)
     return () => window.clearTimeout(timer)
-  }, [error, locked, pending, retry, onRetry])
+  }, [ui.error, ui.locked, ui.pending, ui.retry, submitted, dispatch])
+}
+
+type SubmitOptions = {
+  content: string
+  snapshot: string
+  submitted: RefObject<boolean>
+  saveAsync: SaveAsync
+  dispatch: Dispatch<UiAction>
+  navigate: (url: string) => void
+}
+
+async function submitScene(options: SubmitOptions) {
+  const invalid = sceneSizeError(options.content)
+  if (invalid) {
+    options.dispatch({ type: "error", value: invalid })
+    return
+  }
+  options.dispatch({ type: "pending", value: true })
+  try {
+    const data = await options.saveAsync({
+      snapshot: options.snapshot,
+      draftOnly: false,
+    })
+    options.submitted.current = true
+    options.navigate(`/dashboard/texts/${data.textId}`)
+  } catch (cause) {
+    options.dispatch({
+      type: "error",
+      value:
+        cause instanceof Error
+          ? cause.message
+          : "Não foi possível enviar. Seu texto continua aqui.",
+    })
+  } finally {
+    options.dispatch({ type: "pending", value: false })
+  }
 }
 
 export function useSceneDraft(props: EditorProps) {
   const router = useRouter()
-  const [initial] = useState(() => initialDraft(props))
-  const [content, setContent] = useState(initial.content)
-  const [title, setTitle] = useState(initial.title)
-  const [checklist, setChecklist] = useState(initial.checklist)
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState("")
-  const [saved, setSaved] = useState("")
-  const [expired, setExpired] = useState(false)
-  const [locked, setLocked] = useState(false)
-  const [focus, setFocus] = useState(false)
-  const [review, setReview] = useState(false)
-  const [retry, setRetry] = useState(0)
+  const [content, setContent] = useState(() => initialDraft(props).content)
+  const [title, setTitle] = useState(() => initialDraft(props).title)
+  const [checklist, setChecklist] = useState(
+    () => initialDraft(props).checklist
+  )
+  const [ui, dispatch] = useReducer(uiReducer, initialUi)
   const textId = useRef(props.textId)
   const submitted = useRef(false)
-  const [confirmed] = useState(() => ({ current: JSON.stringify(initial) }))
+  const [confirmed] = useState(() => ({
+    current: JSON.stringify(initialDraft(props)),
+  }))
   const snapshot = JSON.stringify({ content, title, checklist })
   const dirty = snapshot !== confirmed.current
   const items = props.checklistItems ?? []
   const words = countWords(content)
 
-  // Scoped mutations run one at a time in call order, so an older response
-  // never replaces a newer draft and submission waits for the pending save.
-  // Draft saves are never read back through a query, so there is nothing to invalidate.
-  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
-  const save = useMutation({
-    mutationFn: (input: SaveInput) => saveScene(props.themeId, input, textId),
-    scope: { id: `scene-draft:${props.themeId}` },
-    onSuccess: (_data, input) => {
-      confirmed.current = input.snapshot
-      setSaved("Salvo há instantes")
-      setError("")
-      setExpired(false)
-    },
-    onError: (cause) => {
-      if (!(cause instanceof SaveRejected)) return
-      setExpired(cause.status === 401)
-      if (cause.status === 409) setLocked(true)
-    },
-  })
+  const save = useSaveScene(props.themeId, textId, { confirmed, dispatch })
   const saveAsync = save.mutateAsync
-  useAutosave({
-    snapshot,
-    dirty,
-    pending,
-    locked,
-    retry,
-    submitted,
-    saveAsync,
-    setSaved,
-    setError,
-  })
-
-  const bumpRetry = useCallback(() => setRetry((value) => value + 1), [])
-  useSaveRetry(error, locked, pending, retry, bumpRetry)
+  useAutosave({ snapshot, dirty, ui, submitted, saveAsync, dispatch })
+  useSaveRetry(ui, submitted, dispatch)
   useUnsavedChangesWarning(dirty)
 
-  async function submit() {
-    const invalid = sceneSizeError(content)
-    if (invalid) {
-      setError(invalid)
-      return
-    }
-    setPending(true)
-    try {
-      const data = await saveAsync({ snapshot, draftOnly: false })
-      submitted.current = true
-      router.push(`/dashboard/texts/${data.textId}`)
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Não foi possível enviar. Seu texto continua aqui."
-      )
-    } finally {
-      setPending(false)
-    }
+  function submit() {
+    return submitScene({
+      content,
+      snapshot,
+      submitted,
+      saveAsync,
+      dispatch,
+      navigate: (url) => router.push(url),
+    })
   }
 
   return {
@@ -240,19 +310,19 @@ export function useSceneDraft(props: EditorProps) {
     setTitle,
     checklist,
     setChecklist,
-    pending,
-    error,
-    saved,
+    pending: ui.pending,
+    error: ui.error,
+    saved: ui.saved,
     dirty,
-    setSaved,
-    setError,
-    expired,
-    locked,
-    focus,
-    setFocus,
-    review,
-    setReview,
-    setRetry,
+    setSaved: (value: string) => dispatch({ type: "saved", value }),
+    setError: (value: string) => dispatch({ type: "error", value }),
+    expired: ui.expired,
+    locked: ui.locked,
+    focus: ui.focus,
+    setFocus: (value: boolean) => dispatch({ type: "focus", value }),
+    review: ui.review,
+    setReview: (value: boolean) => dispatch({ type: "review", value }),
+    bumpRetry: () => dispatch({ type: "retry" }),
     textId,
     items,
     words,

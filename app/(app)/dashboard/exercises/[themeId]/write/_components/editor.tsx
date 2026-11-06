@@ -121,7 +121,7 @@ export function Editor(props: EditorProps) {
               expired={draft.expired}
               locked={draft.locked}
               textId={draft.textId.current}
-              onRetry={() => draft.setRetry((value) => value + 1)}
+              onRetry={draft.bumpRetry}
               onNotice={draft.setSaved}
             />
           ) : null}
