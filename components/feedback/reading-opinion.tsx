@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { saveDisagreement } from "@/app/reading-feedback-actions"
+import { useActionState, useState } from "react"
 import type { Usefulness } from "@/services/reading-feedback"
 
 async function sendOpinion(correctionId: string, body: object) {
@@ -95,37 +96,25 @@ export function CriterionDisagreement({
   criterionId: string
   initialReason?: string
 }) {
-  const [reason, setReason] = useState(initialReason ?? "")
-  const [saved, setSaved] = useState(initialReason !== undefined)
-  const [pending, setPending] = useState(false)
-  const [message, setMessage] = useState("")
-  const [error, setError] = useState("")
+  const [state, submitAction, pending] = useActionState(saveDisagreement, {
+    saved: initialReason !== undefined,
+    reason: initialReason ?? "",
+    message: "",
+    error: "",
+  })
+  const [reason, setReason] = useState(state.reason)
   return (
     <details className="border-t pt-3">
       <summary className="w-fit cursor-pointer py-2 text-sm underline">
-        Discordo deste critério{saved ? " — registrada" : ""}
+        Discordo deste critério{state.saved ? " — registrada" : ""}
       </summary>
-      <form
-        className="space-y-2"
-        onSubmit={async (event) => {
-          event.preventDefault()
-          setPending(true)
-          setError("")
-          setMessage("")
-          try {
-            await sendOpinion(correctionId, { criterionId, reason })
-            setSaved(true)
-            setMessage("Discordância registrada. A avaliação permanece igual.")
-          } catch (error) {
-            setError((error as Error).message)
-          } finally {
-            setPending(false)
-          }
-        }}
-      >
+      <form className="space-y-2" action={submitAction}>
+        <input type="hidden" name="correctionId" value={correctionId} />
+        <input type="hidden" name="criterionId" value={criterionId} />
         <label className="block text-sm">
           Motivo (opcional)
           <textarea
+            name="reason"
             maxLength={2000}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
@@ -143,16 +132,16 @@ export function CriterionDisagreement({
         >
           {pending
             ? "Salvando…"
-            : saved
+            : state.saved
               ? "Atualizar discordância"
               : "Registrar discordância"}
         </button>
         <p role="status" className="text-sm">
-          {message}
+          {state.message}
         </p>
-        {error ? (
+        {state.error ? (
           <p role="alert" className="text-sm text-destructive">
-            {error}
+            {state.error}
           </p>
         ) : null}
       </form>

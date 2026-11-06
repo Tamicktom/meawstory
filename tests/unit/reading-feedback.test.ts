@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, expect, spyOn, test } from "bun:test"
 import { eq } from "drizzle-orm"
 import * as nextHeaders from "next/headers"
+import {
+  saveDisagreement,
+  type DisagreementState,
+} from "@/app/reading-feedback-actions"
 import { app } from "@/api"
 import { db } from "@/database"
 import { correction, text } from "@/database/schema"
@@ -164,6 +168,12 @@ test("API checks sessions, ownership, frozen criteria and payload limits", async
   const own = await reading(sessions[0].userId)
   expect((await put(own.id, { usefulness: "maybe" })).status).toBe(422)
   expect(
+    (await put(own.id, { usefulness: "yes", criterionId: "fidelity" })).status
+  ).toBe(422)
+  expect(
+    (await put(own.id, { criterionId: "fidelity", extra: true })).status
+  ).toBe(422)
+  expect(
     (await put(own.id, { criterionId: "fidelity", reason: "x".repeat(2001) }))
       .status
   ).toBe(422)
@@ -219,4 +229,58 @@ test("page passes frozen structured data and saved feedback without private band
   })
   expect(JSON.stringify(page.props)).not.toContain('"bands"')
   expect(JSON.stringify(page.props)).not.toContain("MARKDOWN NÃO USADO")
+})
+
+test("disagreement server action validates form data and authorizes each submission", async () => {
+  const state: DisagreementState = {
+    saved: false,
+    reason: "",
+    message: "",
+    error: "",
+  }
+  const g = await reading()
+  const form = new FormData()
+  form.set("correctionId", g.id)
+  form.set("criterionId", "fidelity")
+  form.set("reason", "Minha leitura é outra.")
+  expect(await saveDisagreement(state, form)).toMatchObject({
+    saved: false,
+    reason: "Minha leitura é outra.",
+    error: expect.stringContaining("sessão expirou"),
+  })
+  const session = await signIn()
+  expect(await saveDisagreement(state, form)).toMatchObject({
+    saved: false,
+    error: expect.stringContaining("não está disponível"),
+  })
+  const own = await reading(session.userId)
+  form.set("correctionId", own.id)
+  form.set("reason", "x".repeat(2001))
+  expect(await saveDisagreement(state, form)).toMatchObject({
+    saved: false,
+    error: expect.stringContaining("2.000"),
+  })
+  form.set("reason", "")
+  form.set("criterionId", "invented")
+  expect(await saveDisagreement(state, form)).toMatchObject({
+    saved: false,
+    error: expect.stringContaining("não está disponível"),
+  })
+  form.set("criterionId", "fidelity")
+  const saved = await saveDisagreement(state, form)
+  expect(saved).toMatchObject({
+    saved: true,
+    error: "",
+    message: expect.stringContaining("registrada"),
+  })
+  form.set("reason", "Motivo atualizado.")
+  expect(await saveDisagreement(saved, form)).toMatchObject({
+    saved: true,
+    reason: "Motivo atualizado.",
+    error: "",
+  })
+  expect(await loadReadingFeedback(own.id)).toEqual({
+    usefulness: null,
+    disagreements: [{ criterionId: "fidelity", reason: "Motivo atualizado." }],
+  })
 })

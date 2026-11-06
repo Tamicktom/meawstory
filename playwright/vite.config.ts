@@ -25,6 +25,12 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: "@/app/reading-feedback-actions",
+        replacement: fileURLToPath(
+          new URL("./mocks/reading-feedback-actions.ts", import.meta.url)
+        ),
+      },
+      {
         find: "@/app/auth-actions",
         replacement: fileURLToPath(
           new URL("./mocks/auth-actions.ts", import.meta.url)

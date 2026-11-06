@@ -151,3 +151,20 @@ test("long content fits mobile and tabs support keyboard navigation", async ({
     .click()
   await expect(view.locator("mark:focus")).toHaveText("chave ficou na mesa")
 })
+
+test("identical evidence is shown once and still locates the scene", async ({
+  mount,
+}) => {
+  const view = await mount(
+    "components/feedback/structured-reading/RepeatedEvidence"
+  )
+  const criterion = view.getByRole("article", {
+    name: "Aderência",
+    exact: true,
+  })
+  await expect(
+    criterion.getByRole("button", { name: /Ver trecho \d/ })
+  ).toHaveCount(1)
+  await criterion.getByRole("button", { name: /Ver trecho \d/ }).click()
+  await expect(view.locator("mark:focus")).toHaveText("chave ficou na mesa")
+})

@@ -203,19 +203,24 @@ export function StructuredReadingView(props: StructuredReadingProps) {
                     {entry.gaps}
                   </p>
                   <div className="space-y-2">
-                    {entry.evidence.map((quote, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => locate(offset + index)}
-                        className="block min-h-11 w-full border-l-2 pl-3 text-left italic underline decoration-dotted"
-                      >
-                        “{quote}”{" "}
-                        <span className="text-xs not-italic">
-                          Ver trecho {index + 1} na cena
-                        </span>
-                      </button>
-                    ))}
+                    {entry.evidence
+                      .filter(
+                        (quote, index, evidence) =>
+                          evidence.indexOf(quote) === index
+                      )
+                      .map((quote, index) => (
+                        <button
+                          key={quote}
+                          type="button"
+                          onClick={() => locate(offset + index)}
+                          className="block min-h-11 w-full border-l-2 pl-3 text-left italic underline decoration-dotted"
+                        >
+                          “{quote}”{" "}
+                          <span className="text-xs not-italic">
+                            Ver trecho {index + 1} na cena
+                          </span>
+                        </button>
+                      ))}
                   </div>
                   <CriterionDisagreement
                     correctionId={props.correctionId}

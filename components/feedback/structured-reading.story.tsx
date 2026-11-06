@@ -73,3 +73,18 @@ export function Long() {
     />
   )
 }
+
+export function RepeatedEvidence() {
+  return (
+    <StructuredReadingView
+      {...props}
+      result={{
+        ...props.result,
+        criteria: props.result.criteria.map((criterion) => ({
+          ...criterion,
+          evidence: [criterion.evidence[0], criterion.evidence[0]],
+        })),
+      }}
+    />
+  )
+}

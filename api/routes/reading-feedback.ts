@@ -40,13 +40,11 @@ export const readingFeedbackRoutes = new Elysia({
   {
     params: z.object({ correctionId: z.string().min(1) }),
     body: z.union([
-      z.object({ usefulness: z.enum(["yes", "partly", "no"]) }).strict(),
-      z
-        .object({
-          criterionId: z.string().min(1),
-          reason: z.string().trim().max(2000).default(""),
-        })
-        .strict(),
+      z.strictObject({ usefulness: z.enum(["yes", "partly", "no"]) }),
+      z.strictObject({
+        criterionId: z.string().min(1),
+        reason: z.string().trim().max(2000).default(""),
+      }),
     ]),
   }
 )
