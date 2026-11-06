@@ -108,3 +108,48 @@ After 2 minutes the UI reports a delay. After 10 minutes a PENDING/IN_PROGRESS
 attempt expires to FAILED. Expiration is reconciled on status/history/detail reads
 and before admission, even if the browser was closed. Terminal-write guards also
 reject results past the deadline. Expired attempts release capacity and can be retried.
+
+## Structured catalog and reading records (Phase 1-B)
+
+`rubric.criteria` is an ordered JSON array of exactly five criteria, totaling
+1,000 points. Each criterion has a stable id, name, kind, public description,
+maximum and four named bands with numeric bounds and internal descriptors.
+`rubric.genre` is a directly queryable genre key. `rubric.content` remains the
+private model instruction document; public queries select only public criterion
+fields and never return the instruction document or internal band descriptors.
+
+`theme.genre`, `objective`, `min_words` and `max_words` are explicit metadata.
+The genre must agree with its rubric. Word bounds are recommendations for the
+exercise; the operational admission bounds remain 100–2,000 words.
+`theme.briefing` stores situation, alreadyTrue, mustInclude (one array element
+per checklist item), youDecide and doNotPenalize. The twelve catalog exercises
+receive all fields in the migration, without requiring a subsequent seed.
+Existing markdown `description` is retained byte-for-byte for the current model
+and historical reference set. Public briefings are rendered from structured data.
+Unknown, pre-catalog rows can retain null structured fields and use their legacy
+description; no genre, instructions or results are invented for them.
+
+Every new reading freezes `rubric_criteria` and `source` on reservation. Source
+contains the theme title/description and rubric title, complementing the existing
+frozen bodies. `model_id`, `prompt_version` and `prompt_config` record the exact
+application configuration, including instructions, output schema and provider
+options. The prompt version is a content hash of that configuration and the
+prompt template; changing any part produces a different version. These technical
+fields are not selected for the writing UI. A deployment change before dispatch
+must fail rather than record one configuration while calling another.
+
+`structured_result` is a versioned JSON document containing the opening, one highlight with its quotation, criterion
+results (id, score, band, evidence, strengths and gaps) and revision suggestion.
+It is optional while the existing markdown engine remains in use; Phase 1-C will
+produce it directly. Structured completion requires a frozen rubric and model
+configuration, all five matching criterion ids, bounded scores/bands and a total
+matching `score`. Band ceilings apply to hundredths too: e.g. 30.01 out of
+150 belongs to the second band, just as in the evaluation reports. Evidence and prose remain frozen verbatim, never reconstructed
+from a later rubric. No old markdown result is backfilled by guessing scores or
+quotes. `COMPLETED` is the only status that represents a reading version; failed
+attempts remain diagnostic history and do not count as versions.
+
+The database freezes snapshot fields after insertion and result fields after
+completion/failure, allowing soft deletion. On insert it captures the current
+structured rubric and verifies supplied snapshots. Retry admission also compares
+criteria and briefing snapshots, so catalog edits cannot silently change a retry.

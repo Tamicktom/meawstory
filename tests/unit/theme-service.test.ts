@@ -38,7 +38,17 @@ describe("themeService.listActiveThemes", () => {
         image,
       })
 
-      activeThemes.push({ id, title, description, image })
+      activeThemes.push({
+        id,
+        title,
+        description,
+        image,
+        genre: null,
+        objective: null,
+        minWords: null,
+        maxWords: null,
+        briefing: null,
+      })
     }
 
     await rows.insertTheme(rubricId, {
@@ -59,6 +69,11 @@ describe("themeService.listActiveThemes", () => {
       title: activeThemes[0]?.title,
       description: activeThemes[0]?.description,
       image: "https://example.test/one.png",
+      genre: null,
+      objective: null,
+      minWords: null,
+      maxWords: null,
+      briefing: null,
     })
     expect(listed.some((item) => item.title === `${earlyTitlePrefix}000`)).toBe(
       false

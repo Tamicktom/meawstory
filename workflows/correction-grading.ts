@@ -1,15 +1,16 @@
 //* Libraries imports
 import { generateText, Output } from "ai"
 import type { OpenAIProvider } from "@ai-sdk/openai"
-import { z } from "zod"
-
-//* The reference-set baseline (evaluation/) calls the same function, so it measures this exact setup.
-export const CORRECTION_MODEL_ID = "gpt-5-mini"
-
-export const correctionOutputSchema = z.object({
-  content: z.string().trim().min(1),
-  score: z.number().min(0).max(1000),
-})
+import {
+  CORRECTION_MODEL_ID,
+  CORRECTION_PROMPT_CONFIG,
+  correctionOutputSchema,
+} from "@/workflows/correction-config"
+export {
+  CORRECTION_MODEL_ID,
+  correctionInstructions,
+  correctionOutputSchema,
+} from "@/workflows/correction-config"
 
 export type CorrectionSource = {
   themeTitle: string
@@ -19,29 +20,13 @@ export type CorrectionSource = {
   rubricContent: string
 }
 
-export const correctionInstructions = [
-  "Grade the student text against the rubric in the prompt.",
-  "Follow that rubric. Do not add criteria.",
-  "Write content as Portuguese markdown, in the shape the rubric asks for: a short opening, a score for each criterion with a short quotation, a line in the form Nota: N, and one concrete revision the student can try next.",
-  "Do not rewrite the scene.",
-  "score is the sum of the criterion scores. It is a number from 0 through 1000 inclusive and it matches the Nota line.",
-].join("\n")
-
 export function buildCorrectionPrompt(source: CorrectionSource): string {
-  return [
-    "## Tema",
-    source.themeTitle,
-    "",
-    source.themeDescription,
-    "",
-    "## Texto",
-    source.textContent,
-    "",
-    "## Rubrica",
-    source.rubricTitle,
-    "",
-    source.rubricContent,
-  ].join("\n")
+  return CORRECTION_PROMPT_CONFIG.template
+    .map((line) => {
+      const key = line.slice(1, -1) as keyof CorrectionSource
+      return line.startsWith("{") ? source[key] : line
+    })
+    .join("\n")
 }
 
 export function formatCorrectionScore(score: number): string {
@@ -64,15 +49,15 @@ export async function requestCorrection(
 ) {
   const result = await generateText({
     model: provider(CORRECTION_MODEL_ID),
-    instructions: correctionInstructions,
+    instructions: CORRECTION_PROMPT_CONFIG.instructions,
     prompt: buildCorrectionPrompt(source),
     output: Output.object({
       schema: correctionOutputSchema,
-      name: "correction",
-      description: "Rubric-based correction of one student text.",
+      name: CORRECTION_PROMPT_CONFIG.outputName,
+      description: CORRECTION_PROMPT_CONFIG.outputDescription,
     }),
     //* Our public privacy text relies on this: see docs/v2/fase-0-base/0A-3.
-    providerOptions: { openai: { store: false } },
+    providerOptions: CORRECTION_PROMPT_CONFIG.providerOptions,
   })
 
   return { output: result.output, usage: result.usage }

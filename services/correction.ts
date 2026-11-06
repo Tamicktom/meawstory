@@ -1,3 +1,4 @@
+import { validateStructuredReading } from "@/lib/reading-contract"
 //* Libraries imports
 import { and, eq, gt, inArray } from "drizzle-orm"
 
@@ -8,16 +9,7 @@ import { correction, type CorrectionStatus } from "@/database/schema"
 import { READING_TIMEOUT_MS } from "@/lib/reading-policy"
 import { expireReadings } from "@/services/reading"
 
-type InsertCorrectionValues = {
-  id: string
-  content: string
-  score: string
-  textContent: string
-  rubricId: string
-  rubricContent: string
-  textId: string
-  status: CorrectionStatus
-}
+type InsertCorrectionValues = typeof correction.$inferInsert
 
 type CorrectionWriteResult = {
   id: string
@@ -25,7 +17,38 @@ type CorrectionWriteResult = {
   status: CorrectionStatus
 }
 
+type CompletionValues = Partial<
+  Pick<InsertCorrectionValues, "status" | "score" | "structuredResult">
+>
+type CompletionSnapshot = Pick<
+  InsertCorrectionValues,
+  "score" | "rubricCriteria" | "modelId" | "promptVersion" | "promptConfig"
+>
+
+function validateStructuredCompletion(
+  values: CompletionValues,
+  snapshot: CompletionSnapshot | undefined
+) {
+  if (!values.structuredResult) return
+  if (
+    values.status !== "COMPLETED" ||
+    !snapshot?.rubricCriteria ||
+    !snapshot.modelId ||
+    !snapshot.promptVersion ||
+    !snapshot.promptConfig
+  )
+    throw new Error(
+      "Structured completion requires frozen rubric and configuration."
+    )
+  validateStructuredReading(
+    values.structuredResult,
+    snapshot.rubricCriteria,
+    values.score ?? snapshot.score
+  )
+}
+
 async function insertCorrection(values: InsertCorrectionValues) {
+  validateStructuredCompletion(values, values)
   const inserted = await db
     .insert(correction)
     .values(values)
@@ -99,6 +122,10 @@ async function updateCorrection(
   id: string,
   values: Partial<Omit<InsertCorrectionValues, "id">>
 ): Promise<CorrectionWriteResult | null> {
+  if (values.structuredResult) {
+    const attempt = await findAttemptSnapshot(id)
+    validateStructuredCompletion(values, attempt)
+  }
   const result = await db
     .update(correction)
     .set(values)

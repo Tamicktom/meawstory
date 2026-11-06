@@ -10,6 +10,7 @@ const prose = 200
 export const rubricDefinitions: RubricDefinition[] = [
   {
     id: "rubric_action",
+    genre: "action",
     title: "Cena de ação",
     purpose:
       "Corrigir uma cena cujo fôlego vem de movimento: perseguição, fuga, corrida contra um prazo ou travessia sob pressão. O leitor precisa sentir o espaço e o tempo mudando. O desfecho não entra na nota. Escapar, ser alcançado ou escolher parar podem valer o mesmo.",
@@ -22,6 +23,9 @@ export const rubricDefinitions: RubricDefinition[] = [
     ],
     criteria: [
       {
+        id: "fidelity",
+        publicDescription:
+          "Mostre na cena o contexto e as exigências do exercício.",
         name: "Aderência ao tema",
         points: fidelity,
         kind: "objective",
@@ -36,6 +40,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "shape",
+        publicDescription:
+          "Faça um obstáculo mudar o trajeto ou o plano de alguém.",
         name: "Movimento com consequência",
         points: shape,
         kind: "objective",
@@ -51,6 +58,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "world",
+        publicDescription:
+          "Ajude o leitor a acompanhar quem está onde durante a ação.",
         name: "Clareza em velocidade",
         points: world,
         kind: "objective",
@@ -66,6 +76,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "people",
+        publicDescription:
+          "Coloque alguém diante de uma escolha que tenha um custo.",
         name: "Pressão e escolha",
         points: people,
         kind: "subjective",
@@ -81,6 +94,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "prose",
+        publicDescription:
+          "Use frases, pausas e detalhes para dar ritmo ao movimento.",
         name: "Ritmo",
         points: prose,
         kind: "subjective",
@@ -100,6 +116,7 @@ export const rubricDefinitions: RubricDefinition[] = [
   },
   {
     id: "rubric_fight",
+    genre: "fight",
     title: "Cena de luta",
     purpose:
       "Corrigir um confronto físico. A luta é uma conversa feita com o corpo. Ganhar não aumenta a nota. Derrota, empate, golpe recusado ou uma briga que para cedo podem chegar à faixa alta se a sequência física e o motivo forem legíveis.",
@@ -112,6 +129,9 @@ export const rubricDefinitions: RubricDefinition[] = [
     ],
     criteria: [
       {
+        id: "fidelity",
+        publicDescription:
+          "Mostre na luta o contexto e as exigências do exercício.",
         name: "Aderência ao tema",
         points: fidelity,
         kind: "objective",
@@ -128,6 +148,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "shape",
+        publicDescription: "Faça cada golpe ou defesa afetar o gesto seguinte.",
         name: "Causa e efeito físico",
         points: shape,
         kind: "objective",
@@ -143,6 +165,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "world",
+        publicDescription:
+          "Use o espaço e os objetos para mudar as possibilidades da luta.",
         name: "Espaço e recursos",
         points: world,
         kind: "objective",
@@ -158,6 +183,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "people",
+        publicDescription: "Mostre o que cada pessoa tenta proteger ao lutar.",
         name: "O que os corpos protegem",
         points: people,
         kind: "subjective",
@@ -173,6 +200,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "prose",
+        publicDescription: "Deixe claros os movimentos e suas consequências.",
         name: "Coreografia legível",
         points: prose,
         kind: "subjective",
@@ -192,6 +221,7 @@ export const rubricDefinitions: RubricDefinition[] = [
   },
   {
     id: "rubric_romance",
+    genre: "romance",
     title: "Cena de romance",
     purpose:
       "Corrigir uma cena de desejo, ternura, constrangimento ou conflito romântico entre pessoas adultas. Calor explícito não aumenta a nota, e contenção não a reduz. As duas pessoas precisam continuar com vontade própria.",
@@ -204,6 +234,9 @@ export const rubricDefinitions: RubricDefinition[] = [
     ],
     criteria: [
       {
+        id: "fidelity",
+        publicDescription:
+          "Mostre no encontro o contexto e as exigências do exercício.",
         name: "Aderência ao tema",
         points: fidelity,
         kind: "objective",
@@ -219,6 +252,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "shape",
+        publicDescription:
+          "Mostre a atenção entre as pessoas em gestos e reações.",
         name: "Atenção entre pessoas",
         points: shape,
         kind: "objective",
@@ -234,6 +270,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "world",
+        publicDescription: "Faça a relação mudar durante a cena.",
         name: "Virada do vínculo",
         points: world,
         kind: "objective",
@@ -248,6 +286,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "people",
+        publicDescription: "Dê ao sentimento detalhes próprios dessas pessoas.",
         name: "Sentimento específico",
         points: people,
         kind: "subjective",
@@ -263,6 +303,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "prose",
+        publicDescription:
+          "Use a prosa para aproximar o leitor da intimidade da cena.",
         name: "Intimidade na prosa",
         points: prose,
         kind: "subjective",
@@ -282,6 +325,7 @@ export const rubricDefinitions: RubricDefinition[] = [
   },
   {
     id: "rubric_dialogue",
+    genre: "dialogue",
     title: "Cena de diálogo",
     purpose:
       "Corrigir uma cena que anda sobretudo pela fala. Diálogo precisa fazer mais do que informar. As pessoas querem coisas umas das outras, e a fala é o modo de alcançar, desviar ou apertar.",
@@ -294,6 +338,9 @@ export const rubricDefinitions: RubricDefinition[] = [
     ],
     criteria: [
       {
+        id: "fidelity",
+        publicDescription:
+          "Mostre na conversa o contexto e as exigências do exercício.",
         name: "Aderência ao tema",
         points: fidelity,
         kind: "objective",
@@ -309,6 +356,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "shape",
+        publicDescription: "Dê a cada pessoa um jeito reconhecível de falar.",
         name: "Vozes separáveis",
         points: shape,
         kind: "objective",
@@ -324,6 +373,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "world",
+        publicDescription: "Faça o que fica por dizer pressionar a conversa.",
         name: "Subtexto e pressão",
         points: world,
         kind: "objective",
@@ -339,6 +390,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "people",
+        publicDescription: "Mostre desejos e receios por trás das falas.",
         name: "Gente atrás das falas",
         points: people,
         kind: "subjective",
@@ -354,6 +407,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "prose",
+        publicDescription: "Dê às falas um ritmo que caiba nessas pessoas.",
         name: "Fala que parece fala",
         points: prose,
         kind: "subjective",
@@ -372,6 +427,7 @@ export const rubricDefinitions: RubricDefinition[] = [
   },
   {
     id: "rubric_suspense",
+    genre: "suspense",
     title: "Cena de suspense",
     purpose:
       "Corrigir uma cena que retém e revela. Medo, mistério ou uma coisa quieta fora do lugar. A nota não exige monstro, reviravolta nem explicação. Exige controle do que o leitor sabe, e quando sabe.",
@@ -384,6 +440,9 @@ export const rubricDefinitions: RubricDefinition[] = [
     ],
     criteria: [
       {
+        id: "fidelity",
+        publicDescription:
+          "Mostre na cena o contexto e as exigências do exercício.",
         name: "Aderência ao tema",
         points: fidelity,
         kind: "objective",
@@ -400,6 +459,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "shape",
+        publicDescription:
+          "Sustente uma pergunta que faça o leitor querer continuar.",
         name: "Uma pergunta aberta",
         points: shape,
         kind: "objective",
@@ -415,6 +477,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "world",
+        publicDescription:
+          "Escolha quando revelar pistas e quando guardar informação.",
         name: "Informação controlada",
         points: world,
         kind: "objective",
@@ -431,6 +496,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "people",
+        publicDescription: "Mostre o que alguém pode perder diante do perigo.",
         name: "Aposta humana",
         points: people,
         kind: "subjective",
@@ -446,6 +513,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "prose",
+        publicDescription:
+          "Use detalhes e ritmo para tornar a ameaça presente.",
         name: "Atmosfera na prosa",
         points: prose,
         kind: "subjective",
@@ -465,6 +535,7 @@ export const rubricDefinitions: RubricDefinition[] = [
   },
   {
     id: "rubric_turning_point",
+    genre: "turning_point",
     title: "Cena de virada",
     purpose:
       "Corrigir uma cena quieta em que uma pessoa muda de rumo. Perseguição e briga não são necessárias. O drama é uma decisão, um reconhecimento ou uma frase que não dá para desdizer. Quietude não é cena vazia.",
@@ -477,6 +548,9 @@ export const rubricDefinitions: RubricDefinition[] = [
     ],
     criteria: [
       {
+        id: "fidelity",
+        publicDescription:
+          "Mostre na cena o contexto e as exigências do exercício.",
         name: "Aderência ao tema",
         points: fidelity,
         kind: "objective",
@@ -492,6 +566,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "shape",
+        publicDescription: "Deixe visível o que muda com a decisão.",
         name: "Antes e depois",
         points: shape,
         kind: "objective",
@@ -507,6 +583,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "world",
+        publicDescription:
+          "Dê à decisão um lugar entre objetos, tarefas e relações.",
         name: "Vida concreta em volta da decisão",
         points: world,
         kind: "objective",
@@ -522,6 +601,8 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "people",
+        publicDescription: "Prepare a escolha com o que a pessoa vive na cena.",
         name: "Virada merecida",
         points: people,
         kind: "subjective",
@@ -537,6 +618,9 @@ export const rubricDefinitions: RubricDefinition[] = [
         },
       },
       {
+        id: "prose",
+        publicDescription:
+          "Aproxime o leitor do conflito interior por meio da prosa.",
         name: "Prosa interior",
         points: prose,
         kind: "subjective",

@@ -1,7 +1,13 @@
+import type { Genre } from "@/lib/reading-contract"
 export type ThemeDefinition = {
   id: string
   title: string
   rubricId: string
+  genre: Genre
+  objective: string
+  minWords: number
+  maxWords: number
+  doNotPenalize: string[]
   situation: string
   alreadyTrue: string[]
   mustInclude: string[]

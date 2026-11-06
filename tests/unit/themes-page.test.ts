@@ -25,7 +25,16 @@ afterEach(async () => {
 })
 
 function stubCatalog(themes: ListedTheme[]) {
-  const spy = spyOn(themeService, "listActiveThemes").mockResolvedValue(themes)
+  const spy = spyOn(themeService, "listActiveThemes").mockResolvedValue(
+    themes.map((t) => ({
+      ...t,
+      genre: null,
+      objective: null,
+      minWords: null,
+      maxWords: null,
+      briefing: null,
+    }))
+  )
   restoreList = () => {
     spy.mockRestore()
   }

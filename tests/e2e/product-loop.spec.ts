@@ -44,6 +44,20 @@ for (const width of [1280, 320, 390]) {
         page.getByRole("heading", { name: themeTitle })
       ).toBeVisible()
       await expect(page.getByText(/Theme Page|Theme ID/)).toHaveCount(0)
+      await expect(
+        page.getByRole("heading", { name: "Critérios da leitura" })
+      ).toBeVisible()
+      await expect(
+        page.getByRole("heading", { name: "O que não será penalizado" })
+      ).toBeVisible()
+      await expect(
+        page.getByText(
+          "Treinar uma virada de relação sustentada por uma escolha visível."
+        )
+      ).toBeVisible()
+      await expect(
+        page.getByText(/Como dar a nota|O que escrever na correção|gpt-5-mini/)
+      ).toHaveCount(0)
 
       await page.getByRole("link", { name: "Começar a escrever" }).click()
 
@@ -52,6 +66,9 @@ for (const width of [1280, 320, 390]) {
       const editor = page.locator("#scene-content")
 
       await expect(editor).toBeVisible()
+      await expect(page.locator("#scene-limits")).toContainText(
+        "Sugestão do exercício: 400 a 900 palavras"
+      )
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth)
       ).toBeLessThanOrEqual(width)

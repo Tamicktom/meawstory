@@ -94,6 +94,7 @@ async function overwriteCatalogWithStaleRows(
     set "title" = 'Stale theme title',
         "description" = 'Stale theme description',
         "rubric_id" = ${sample.alternateRubric.id},
+        "genre" = ${sample.alternateRubric.genre},
         "updated_at" = timestamp '2000-01-01 00:00:00'
     where "id" = ${sample.themeSeed.id}
   `)

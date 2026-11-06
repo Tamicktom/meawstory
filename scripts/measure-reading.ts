@@ -1,3 +1,7 @@
+import {
+  correctionConfiguration,
+  CORRECTION_PROMPT_VERSION,
+} from "@/workflows/correction-config"
 //* Reads every reference scene several times with the current reading setup.
 //* bun run eval:baseline [--runs 5] [--cases acao-01,luta-03] [--concurrency 4] [--label atual] [--out dir]
 //* Interrupted runs resume: readings already in readings.json are kept.
@@ -81,7 +85,7 @@ function freshRun(): BaselineRun {
     label,
     set: { version: set.version, fingerprint: set.fingerprint },
     config: {
-      modelId: CORRECTION_MODEL_ID,
+      ...correctionConfiguration(),
       instructionsSha256: sha256(correctionInstructions),
       store: false,
     },
@@ -109,7 +113,9 @@ if (
   previous &&
   (previous.set.fingerprint !== set.fingerprint ||
     previous.config.instructionsSha256 !== sha256(correctionInstructions) ||
-    previous.config.modelId !== CORRECTION_MODEL_ID)
+    previous.config.modelId !== CORRECTION_MODEL_ID ||
+    (previous.config.promptVersion !== undefined &&
+      previous.config.promptVersion !== CORRECTION_PROMPT_VERSION))
 ) {
   console.error(
     `${outDirectory} holds a run of another set or setup. Choose another --out.`

@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util"
+import { correctionConfiguration } from "@/workflows/correction-config"
 import { and, eq, gt, inArray, isNull, lt, sql, desc } from "drizzle-orm"
 import { db } from "@/database"
 import { correction, text, theme, rubric } from "@/database/schema"
@@ -78,12 +80,20 @@ export async function saveScene(
 function assertRetrySnapshot(
   scene: {
     scene: { content: string }
-    rubric: { id: string; content: string }
+    rubric: Pick<
+      typeof rubric.$inferSelect,
+      "id" | "title" | "content" | "criteria"
+    >
+    theme: { title: string; description: string }
   },
   previous:
     | Pick<
         typeof correction.$inferSelect,
-        "rubricId" | "rubricContent" | "textContent"
+        | "rubricId"
+        | "rubricContent"
+        | "textContent"
+        | "rubricCriteria"
+        | "source"
       >
     | undefined
 ) {
@@ -91,7 +101,15 @@ function assertRetrySnapshot(
   if (
     previous.rubricId !== scene.rubric.id ||
     previous.rubricContent !== scene.rubric.content ||
-    previous.textContent !== scene.scene.content
+    previous.textContent !== scene.scene.content ||
+    (previous.rubricCriteria !== null &&
+      !isDeepStrictEqual(previous.rubricCriteria, scene.rubric.criteria)) ||
+    (previous.source !== null &&
+      !isDeepStrictEqual(previous.source, {
+        themeTitle: scene.theme.title,
+        themeDescription: scene.theme.description,
+        rubricTitle: scene.rubric.title,
+      }))
   ) {
     throw new ReadingError(
       409,
@@ -164,6 +182,13 @@ export async function reserveReading(userId: string, textId: string) {
       textContent: content,
       rubricId: scene.rubric.id,
       rubricContent: scene.rubric.content,
+      rubricCriteria: scene.rubric.criteria,
+      source: {
+        themeTitle: scene.theme.title,
+        themeDescription: scene.theme.description,
+        rubricTitle: scene.rubric.title,
+      },
+      ...correctionConfiguration(),
       content: "",
       score: "0.00",
       status: "PENDING",

@@ -172,6 +172,12 @@ function metadataSection(
         ["Configuração", `\`${run.label}\``],
         ["Modelo", `\`${run.config.modelId}\`, \`store: false\``],
         [
+          "Versão do prompt",
+          run.config.promptVersion
+            ? `\`${run.config.promptVersion}\``
+            : "Não registrada nesta medição antiga",
+        ],
+        [
           "Instruções (sha256)",
           `\`${run.config.instructionsSha256.slice(0, 16)}\``,
         ],

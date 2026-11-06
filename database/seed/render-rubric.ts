@@ -1,3 +1,4 @@
+import type { Genre } from "@/lib/reading-contract"
 const NARRATIVE_SCORE_MAX = 1000
 
 export type CriterionKind = "objective" | "subjective"
@@ -10,6 +11,8 @@ export type CriterionBands = {
 }
 
 export type CriterionDefinition = {
+  id: string
+  publicDescription: string
   name: string
   points: number
   kind: CriterionKind
@@ -19,6 +22,7 @@ export type CriterionDefinition = {
 
 export type RubricDefinition = {
   id: string
+  genre: Genre
   title: string
   purpose: string
   howToRead: string
