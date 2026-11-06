@@ -29,6 +29,7 @@ test.describe("dashboard session gate", () => {
     await expect(page.locator("#sidebar-dashboard")).toBeVisible()
     await expect(page.locator("#sidebar-themes")).toBeVisible()
     await expect(page.locator("#sidebar-texts")).toBeVisible()
+    await expect(page.locator("#sidebar-account")).toBeVisible()
     await expect(
       page.getByRole("button", { name: "Alternar menu" })
     ).toBeVisible()
@@ -80,13 +81,23 @@ test.describe("dashboard session gate", () => {
     ).toBeVisible()
   })
 
-  test("signs out and opens sign in", async ({ page }) => {
-    await signIn(page)
+  test("opens Conta with the signed-in name and email, then signs out", async ({
+    page,
+  }) => {
+    const account = await signIn(page)
     await page.goto("/dashboard")
 
-    const signOut = page.getByRole("button", { name: "Sair" })
+    await page.locator("#sidebar-account").click()
 
-    await expect(signOut).toHaveAttribute("id", "sidebar-sign-out")
+    await expect(page).toHaveURL("/dashboard/account")
+    await expect(page.getByRole("heading", { name: "Conta" })).toBeVisible()
+    await expect(page.locator("#account-name")).toHaveText(account.name)
+    await expect(page.locator("#account-email")).toHaveText(account.email)
+    await expect(page.getByRole("textbox")).toHaveCount(0)
+
+    const signOut = page.getByRole("button", { name: "Sair", exact: true })
+
+    await expect(signOut).toHaveAttribute("id", "account-sign-out")
     await expect(signOut).toHaveAttribute("type", "button")
 
     await signOut.click()
@@ -125,6 +136,10 @@ test.describe("dashboard sidebar", () => {
     await expect(page.locator("#sidebar-texts")).toHaveAttribute(
       "href",
       "/dashboard/texts"
+    )
+    await expect(page.locator("#sidebar-account")).toHaveAttribute(
+      "href",
+      "/dashboard/account"
     )
 
     await page.locator("#sidebar-dashboard").click()
@@ -198,5 +213,152 @@ test.describe("dashboard sidebar", () => {
     await expect(page.locator("#sidebar-themes")).not.toHaveAttribute(
       "data-active"
     )
+    await expect(page.locator("#sidebar-account")).not.toHaveAttribute(
+      "data-active"
+    )
+
+    await page.goto("/dashboard/account")
+
+    await expect(page.locator("#sidebar-account")).toHaveAttribute(
+      "data-active",
+      ""
+    )
+    await expect(page.locator("#sidebar-account")).toHaveAttribute(
+      "aria-current",
+      "page"
+    )
+    await expect(page.locator("#sidebar-dashboard")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(page.locator("#sidebar-themes")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(page.locator("#sidebar-texts")).not.toHaveAttribute(
+      "data-active"
+    )
+    await expect(
+      page.getByRole("heading", { name: "Conta" })
+    ).toBeVisible()
+  })
+
+  test("hides the sidebar during focus mode and restores it afterwards", async ({
+    page,
+  }) => {
+    await signIn(page)
+    await page.goto("/dashboard/exercises/theme_key_on_the_table/write")
+
+    await expect(page.locator("#sidebar-account")).toBeVisible()
+
+    await page.getByRole("button", { name: "Modo foco", exact: true }).click()
+
+    await expect(page.locator("#sidebar-account")).toBeHidden()
+    await expect(
+      page.getByRole("textbox", { name: "Sua cena", exact: true })
+    ).toBeVisible()
+
+    await page.getByRole("button", { name: "Sair do modo foco" }).click()
+
+    await expect(page.locator("#sidebar-account")).toBeVisible()
   })
 })
+
+function boxesOverlap(
+  first: { x: number; y: number; width: number; height: number },
+  second: { x: number; y: number; width: number; height: number }
+) {
+  return (
+    first.x < second.x + second.width &&
+    first.x + first.width > second.x &&
+    first.y < second.y + second.height &&
+    first.y + first.height > second.y
+  )
+}
+
+for (const width of [320, 390]) {
+  test.describe(`phone navigation at ${width}px`, () => {
+    test.use({
+      viewport: { width, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    })
+
+    test("reaches every area and leaves the primary action uncovered", async ({
+      page,
+    }) => {
+      const account = await signIn(page)
+      await page.goto("/dashboard")
+
+      const nav = page.getByRole("navigation", { name: "Navegação principal" })
+
+      await expect(
+        page.getByRole("button", { name: "Alternar menu" })
+      ).toBeHidden()
+      await expect(page.locator("#mobile-dashboard")).toHaveAttribute(
+        "aria-current",
+        "page"
+      )
+      await expect(page.locator("#mobile-themes")).toBeVisible()
+      await expect(page.locator("#mobile-texts")).toBeVisible()
+      await expect(page.locator("#mobile-account")).toBeVisible()
+
+      const browse = page.locator("#dashboard-browse-themes")
+      await expect(browse).toBeVisible()
+      const browseBox = await browse.boundingBox()
+      const navBox = await nav.boundingBox()
+      expect(browseBox).not.toBeNull()
+      expect(navBox).not.toBeNull()
+      expect(boxesOverlap(browseBox!, navBox!)).toBe(false)
+
+      await page.locator("#mobile-themes").tap()
+      await expect(page).toHaveURL("/dashboard/themes")
+      await expect(page.locator("#mobile-themes")).toHaveAttribute(
+        "aria-current",
+        "page"
+      )
+      await expect(
+        page.getByRole("heading", { name: "Exercícios" })
+      ).toBeVisible()
+
+      await page.locator("#mobile-texts").tap()
+      await expect(page).toHaveURL("/dashboard/texts")
+      await expect(page.locator("#mobile-texts")).toHaveAttribute(
+        "aria-current",
+        "page"
+      )
+      await expect(
+        page.getByRole("heading", { name: "Minhas cenas" })
+      ).toBeVisible()
+
+      await page.locator("#mobile-account").tap()
+      await expect(page).toHaveURL("/dashboard/account")
+      await expect(page.locator("#mobile-account")).toHaveAttribute(
+        "aria-current",
+        "page"
+      )
+      await expect(page.locator("#account-name")).toHaveText(account.name)
+      await expect(page.locator("#account-email")).toHaveText(account.email)
+
+      await page.goto("/dashboard/exercises/theme_key_on_the_table/write")
+      const submit = page.getByRole("button", {
+        name: "Enviar para leitura",
+        exact: true,
+      })
+      await submit.scrollIntoViewIfNeeded()
+      const submitBox = await submit.boundingBox()
+      const bar = await page.locator("[data-app-navigation]").boundingBox()
+      expect(submitBox).not.toBeNull()
+      expect(bar).not.toBeNull()
+      expect(boxesOverlap(submitBox!, bar!)).toBe(false)
+      expect(submitBox!.x).toBeGreaterThanOrEqual(0)
+      expect(submitBox!.x + submitBox!.width).toBeLessThanOrEqual(width)
+
+      await page.getByRole("button", { name: "Modo foco", exact: true }).click()
+      await expect(page.locator("[data-app-navigation]")).toBeHidden()
+      await expect(
+        page.getByRole("textbox", { name: "Sua cena", exact: true })
+      ).toBeVisible()
+      await page.getByRole("button", { name: "Sair do modo foco" }).click()
+      await expect(page.locator("#mobile-account")).toBeVisible()
+    })
+  })
+}

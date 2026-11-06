@@ -27,11 +27,9 @@ for (const width of [1280, 320, 390]) {
       await confirmEmail(page, account.email)
       if (width < 768) {
         await page.goto("/dashboard")
-        await page.getByRole("button", { name: "Alternar menu" }).tap()
-        const menu = page.getByRole("dialog", { name: "Menu de navegação" })
-        await expect(menu).toBeVisible()
-        await menu.getByRole("link", { name: "Exercícios" }).tap()
-        await expect(menu).not.toBeVisible()
+        const exercises = page.locator("#mobile-themes")
+        await expect(exercises).toBeVisible()
+        await exercises.tap()
       } else {
         await page.goto("/dashboard/themes")
       }

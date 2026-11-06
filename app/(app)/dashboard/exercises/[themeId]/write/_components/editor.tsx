@@ -97,7 +97,7 @@ function FocusModeStyle(props: { active: boolean }) {
   return (
     <style>
       {
-        '[data-slot="sidebar"], [data-slot="sidebar-gap"], main > div:has([data-slot="sidebar-trigger"]) { display: none !important; }'
+        '[data-slot="sidebar"], [data-slot="sidebar-gap"], [data-app-navigation], main > div:has([data-slot="sidebar-trigger"]) { display: none !important; }'
       }
     </style>
   )

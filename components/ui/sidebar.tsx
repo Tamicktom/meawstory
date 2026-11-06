@@ -198,7 +198,7 @@ function Sidebar({
           <SheetHeader className="sr-only">
             <SheetTitle>Menu de navegação</SheetTitle>
             <SheetDescription>
-              Navegue pelo início, exercícios e suas cenas.
+              Navegue pelo início, exercícios, suas cenas e a conta.
             </SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
