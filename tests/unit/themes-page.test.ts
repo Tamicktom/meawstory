@@ -263,6 +263,35 @@ describe("ThemesPage", () => {
     expect(markup).toContain("Limpar filtros")
   })
 
+  it.each([
+    ["unwritten", null, "Abrir exercício", "/dashboard/themes/exercise"],
+    [
+      "draft",
+      "scene",
+      "Continuar rascunho",
+      "/dashboard/exercises/exercise/write?textId=scene",
+    ],
+    ["revising", "scene", "Continuar cena", "/dashboard/texts/scene"],
+    ["closed", "scene", "Ver cena encerrada", "/dashboard/texts/scene"],
+  ] as const)(
+    "preserves the action and destination for %s",
+    async (situation, sceneId, action, href) => {
+      stubCatalog([
+        {
+          id: "exercise",
+          title: "Treino",
+          description: "Uma cena.",
+          image: null,
+          situation,
+          sceneId,
+        },
+      ])
+      const markup = renderToStaticMarkup(await ThemesPage())
+      expect(markup).toContain(`href="${href}"`)
+      expect(markup).toContain(action)
+    }
+  )
+
   it("offers to remove filters when no exercise matches", async () => {
     stubCatalog([
       { id: "one", title: "Uma cena", description: "", image: null },

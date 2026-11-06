@@ -28,24 +28,25 @@ export function themeExcerpt(description: string): string {
   return excerpt
 }
 
+const catalogAction: Record<CatalogExercise["situation"], string> = {
+  unwritten: "Abrir exercício",
+  draft: "Continuar rascunho",
+  revising: "Continuar cena",
+  closed: "Ver cena encerrada",
+}
+
+function catalogHref(theme: CatalogExercise) {
+  if (!theme.sceneId) return `/dashboard/themes/${theme.id}`
+  if (theme.situation === "draft") {
+    return `/dashboard/exercises/${theme.id}/write?textId=${theme.sceneId}`
+  }
+  return `/dashboard/texts/${theme.sceneId}`
+}
+
 function ThemeCard({ theme }: { theme: CatalogExercise }) {
-  const href =
-    theme.sceneId && theme.situation === "draft"
-      ? `/dashboard/exercises/${theme.id}/write?textId=${theme.sceneId}`
-      : theme.sceneId
-        ? `/dashboard/texts/${theme.sceneId}`
-        : `/dashboard/themes/${theme.id}`
-  const action =
-    theme.situation === "unwritten"
-      ? "Abrir exercício"
-      : theme.situation === "closed"
-        ? "Ver cena encerrada"
-        : theme.situation === "draft"
-          ? "Continuar rascunho"
-          : "Continuar cena"
   return (
     <Link
-      href={href}
+      href={catalogHref(theme)}
       className="block h-full rounded-lg [overflow-wrap:anywhere] outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card className="h-full transition-colors hover:bg-accent">
@@ -77,7 +78,7 @@ function ThemeCard({ theme }: { theme: CatalogExercise }) {
           ) : null}
           <p className="text-sm">{EXERCISE_SITUATIONS[theme.situation]}</p>
           <span className="mt-1 font-medium underline underline-offset-4">
-            {action}
+            {catalogAction[theme.situation]}
           </span>
         </CardContent>
       </Card>
