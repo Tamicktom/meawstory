@@ -112,8 +112,10 @@ Total: 86 cards.
 
 ### D. Portão de validação
 
-- [ ] [1D-1](fase-1-revisao/1D-1-avaliar-leitura-estruturada-no-conjunto.md) — Avaliar a leitura estruturada no conjunto de referência
-- [ ] [1D-2](fase-1-revisao/1D-2-testar-prototipo-de-leitura-e-revisao.md) — Testar o protótipo de leitura e revisão com escritores
+- [x] [1D-1](fase-1-revisao/1D-1-avaliar-leitura-estruturada-no-conjunto.md) — Avaliar a leitura estruturada no conjunto de referência — medição concluída, com falhas bloqueantes explicitadas
+- [ ] [1D-2](fase-1-revisao/1D-2-testar-prototipo-de-leitura-e-revisao.md) — Testar o protótipo de leitura e revisão com escritores — protótipo, roteiro e ficha preparados; aguardando resolução dos bloqueios e 5 a 10 sessões reais
+
+**Validação da etapa D (2026-11-06):** [resultado e decisão](validacao-1d/resultado.md). Foram 235 tentativas no conjunto v3, com 233 leituras concluídas e dois timeouts; gasto conhecido de US$ 1,45307, com o consumo dos timeouts desconhecido. As leituras aceitas cobrem os cinco critérios, somam corretamente, têm foco preenchido e guardam 2.507 citações literais. Nos 44 casos comuns à linha de base, o DP mediano aumentou de 17,52 para 20,18; 34/44 mantêm faixa total estável, contra 36/44 antes, e o erro absoluto médio frente à leitora passou de 55,51 para 65,16. As revisões cosméticas ficaram dentro do ruído definido, mas a revisão real de Ação não se separou. A sonda de Virada ganhou 109 pontos frente ao controle, acima da tolerância de 61,34, e `romance-07 #5` citou a falsa instrução como evidência. A inspeção qualitativa encontrou dois comentários cortados numa resposta aceita, interpretação sem apoio, falas prontas para copiar e focos com várias tarefas. **O portão não está liberado; F, G e H continuam aguardando.** 1D-1 fecha como avaliação com falhas explícitas, não como aprovação da configuração. Tamicktom informou que ainda não tem participantes e pediu preparar o teste: o HTML descartável, o roteiro e a ficha estão prontos, sem respostas humanas inventadas. Passaram 318 testes unitários, `bun run typecheck` e a conferência do protótipo em 320, 390 e 1280 px. Sem alteração de modelo, prompt, rubricas, cenas de referência, tabelas ou comportamento de produção.
 
 ### E. Escrita
 

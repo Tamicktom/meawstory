@@ -23,6 +23,8 @@
     "eval:forms": "bun scripts/reference-forms.ts",
     "eval:baseline": "bun scripts/measure-reading.ts",
     "eval:report": "bun scripts/reading-report.ts",
+    "eval:gate": "bun scripts/validation-gate.ts",
+    "eval:prototype": "bun scripts/reading-prototype.ts",
     "ops:report": "bun scripts/reading-ops.ts"
   },
   "dependencies": {
