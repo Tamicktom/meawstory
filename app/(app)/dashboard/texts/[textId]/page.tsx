@@ -1,3 +1,4 @@
+import { sceneTitle } from "@/lib/scene-title"
 import { ReadingState } from "@/components/reading/reading-state"
 //* Libraries imports
 import { notFound } from "next/navigation"
@@ -47,7 +48,7 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
       <ReadingGate
         themeId={ownedText.themeId}
         textId={ownedText.id}
-        themeTitle={ownedText.theme.title}
+        themeTitle={sceneTitle(ownedText.title, ownedText.theme.title)}
         textContent={ownedText.content}
         email={session.user.email}
         emailVerified={session.user.emailVerified}
@@ -60,7 +61,7 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
     return (
       <ReadingState
         textId={ownedText.id}
-        themeTitle={ownedText.theme.title}
+        themeTitle={sceneTitle(ownedText.title, ownedText.theme.title)}
         textContent={latestCorrection.textContent}
         status={latestCorrection.status}
         createdAt={latestCorrection.createdAt.toISOString()}
@@ -69,7 +70,7 @@ export default async function TextFeedbackPage(props: TextFeedbackPageProps) {
   }
   return (
     <FeedbackView
-      themeTitle={ownedText.theme.title}
+      themeTitle={sceneTitle(ownedText.title, ownedText.theme.title)}
       correction={{
         content: latestCorrection.content,
         score: latestCorrection.score,

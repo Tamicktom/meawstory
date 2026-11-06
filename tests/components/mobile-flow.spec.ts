@@ -45,11 +45,21 @@ for (const width of [320, 390]) {
       const view = await mount("components/write/editor/Default")
       const content =
         "Uma cena de ficção. ".repeat(30) + "\n\nÚltimo parágrafo."
-      await view.getByRole("textbox").fill(content)
+      await view
+        .getByRole("textbox", { name: "Sua cena", exact: true })
+        .fill(content)
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth)
       ).toBeLessThanOrEqual(width)
-      await view.getByRole("button", { name: "Enviar para leitura" }).tap()
+      await view
+        .getByRole("button", { name: "Enviar para leitura", exact: true })
+        .tap()
+      await expect(
+        view.getByRole("region", { name: "Conferir envio" })
+      ).toBeVisible()
+      await view
+        .getByRole("button", { name: "Confirmar envio", exact: true })
+        .tap()
       await expect(page.locator("html")).toHaveAttribute(
         "data-navigated-to",
         "/dashboard/texts/saved"

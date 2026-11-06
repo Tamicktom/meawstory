@@ -53,7 +53,7 @@ function TextHistoryCard(props: TextHistoryCardProps) {
     >
       <Card className="h-full transition-colors hover:bg-accent">
         <CardHeader>
-          <CardTitle>{props.text.themeTitle}</CardTitle>
+          <CardTitle>{props.text.title ?? props.text.themeTitle}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           <p className="line-clamp-4 whitespace-pre-wrap text-muted-foreground">

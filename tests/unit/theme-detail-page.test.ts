@@ -1,5 +1,7 @@
+import * as nextHeaders from "next/headers"
+import { openSession } from "@/tests/helpers/open-session"
 //* Libraries imports
-import { afterEach, describe, expect, it } from "bun:test"
+import { afterEach, beforeEach, spyOn, describe, expect, it } from "bun:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
 //* Local imports
@@ -7,8 +9,19 @@ import ThemePage from "@/app/(app)/dashboard/themes/[id]/page"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
 
 const rows = createIsolatedRows()
+let session: Awaited<ReturnType<typeof openSession>>
+let restore = () => {}
+beforeEach(async () => {
+  session = await openSession()
+  const spy = spyOn(nextHeaders, "headers").mockImplementation(
+    async () => session.headers as never
+  )
+  restore = () => spy.mockRestore()
+})
 
 afterEach(async () => {
+  restore()
+  await session.close()
   await rows.cleanup()
 })
 

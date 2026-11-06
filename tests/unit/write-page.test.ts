@@ -91,23 +91,20 @@ describe("WritePage", () => {
   })
 
   it("shows the theme markdown beside the editor", async () => {
+    await signIn()
     const rubricId = await rows.insertRubric()
     const themeId = await rows.insertTheme(rubricId, {
       description: "## Situação\n\nA praça está vazia ao meio-dia.",
     })
     const page = await loadPage(themeId)
     const [, grid] = childElements(page)
-    const [information, editor] = childElements(grid) as [
-      ReactElement<{ className?: string; children?: ReactNode }>,
-      ReactElement<{ themeId?: string }>,
-    ]
-
-    expect(childElements(page)).toHaveLength(2)
+    const [editor] = childElements(grid) as ReactElement<{
+      themeId: string
+      briefing: ReactNode
+    }>[]
     expect(editor.type).toBe(Editor)
     expect(editor.props.themeId).toBe(themeId)
-
-    const markup = renderToStaticMarkup(information)
-
+    const markup = renderToStaticMarkup(editor.props.briefing)
     expect(markup).toContain("<h2")
     expect(markup).toContain("Situação")
     expect(markup).toContain("A praça está vazia ao meio-dia.")
@@ -133,7 +130,7 @@ describe("WritePage draft access", () => {
     })
     const page = await loadPage(themeId, textId)
     const [, grid] = childElements(page)
-    const [, editor] = childElements(grid) as ReactElement<{
+    const [editor] = childElements(grid) as ReactElement<{
       textId: string
       initialContent: string
     }>[]

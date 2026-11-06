@@ -2,88 +2,84 @@ import { expect, test } from "../../playwright/component"
 const story = "components/write/editor/Default"
 const content =
   "Uma cena de ficção. ".repeat(30).trim() + "\n\nOutro parágrafo."
-test("starts empty with a placeholder and rejects short scenes locally", async ({
+
+test("autosaves short drafts and preserves the confirmed identity", async ({
   mount,
   page,
 }) => {
-  let requests = 0
-  await page.route("**/api/write/**", (route) => {
-    requests++
-    return route.fulfill({ json: { textId: "saved" } })
-  })
-  const view = await mount(story)
-  await expect(view.getByRole("textbox")).toHaveValue("")
-  await expect(view.getByRole("textbox")).toHaveAttribute(
-    "placeholder",
-    "Comece no meio da cena."
-  )
-  await view.getByRole("textbox").fill("Curta.")
-  await view.getByRole("button").click()
-  await expect(view.getByRole("alert")).toContainText("1 palavras")
-  await expect(view.getByRole("textbox")).toHaveValue("Curta.")
-  expect(requests).toBe(0)
-})
-test("preserves paragraphs, opens saved scenes and keeps the text on rate limiting", async ({
-  mount,
-  page,
-}) => {
-  const bodies: { content: string; textId?: string }[] = []
+  const bodies: Record<string, unknown>[] = []
   await page.route("**/api/write/**", async (route) => {
     bodies.push(route.request().postDataJSON())
-    await route.fulfill({
-      status: bodies.length === 1 ? 429 : 200,
-      json:
-        bodies.length === 1
-          ? {
-              textId: "saved",
-              message: "Tente de novo em 10 minutos. Sua cena continua salva.",
-            }
-          : { textId: "saved" },
-    })
+    await route.fulfill({ json: { textId: "saved" } })
   })
   const view = await mount(story)
-  await view.getByRole("textbox").fill(content)
-  await view.getByRole("button").click()
-  await expect(view.getByRole("alert")).toContainText("10 minutos")
-  await expect(view.getByRole("textbox")).toHaveValue(content)
-  await view.getByRole("button").click()
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-navigated-to",
-    "/dashboard/texts/saved"
-  )
-  expect(bodies).toEqual([{ content }, { content, textId: "saved" }])
+  await view.getByLabel("Sua cena", { exact: true }).fill("Curta.")
+  await expect(view.getByRole("status")).toContainText("Salvo há instantes")
+  await view.getByLabel("Título da cena (opcional)").fill("Uma porta")
+  await expect.poll(() => bodies.length).toBe(2)
+  expect(bodies[1]).toMatchObject({
+    textId: "saved",
+    draftOnly: true,
+    title: "Uma porta",
+    content: "Curta.",
+  })
+  await view
+    .getByRole("button", { name: "Enviar para leitura", exact: true })
+    .click()
+  await expect(view.getByRole("alert")).toContainText("1 palavras")
 })
 
-test("server errors keep the scene without exposing details or adopting an error ID", async ({
+test("requires confirmation and keeps unsaved content after network failure", async ({
   mount,
   page,
 }) => {
-  const bodies: { content: string; textId?: string }[] = []
+  await page.route("**/api/write/**", (route) =>
+    route.fulfill({ status: 503, json: {} })
+  )
+  const view = await mount(story)
+  await view.getByLabel("Sua cena", { exact: true }).fill(content)
+  await expect(view.getByRole("alert")).toContainText(
+    "Mantenha esta página aberta"
+  )
+  await expect(view.getByLabel("Sua cena", { exact: true })).toHaveValue(
+    content
+  )
+  await view
+    .getByRole("button", { name: "Enviar para leitura", exact: true })
+    .click()
+  await expect(
+    view.getByRole("region", { name: "Conferir envio" })
+  ).toBeVisible()
+  await view.getByRole("button", { name: "Voltar a escrever" }).click()
+  await expect(view.getByLabel("Sua cena", { exact: true })).toHaveValue(
+    content
+  )
+  await view.getByRole("button", { name: "Modo foco", exact: true }).click()
+  await expect(
+    view.getByRole("button", { name: "Sair do modo foco" })
+  ).toBeVisible()
+})
+
+test("submission waits for save and sends exactly the confirmed paragraphs", async ({
+  mount,
+  page,
+}) => {
+  const bodies: Record<string, unknown>[] = []
   await page.route("**/api/write/**", async (route) => {
     bodies.push(route.request().postDataJSON())
-    await route.fulfill({
-      status: bodies.length === 1 ? 500 : 200,
-      json:
-        bodies.length === 1
-          ? {
-              textId: "untrusted-error-id",
-              message: "Internal database details",
-            }
-          : { textId: "saved" },
-    })
+    await route.fulfill({ json: { textId: "saved" } })
   })
   const view = await mount(story)
-  await view.getByRole("textbox").fill(content)
-  await view.getByRole("button").click()
-  await expect(view.getByRole("alert")).toContainText("Seu texto continua aqui")
-  await expect(view.getByRole("alert")).not.toContainText(
-    "Internal database details"
-  )
-  await expect(view.getByRole("textbox")).toHaveValue(content)
-  await view.getByRole("button").click()
+  await view.getByLabel("Sua cena", { exact: true }).fill(content)
+  await view
+    .getByRole("button", { name: "Enviar para leitura", exact: true })
+    .click()
+  await view
+    .getByRole("button", { name: "Confirmar envio", exact: true })
+    .click()
   await expect(page.locator("html")).toHaveAttribute(
     "data-navigated-to",
     "/dashboard/texts/saved"
   )
-  expect(bodies).toEqual([{ content }, { content }])
+  expect(bodies.at(-1)).toMatchObject({ content, draftOnly: false })
 })

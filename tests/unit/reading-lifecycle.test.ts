@@ -170,3 +170,26 @@ for (const change of ["scene", "rubric body", "rubric id"] as const) {
     ).toHaveLength(1)
   })
 }
+
+test("draft metadata survives reload and freezes when reading starts", async () => {
+  const g = await scene()
+  await saveScene(g.userId, g.themeId, content, g.textId, {
+    title: "Minha cena",
+    checklist: ["Um conflito"],
+  })
+  const [saved] = await db.select().from(text).where(eq(text.id, g.textId))
+  expect(saved.title).toBe("Minha cena")
+  expect(saved.checklist).toEqual(["Um conflito"])
+  rows.trackCorrection(await reserveReading(g.userId, g.textId, content))
+  await expect(
+    saveScene(g.userId, g.themeId, "Outro texto", g.textId, { checklist: [] })
+  ).rejects.toThrow("já tem uma leitura")
+})
+
+test("a concurrent edit invalidates the content confirmed for submission", async () => {
+  const g = await scene()
+  await saveScene(g.userId, g.themeId, content + " Mudança.", g.textId)
+  await expect(reserveReading(g.userId, g.textId, content)).rejects.toThrow(
+    "outra aba"
+  )
+})

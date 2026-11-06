@@ -46,23 +46,14 @@ export default async function WritePage(props: WritePageProps) {
           Consultar exercício
         </a>
       </header>
-      <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <aside
-          id="exercise-information"
-          className="order-2 min-w-0 scroll-mt-4 [overflow-wrap:anywhere] lg:order-1"
-          aria-label="Informações do exercício"
-        >
-          <h2 className="mb-3 font-heading text-lg font-medium">Exercício</h2>
-          <div className="prose max-w-none min-w-0 dark:prose-invert">
-            <Markdown>{parsedDescription}</Markdown>
-          </div>
-        </aside>
+      <div className="min-w-0">
         <Editor
           themeId={params.themeId}
           minWords={thisTheme.minWords ?? undefined}
           maxWords={thisTheme.maxWords ?? undefined}
-          textId={draft?.id}
-          initialContent={draft?.content}
+          {...draftEditorProps(draft)}
+          checklistItems={thisTheme.briefing?.mustInclude}
+          briefing={<Markdown>{parsedDescription}</Markdown>}
         />
       </div>
     </div>
@@ -70,11 +61,26 @@ export default async function WritePage(props: WritePageProps) {
 }
 
 async function findEditableDraft(themeId: string, textId?: string) {
-  if (!textId) return
   const session = await requireSession()
+  if (!textId)
+    return (
+      (await textService.findDraftForTheme(session.user.id, themeId)) ??
+      undefined
+    )
   const draft = await textService.findOwnedText(textId, session.user.id)
   if (!draft || draft.themeId !== themeId) notFound()
   if (await correctionService.findLatestActiveCorrection(textId))
     redirect(`/dashboard/texts/${textId}`)
   return draft
+}
+
+function draftEditorProps(
+  draft: Awaited<ReturnType<typeof findEditableDraft>>
+) {
+  return {
+    textId: draft?.id,
+    initialContent: draft?.content,
+    initialTitle: draft?.title,
+    initialChecklist: draft?.checklist,
+  }
 }

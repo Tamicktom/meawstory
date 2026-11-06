@@ -123,8 +123,8 @@ describe("TextsPage", () => {
     })
 
     const markup = await loadPage()
-    const newerIndex = markup.indexOf("Newer theme")
-    const olderIndex = markup.indexOf("Older theme")
+    const newerIndex = markup.indexOf(`Text ${newerId}`)
+    const olderIndex = markup.indexOf(`Text ${older.textId}`)
 
     expect(newerIndex).toBeGreaterThan(-1)
     expect(olderIndex).toBeGreaterThan(newerIndex)

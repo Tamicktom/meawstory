@@ -119,6 +119,8 @@ describe("textService.findOwnedText", () => {
       {
         id: graph.textId,
         themeId: graph.themeId,
+        title: `Text ${graph.textId}`,
+        checklist: [],
         content: `Text body ${graph.textId}`,
         theme: {
           title: "Owned theme",
@@ -208,6 +210,7 @@ describe("textService.listOwnedTexts", () => {
     expect(listed.map((item) => item.id)).toEqual([newerId, older.textId])
     expect(listed[0]).toEqual({
       id: newerId,
+      title: `Text ${newerId}`,
       content: "The newer draft names the missing key.",
       createdAt: new Date("2024-06-01T00:00:00.000Z"),
       themeTitle: "Older theme",
@@ -279,7 +282,7 @@ describe("textService.createText", () => {
     expect(stored).toEqual([
       {
         id: created.id,
-        title: `Text for theme ${graph.themeId}`,
+        title: "",
         content,
         userId: graph.userId,
         themeId: graph.themeId,

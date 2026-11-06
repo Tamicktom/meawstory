@@ -1,0 +1,1 @@
+ALTER TABLE "text" ADD COLUMN "checklist" jsonb DEFAULT '[]' NOT NULL;

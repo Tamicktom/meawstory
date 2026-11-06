@@ -131,13 +131,15 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### E. Escrita
 
-- [ ] [1E-1](fase-1-revisao/1E-1-apresentar-briefing-completo.md) — Apresentar o briefing completo do exercício
-- [ ] [1E-2](fase-1-revisao/1E-2-tornar-o-titulo-da-cena-opcional.md) — Tornar o título da cena opcional
-- [ ] [1E-3](fase-1-revisao/1E-3-salvar-rascunho-no-servidor.md) — Salvar rascunho automaticamente no servidor
-- [ ] [1E-4](fase-1-revisao/1E-4-impedir-alteracao-durante-a-leitura.md) — Impedir alteração do texto durante a leitura
-- [ ] [1E-5](fase-1-revisao/1E-5-exibir-contador-e-checklist-da-cena.md) — Exibir contador de palavras e checklist da cena
-- [ ] [1E-6](fase-1-revisao/1E-6-adicionar-painel-recolhivel-e-modo-foco.md) — Adicionar painel recolhível e modo foco
-- [ ] [1E-7](fase-1-revisao/1E-7-criar-etapa-de-conferencia-antes-do-envio.md) — Criar a etapa de conferência antes do envio
+- [x] [1E-1](fase-1-revisao/1E-1-apresentar-briefing-completo.md) — Apresentar o briefing completo do exercício
+- [x] [1E-2](fase-1-revisao/1E-2-tornar-o-titulo-da-cena-opcional.md) — Tornar o título da cena opcional
+- [x] [1E-3](fase-1-revisao/1E-3-salvar-rascunho-no-servidor.md) — Salvar rascunho automaticamente no servidor
+- [x] [1E-4](fase-1-revisao/1E-4-impedir-alteracao-durante-a-leitura.md) — Impedir alteração do texto durante a leitura
+- [x] [1E-5](fase-1-revisao/1E-5-exibir-contador-e-checklist-da-cena.md) — Exibir contador de palavras e checklist da cena
+- [x] [1E-6](fase-1-revisao/1E-6-adicionar-painel-recolhivel-e-modo-foco.md) — Adicionar painel recolhível e modo foco
+- [x] [1E-7](fase-1-revisao/1E-7-criar-etapa-de-conferencia-antes-do-envio.md) — Criar a etapa de conferência antes do envio
+
+**Validação da etapa E (2026-11-06):** briefing público completo com os cinco critérios e retomada do rascunho; título opcional com fallback para o exercício nas cenas e leituras; autosave serializado no servidor, checklist manual persistido, painel recolhível, modo foco e conferência antes do envio. A interface preserva o texto em falhas e sessão expirada, oferece cópia e nova entrada em outra aba, tenta salvar novamente e avisa ao fechar com alterações não confirmadas. A reserva confere o conteúdo confirmado sob o mesmo lock das edições, e qualquer cena com leitura permanece bloqueada para autosave. Migração `20261106044915_writing_drafts` aplicada ao PostgreSQL local; não há tabela nova. Passaram 320 testes unitários, três testes de componentes do editor e oito jornadas E2E (ciclo completo em 320, 390 e 1280 px, incluindo recarga do texto/checklist), além de typecheck e build. React Doctor: 93/100, com um aviso de complexidade no editor. Sem alteração de modelo, prompt ou critérios e sem chamadas à OpenAI; os E2E usam a leitura salva. O build usou chave Resend fictícia para validar o ambiente, sem envio de e-mail. O portão D continua fechado para F, G e H.
 
 ### F. Tela da leitura
 

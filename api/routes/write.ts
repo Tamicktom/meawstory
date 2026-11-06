@@ -16,7 +16,7 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
   "/:themeId",
   async (request) => {
     const { themeId } = request.params
-    const { content, textId } = request.body
+    const { content, textId, draftOnly, title, checklist } = request.body
 
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -30,7 +30,7 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
       }
     }
 
-    if (sceneSizeError(content)) {
+    if (!draftOnly && sceneSizeError(content)) {
       request.set.status = 400
       return { message: sceneSizeError(content) }
     }
@@ -47,12 +47,17 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
 
     let newText
     try {
-      newText = await saveScene(session.user.id, themeId, content, textId)
+      newText = await saveScene(session.user.id, themeId, content, textId, {
+        title,
+        checklist,
+      })
     } catch (error) {
-      if (!(error instanceof ReadingError)) throw error
-      request.set.status = error.status
-      return { message: error.message }
+      const readingError = requireReadingError(error)
+      request.set.status = readingError.status
+      return { message: readingError.message }
     }
+
+    if (draftOnly) return { textId: newText.id }
 
     //* The scene stays saved. A blocked attempt starts nothing, so it uses no reading.
     if (!session.user.emailVerified) {
@@ -63,14 +68,14 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
     }
 
     try {
-      await startReading(session.user.id, newText.id)
+      await startReading(session.user.id, newText.id, content)
     } catch (error) {
-      if (!(error instanceof ReadingError)) throw error
-      request.set.status = error.status
+      const readingError = requireReadingError(error)
+      request.set.status = readingError.status
       return {
         textId: newText.id,
-        message: error.message,
-        retryAt: error.retryAt,
+        message: readingError.message,
+        retryAt: readingError.retryAt,
       }
     }
 
@@ -78,7 +83,10 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
   },
   {
     body: z.object({
-      content: z.string(),
+      content: z.string().max(200000),
+      title: z.string().max(200).optional(),
+      checklist: z.array(z.string().max(1000)).max(100).optional(),
+      draftOnly: z.boolean().optional(),
       textId: z.string().optional(),
     }),
     params: z.object({
@@ -86,5 +94,10 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
     }),
   }
 )
+
+function requireReadingError(error: unknown) {
+  if (!(error instanceof ReadingError)) throw error
+  return error
+}
 
 export { writeRoutes }

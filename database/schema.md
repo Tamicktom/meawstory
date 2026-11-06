@@ -229,3 +229,17 @@ comparison of Phase 1-H will add its own kind to the same table.
 a user) deletes its calls. Soft-deleting a correction keeps them, so spend
 stays measurable.
 
+
+## Writing drafts (Phase 1-E)
+
+A draft uses the existing text row. An empty title means no personal title;
+presentation falls back to the exercise title, including old automatic titles.
+The JSON string array `text.checklist` records manually checked briefing items.
+It is writing metadata only, never included in model input or correction snapshots.
+
+Draft-only saves accept content below the reading minimum. They use the same
+per-author transaction lock as reading reservation and reject updates once any
+correction exists. Submission checks its confirmed content again inside the
+reservation transaction, so an intervening edit from another tab cannot silently
+change what is submitted. The UI serializes autosaves and waits for them before
+submission. Once reserved, the frozen text remains visible in the reading state.

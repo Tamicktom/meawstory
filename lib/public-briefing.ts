@@ -44,7 +44,7 @@ export function renderPublicBriefing(
     `Entre ${theme.minWords} e ${theme.maxWords} palavras.`,
     "## O que não será penalizado",
     bullets(b.doNotPenalize),
-    "## Critérios da leitura",
+    "## O que será observado",
     bullets(
       criteria.map(
         (c) => `**${c.name} (${c.maxScore} pontos):** ${c.publicDescription}`

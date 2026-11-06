@@ -45,7 +45,7 @@ for (const width of [1280, 320, 390]) {
       ).toBeVisible()
       await expect(page.getByText(/Theme Page|Theme ID/)).toHaveCount(0)
       await expect(
-        page.getByRole("heading", { name: "Critérios da leitura" })
+        page.getByRole("heading", { name: "O que será observado" })
       ).toBeVisible()
       await expect(
         page.getByRole("heading", { name: "O que não será penalizado" })
@@ -96,7 +96,17 @@ for (const width of [1280, 320, 390]) {
       ).toBeVisible()
       await privacy.close()
       await expect(editor).toHaveValue(submittedText)
+      await expect(page.getByRole("status")).toContainText("Salvo há instantes")
+      const firstItem = page.getByRole("checkbox").first()
+      await firstItem.check()
+      await expect(page.getByRole("status")).toContainText("Salvo há instantes")
+      await page.reload()
+      await expect(page.locator("#scene-content")).toHaveValue(submittedText)
+      await expect(page.getByRole("checkbox").first()).toBeChecked()
       await page.getByRole("button", { name: "Enviar para leitura" }).click()
+      await page
+        .getByRole("button", { name: "Confirmar envio", exact: true })
+        .click()
 
       await expect(page).toHaveURL(/\/dashboard\/texts\/[^/]+$/, {
         timeout: 45_000,

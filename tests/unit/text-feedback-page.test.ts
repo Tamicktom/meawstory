@@ -206,7 +206,7 @@ describe("TextFeedbackPage", () => {
 
     const props = feedbackProps(await loadPage(textId))
 
-    expect(props.themeTitle).toBe("A letter that arrives late")
+    expect(props.themeTitle).toBe(`Text ${textId}`)
     expect(props.correction).toEqual({
       content: "Newer note",
       score: "20.00",
@@ -232,7 +232,7 @@ describe("TextFeedbackPage", () => {
     const props = gateProps(await loadPage(textId))
 
     expect(props.textId).toBe(textId)
-    expect(props.themeTitle).toBe("A letter that arrives late")
+    expect(props.themeTitle).toBe(`Text ${textId}`)
     expect(props.emailVerified).toBe(false)
     expect(props.verificationLinkFailed).toBe(false)
     expect(props.email).toContain("@example.com")
