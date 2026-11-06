@@ -4,6 +4,9 @@ import { useSceneDraft } from "@/hooks/write/use-scene-draft"
 import { Button } from "@/components/ui/button"
 import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 import { sceneSizeError } from "@/lib/reading-policy"
+import { ReviewPanel } from "./review-panel"
+import { SaveError } from "./save-error"
+import { SceneChecklist } from "./scene-checklist"
 
 export type EditorProps = {
   themeId: string
@@ -17,36 +20,27 @@ export type EditorProps = {
   maxWords?: number
 }
 export function Editor(props: EditorProps) {
-  const {
-    content,
-    setContent,
-    title,
-    setTitle,
-    checklist,
-    setChecklist,
-    pending,
-    error,
-    saved,
-    dirty,
-    setSaved,
-    setError,
-    expired,
-    locked,
-    focus,
-    setFocus,
-    review,
-    setReview,
-    setRetry,
-    textId,
-    items,
-    words,
-    submit,
-  } = useSceneDraft(props)
+  const draft = useSceneDraft(props)
+  const checked = new Set(draft.checklist)
+  const missing = draft.items.filter((item) => !checked.has(item))
 
-  const marked = new Set(checklist)
+  function toggleItem(item: string, checked: boolean) {
+    draft.setChecklist(
+      checked
+        ? [...draft.checklist, item]
+        : draft.checklist.filter((value) => value !== item)
+    )
+  }
+
+  function askReview() {
+    const invalid = sceneSizeError(draft.content)
+    if (invalid) draft.setError(invalid)
+    else draft.setReview(true)
+  }
+
   return (
-    <div data-writing-focus={focus} className="min-w-0">
-      {focus ? (
+    <div data-writing-focus={draft.focus} className="min-w-0">
+      {draft.focus ? (
         <style>
           {
             '[data-slot="sidebar"], [data-slot="sidebar-gap"], main > div:has([data-slot="sidebar-trigger"]) { display: none !important; }'
@@ -54,19 +48,22 @@ export function Editor(props: EditorProps) {
         </style>
       ) : null}
       <div className="mb-4 flex flex-wrap gap-3">
-        <Button variant="outline" onClick={() => setFocus(!focus)}>
-          {focus ? "Sair do modo foco" : "Modo foco"}
+        <Button
+          variant="outline"
+          onClick={() => draft.setFocus(!draft.focus)}
+        >
+          {draft.focus ? "Sair do modo foco" : "Modo foco"}
         </Button>
       </div>
       <div
         className={
-          focus
+          draft.focus
             ? ""
             : "grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]"
         }
       >
         <aside
-          hidden={focus}
+          hidden={draft.focus}
           id="exercise-information"
           className="order-2 min-w-0 lg:order-1"
         >
@@ -84,9 +81,9 @@ export function Editor(props: EditorProps) {
           <input
             id="scene-title"
             maxLength={200}
-            value={title}
-            disabled={pending || locked}
-            onChange={(event) => setTitle(event.target.value)}
+            value={draft.title}
+            disabled={draft.pending || draft.locked}
+            onChange={(event) => draft.setTitle(event.target.value)}
             className="min-h-11 w-full rounded-md border p-3"
           />
           <label htmlFor="scene-content" className="font-medium">
@@ -95,142 +92,59 @@ export function Editor(props: EditorProps) {
           <textarea
             id="scene-content"
             placeholder="Comece no meio da cena."
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            disabled={pending || locked}
+            value={draft.content}
+            onChange={(event) => draft.setContent(event.target.value)}
+            disabled={draft.pending || draft.locked}
             aria-describedby="scene-limits"
             className="min-h-96 w-full resize-y rounded-md border bg-background p-4 text-base leading-relaxed"
           />
           <p id="scene-limits">
-            {words.toLocaleString("pt-BR")} palavras · Limites: 100 a 2.000
-            palavras
+            {draft.words.toLocaleString("pt-BR")} palavras · Limites: 100 a
+            2.000 palavras
             {props.minWords && props.maxWords
               ? ` · Sugestão do exercício: ${props.minWords} a ${props.maxWords} palavras`
               : ""}
           </p>
-          <p role="status">{dirty ? "Alterações ainda não salvas" : saved}</p>
-          {items.length ? (
-            <fieldset
-              disabled={pending || locked}
-              className="flex flex-col gap-3"
-            >
-              <legend>Checklist da cena</legend>
-              {items.map((item) => (
-                <label key={item} className="flex gap-3 py-2">
-                  <input
-                    type="checkbox"
-                    checked={marked.has(item)}
-                    onChange={(event) =>
-                      setChecklist(
-                        event.target.checked
-                          ? [...checklist, item]
-                          : checklist.filter((value) => value !== item)
-                      )
-                    }
-                  />
-                  {item}
-                </label>
-              ))}
-            </fieldset>
-          ) : null}
-          {error ? (
-            <div role="alert">
-              <p>{error}</p>
-              <Button
-                variant="outline"
-                onClick={() => setRetry((value) => value + 1)}
-              >
-                Tentar salvar novamente
-              </Button>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(content)
-                    setSaved("Texto copiado")
-                  } catch {
-                    setSaved("Selecione o texto da cena e copie manualmente.")
-                  }
-                }}
-              >
-                Copiar texto
-              </Button>
-              {expired ? (
-                <a
-                  href="/sign-in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block underline"
-                >
-                  Entrar novamente em outra aba para salvar
-                </a>
-              ) : null}
-              {locked && textId.current ? (
-                <a
-                  className="block underline"
-                  href={`/dashboard/texts/${textId.current}`}
-                >
-                  Abrir leitura — o texto enviado está preservado
-                </a>
-              ) : null}
-            </div>
+          <p role="status">
+            {draft.dirty ? "Alterações ainda não salvas" : draft.saved}
+          </p>
+          <SceneChecklist
+            items={draft.items}
+            checked={draft.checklist}
+            disabled={draft.pending || draft.locked}
+            onToggle={toggleItem}
+          />
+          {draft.error ? (
+            <SaveError
+              error={draft.error}
+              content={draft.content}
+              expired={draft.expired}
+              locked={draft.locked}
+              textId={draft.textId.current}
+              onRetry={() => draft.setRetry((value) => value + 1)}
+              onNotice={draft.setSaved}
+            />
           ) : null}
           <ReadingDataNotice />
-          {!review ? (
+          {!draft.review ? (
             <Button
               id="submit-text"
-              disabled={pending || locked}
-              onClick={() => {
-                const invalid = sceneSizeError(content)
-                if (invalid) setError(invalid)
-                else setReview(true)
-              }}
+              disabled={draft.pending || draft.locked}
+              onClick={askReview}
             >
               Enviar para leitura
             </Button>
           ) : (
-            <section
-              aria-label="Conferir envio"
-              className="flex flex-col gap-3 rounded-md border p-4"
-            >
-              <h2 className="font-medium">Confira antes de enviar</h2>
-              <p>
-                {words} palavras
-                {props.minWords && props.maxWords
-                  ? ` · Faixa pedida: ${props.minWords} a ${props.maxWords}`
-                  : ""}
-              </p>
-              {props.minWords &&
-              props.maxWords &&
-              (words < props.minWords || words > props.maxWords) ? (
-                <p>
-                  A cena está fora da extensão sugerida. Você pode ajustar o
-                  texto ou enviar assim mesmo.
-                </p>
-              ) : null}
-              <p>Itens ainda não marcados:</p>
-              <ul>
-                {items
-                  .filter((item) => !marked.has(item))
-                  .map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-              </ul>
-              {!items.some((item) => !marked.has(item)) ? (
-                <p>Nenhum item pendente.</p>
-              ) : null}
-              <p>Ao confirmar, esta versão fica congelada para a leitura.</p>
-              <Button
-                variant="outline"
-                disabled={pending}
-                onClick={() => setReview(false)}
-              >
-                Voltar a escrever
-              </Button>
-              <Button disabled={pending || locked} onClick={submit}>
-                {pending ? "Enviando…" : "Confirmar envio"}
-              </Button>
-            </section>
+            <ReviewPanel
+              words={draft.words}
+              minWords={props.minWords}
+              maxWords={props.maxWords}
+              missing={missing}
+              pending={draft.pending}
+              locked={draft.locked}
+              onBack={() => draft.setReview(false)}
+              onConfirm={draft.submit}
+            />
           )}
         </div>
       </div>
