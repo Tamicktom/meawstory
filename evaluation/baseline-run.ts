@@ -1,7 +1,7 @@
 //* Libraries imports
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import path from "node:path"
-import type { LanguageModelUsage } from "ai"
+import type { StructuredReading } from "@/lib/reading-contract"
 
 //* What one measurement of the reading writes to readings.json. The report is computed from it.
 export type ReadingUsage = {
@@ -11,14 +11,30 @@ export type ReadingUsage = {
   reasoningTokens: number | null
 }
 
+//* One model call inside a reading: the first request, or the retry after a server rejection.
+export type RecordedCall = {
+  sequence: number
+  outcome: "accepted" | "rejected" | "error"
+  rejection: string | null
+  detail: string | null
+  discardedQuotes: number
+  usage: ReadingUsage | null
+  durationMs: number
+}
+
 export type RecordedReading = {
   caseId: string
   run: number
   ok: boolean
   score: number | null
   content: string | null
+  //* Present since 1C-1: the reading as stored, with server-computed bands and total.
+  structured?: StructuredReading | null
+  //* Present since 1C-1: every call, so rejected attempts are measured and costed.
+  calls?: RecordedCall[]
   error: string | null
   durationMs: number
+  //* The sum over all calls of the reading.
   usage: ReadingUsage | null
   finishedAt: string
 }
@@ -79,12 +95,19 @@ export function writeBaselineRun(directory: string, run: BaselineRun): void {
   )
 }
 
-export function recordUsage(usage: LanguageModelUsage): ReadingUsage {
+export function sumUsage(calls: RecordedCall[]): ReadingUsage | null {
+  const known = calls.flatMap((call) => (call.usage ? [call.usage] : []))
+  if (known.length === 0) return null
+  const add = (pick: (usage: ReadingUsage) => number | null) =>
+    known.some((usage) => pick(usage) !== null)
+      ? known.reduce((total, usage) => total + (pick(usage) ?? 0), 0)
+      : null
+
   return {
-    inputTokens: usage.inputTokens ?? null,
-    cachedInputTokens: usage.inputTokenDetails.cacheReadTokens ?? null,
-    outputTokens: usage.outputTokens ?? null,
-    reasoningTokens: usage.outputTokenDetails.reasoningTokens ?? null,
+    inputTokens: add((usage) => usage.inputTokens),
+    cachedInputTokens: add((usage) => usage.cachedInputTokens),
+    outputTokens: add((usage) => usage.outputTokens),
+    reasoningTokens: add((usage) => usage.reasoningTokens),
   }
 }
 
@@ -93,7 +116,8 @@ export function failedReading(
   caseId: string,
   run: number,
   error: unknown,
-  durationMs: number
+  durationMs: number,
+  calls: RecordedCall[] = []
 ): RecordedReading {
   return {
     caseId,
@@ -101,9 +125,11 @@ export function failedReading(
     ok: false,
     score: null,
     content: null,
+    structured: null,
+    calls,
     error: error instanceof Error ? error.message : String(error),
     durationMs,
-    usage: null,
+    usage: sumUsage(calls),
     finishedAt: new Date().toISOString(),
   }
 }

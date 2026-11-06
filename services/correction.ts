@@ -1,10 +1,17 @@
 import { validateStructuredReading } from "@/lib/reading-contract"
 //* Libraries imports
-import { and, eq, gt, inArray } from "drizzle-orm"
+import { and, eq, gt, inArray, sql } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
-import { correction, type CorrectionStatus } from "@/database/schema"
+import {
+  correction,
+  readingCall,
+  type CorrectionStatus,
+  type ReadingFailureStage,
+} from "@/database/schema"
+import { callCost, priceFor } from "@/lib/model-pricing"
+import type { GradingCall } from "@/workflows/correction-grading"
 
 import { READING_TIMEOUT_MS } from "@/lib/reading-policy"
 import { expireReadings } from "@/services/reading"
@@ -106,10 +113,29 @@ async function findLatestActiveCorrection(textId: string) {
   return latestCorrection ?? null
 }
 
-async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
+type ReadingFailure = { stage: ReadingFailureStage; reason: string }
+
+//* IN_PROGRESS records when the workflow picked the attempt up; FAILED records where it stopped.
+async function updateCorrectionStatus(
+  id: string,
+  status: CorrectionStatus,
+  failure?: ReadingFailure
+) {
   await db
     .update(correction)
-    .set({ status })
+    .set({
+      status,
+      ...(status === "IN_PROGRESS"
+        ? { startedAt: sql`coalesce(${correction.startedAt}, now())` }
+        : {}),
+      ...(status === "FAILED"
+        ? {
+            finishedAt: sql`now()`,
+            failureStage: failure?.stage ?? null,
+            failureReason: failure?.reason.slice(0, 1000) ?? null,
+          }
+        : {}),
+    })
     .where(
       and(
         eq(correction.id, id),
@@ -128,7 +154,12 @@ async function updateCorrection(
   }
   const result = await db
     .update(correction)
-    .set(values)
+    //* The database clock, like created_at and started_at, so durations never mix clocks.
+    .set(
+      values.status === "COMPLETED"
+        ? { ...values, finishedAt: sql`now()` }
+        : values
+    )
     .where(
       and(
         eq(correction.id, id),
@@ -145,7 +176,49 @@ async function updateCorrection(
   return result[0] ?? null
 }
 
+type CallConfiguration = { modelId: string; promptVersion: string }
+
+function usageColumns(call: GradingCall) {
+  const usage = call.usage
+  return {
+    inputTokens: usage?.inputTokens ?? null,
+    cachedInputTokens: usage?.cachedInputTokens ?? null,
+    outputTokens: usage?.outputTokens ?? null,
+    reasoningTokens: usage?.reasoningTokens ?? null,
+  }
+}
+
+function pricedCost(call: GradingCall, modelId: string) {
+  const price = priceFor(modelId, call.startedAt)
+  const cost = price && call.usage ? callCost(call.usage, price) : null
+  return { price, costUsd: cost === null ? null : cost.toFixed(8) }
+}
+
+//* Keeps every model call with its tokens and cost, priced at the list price of its day (1C-6).
+async function recordCall(
+  correctionId: string,
+  call: GradingCall,
+  configuration: CallConfiguration
+) {
+  await db.insert(readingCall).values({
+    id: crypto.randomUUID(),
+    correctionId,
+    sequence: call.sequence,
+    outcome: call.outcome,
+    rejection: call.rejection,
+    detail: call.detail?.slice(0, 1000) ?? null,
+    discardedQuotes: call.discardedQuotes,
+    modelId: configuration.modelId,
+    promptVersion: configuration.promptVersion,
+    ...usageColumns(call),
+    ...pricedCost(call, configuration.modelId),
+    startedAt: call.startedAt,
+    durationMs: call.durationMs,
+  })
+}
+
 export const correctionService = {
+  recordCall,
   findAttemptSnapshot,
   insertCorrection,
   findCorrectionById,

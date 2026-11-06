@@ -16,9 +16,10 @@ import { createOpenAI } from "@ai-sdk/openai"
 import {
   failedReading,
   readBaselineRun,
-  recordUsage,
+  sumUsage,
   writeBaselineRun,
   type BaselineRun,
+  type RecordedCall,
   type RecordedReading,
 } from "@/evaluation/baseline-run"
 import {
@@ -27,9 +28,11 @@ import {
   validateReferenceSet,
   type ReferenceCase,
 } from "@/evaluation/reference-set"
+import { renderReadingMarkdown } from "@/lib/reading-markdown"
 import {
   CORRECTION_MODEL_ID,
   correctionInstructions,
+  gradeReading,
   requestCorrection,
 } from "@/workflows/correction-grading"
 
@@ -135,34 +138,53 @@ const queue = cases
   )
   .filter(({ item, number }) => !done.has(`${item.id}#${number}`))
 
+//* The same grading as production: one request, the server's validation and at most one retry.
 async function readOnce(
   item: ReferenceCase,
   number: number
 ): Promise<RecordedReading> {
   const started = Date.now()
+  const calls: RecordedCall[] = []
 
   try {
-    const { output, usage } = await requestCorrection(provider, {
-      themeTitle: item.theme.title,
-      themeDescription: item.theme.description,
-      textContent: item.text,
-      rubricTitle: item.rubric.title,
-      rubricContent: item.rubric.content,
-    })
+    const graded = await gradeReading(
+      (source, rejection) => requestCorrection(provider, source, rejection),
+      {
+        themeTitle: item.theme.title,
+        themeDescription: item.theme.description,
+        textContent: item.text,
+        rubricTitle: item.rubric.title,
+        rubricContent: item.rubric.content,
+        criteria: item.rubric.criteria,
+      },
+      (call) => {
+        calls.push({
+          sequence: call.sequence,
+          outcome: call.outcome,
+          rejection: call.rejection,
+          detail: call.detail,
+          discardedQuotes: call.discardedQuotes,
+          usage: call.usage,
+          durationMs: call.durationMs,
+        })
+      }
+    )
 
     return {
       caseId: item.id,
       run: number,
       ok: true,
-      score: output.score,
-      content: output.content,
+      score: Number(graded.score),
+      content: renderReadingMarkdown(graded.reading, item.rubric.criteria),
+      structured: graded.reading,
+      calls,
       error: null,
       durationMs: Date.now() - started,
-      usage: recordUsage(usage),
+      usage: sumUsage(calls),
       finishedAt: new Date().toISOString(),
     }
   } catch (error) {
-    return failedReading(item.id, number, error, Date.now() - started)
+    return failedReading(item.id, number, error, Date.now() - started, calls)
   }
 }
 

@@ -3,6 +3,7 @@ import { correctionConfiguration } from "@/workflows/correction-config"
 import { and, eq, gt, inArray, isNull, lt, sql, desc } from "drizzle-orm"
 import { db } from "@/database"
 import { correction, text, theme, rubric } from "@/database/schema"
+import { logEvent } from "@/lib/telemetry"
 import {
   readingLimitReset,
   READING_TIMEOUT_MS,
@@ -19,16 +20,40 @@ export class ReadingError extends Error {
   }
 }
 const active = inArray(correction.status, ["PENDING", "IN_PROGRESS"])
+//* A PENDING attempt never left the queue; an IN_PROGRESS one stalled while being read (1C-5).
 export async function expireReadings() {
-  await db
+  const expired = await db
     .update(correction)
-    .set({ status: "FAILED" })
+    .set({
+      status: "FAILED",
+      finishedAt: sql`now()`,
+      failureStage: sql`CASE WHEN ${correction.status} = 'PENDING' THEN 'queue_timeout' ELSE 'processing_timeout' END`,
+      failureReason: `No result within ${READING_TIMEOUT_MS / 60000} minutes`,
+    })
     .where(
       and(
         active,
         lt(correction.createdAt, new Date(Date.now() - READING_TIMEOUT_MS))
       )
     )
+    .returning({
+      id: correction.id,
+      failureStage: correction.failureStage,
+      modelId: correction.modelId,
+      promptVersion: correction.promptVersion,
+    })
+
+  for (const attempt of expired) {
+    logEvent("error", "reading.failed", {
+      correctionId: attempt.id,
+      stage: attempt.failureStage,
+      modelId: attempt.modelId,
+      promptVersion: attempt.promptVersion,
+      reason: "timeout",
+    })
+  }
+
+  return expired.length
 }
 
 // All admission paths share the same lock, including edits to existing drafts.

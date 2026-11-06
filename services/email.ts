@@ -1,6 +1,6 @@
 //* Libraries imports
 import { randomUUID } from "node:crypto"
-import { mkdir, writeFile } from "node:fs/promises"
+import { mkdir, rename, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { Resend } from "resend"
 
@@ -48,7 +48,10 @@ async function writeToOutbox(message: EmailMessage) {
   )
 
   await mkdir(directory, { recursive: true })
-  await writeFile(file, JSON.stringify(message, null, 2))
+  //* Written aside and renamed, so a reader never sees a half-written email.
+  const partial = `${file}.partial`
+  await writeFile(partial, JSON.stringify(message, null, 2))
+  await rename(partial, file)
 
   if (process.env.NODE_ENV !== "test") {
     console.info(`[email] "${message.subject}" para ${message.to}: ${file}`)

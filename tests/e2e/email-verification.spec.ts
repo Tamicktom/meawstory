@@ -77,7 +77,7 @@ test.describe("email verification", () => {
 
     await page.getByRole("button", { name: "Receber a leitura" }).click()
 
-    await expect(page.getByText(savedCorrection.content)).toBeVisible({
+    await expect(page.getByText(savedCorrection.opening)).toBeVisible({
       timeout: 45_000,
     })
     await expect(page.getByText("Pontuação: 640 de 1000")).toBeVisible()

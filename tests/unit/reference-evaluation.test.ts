@@ -3,9 +3,10 @@ import { describe, expect, it } from "bun:test"
 
 //* Local imports
 import { buildBaselineReport } from "@/evaluation/baseline-report"
+import { recordUsage } from "@/workflows/correction-grading"
 import {
   failedReading,
-  recordUsage,
+  sumUsage,
   type BaselineRun,
   type RecordedReading,
 } from "@/evaluation/baseline-run"
@@ -240,6 +241,38 @@ describe("recorded readings", () => {
       outputTokens: 1700,
       reasoningTokens: 700,
     })
+  })
+
+  it("adds the usage of every call of a reading, keeping null when no call reported a count", () => {
+    const usage = {
+      inputTokens: 100,
+      cachedInputTokens: null,
+      outputTokens: 50,
+      reasoningTokens: 10,
+    }
+    const call = {
+      sequence: 1,
+      outcome: "rejected" as const,
+      rejection: null,
+      detail: null,
+      discardedQuotes: 0,
+      durationMs: 1,
+      usage,
+    }
+
+    expect(
+      sumUsage([
+        call,
+        { ...call, outcome: "accepted", usage },
+        { ...call, usage: null },
+      ])
+    ).toEqual({
+      inputTokens: 200,
+      cachedInputTokens: null,
+      outputTokens: 100,
+      reasoningTokens: 20,
+    })
+    expect(sumUsage([])).toBeNull()
   })
 
   it("keeps a failed attempt with its message", () => {

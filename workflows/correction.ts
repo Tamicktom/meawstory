@@ -8,15 +8,31 @@ import { openAI } from "@/services/ai"
 import { correctionService } from "@/services/correction"
 import { rubricService } from "@/services/rubric"
 import { textService } from "@/services/text"
-import type { CorrectionStatus } from "@/database/schema"
+import { checkReadingHealth } from "@/services/reading-alerts"
+import type { CorrectionStatus, ReadingFailureStage } from "@/database/schema"
+import type { StructuredReading } from "@/lib/reading-contract"
+import { renderReadingMarkdown } from "@/lib/reading-markdown"
+import { logEvent } from "@/lib/telemetry"
 
 //* Local imports
 import {
-  formatCorrectionScore,
+  gradeReading,
+  ReadingRejectedError,
   requestCorrection,
-  type CorrectionSource,
+  type CallModel,
+  type GradingCall,
 } from "@/workflows/correction-grading"
 import { readSavedCorrection } from "@/workflows/correction-stand-in"
+
+type GradingSource = {
+  themeTitle: string
+  themeDescription: string
+  textContent: string
+  rubricTitle: string
+  rubricContent: string
+}
+
+const VALIDATION_FAILURE = "Reading rejected by validation"
 
 type GradedCorrection = {
   textId: string
@@ -25,6 +41,7 @@ type GradedCorrection = {
   rubricContent: string
   content: string
   score: string
+  structuredResult: StructuredReading
   status: CorrectionStatus
 }
 
@@ -32,6 +49,7 @@ export async function correctText(textId: string, reservedId?: string) {
   "use workflow"
 
   let correctionId = reservedId
+  let stage: ReadingFailureStage = "admission"
   try {
     const textToCorrect = await getText(textId)
     const themeRubric = await getRubric(textToCorrect.themeId)
@@ -51,6 +69,7 @@ export async function correctText(textId: string, reservedId?: string) {
     )
     await updateCorrectionStatus(correctionId, "IN_PROGRESS")
 
+    stage = "grading"
     const graded = await gradeText(correctionId, {
       themeTitle: textToCorrect.themeTitle,
       themeDescription: textToCorrect.themeDescription,
@@ -59,17 +78,27 @@ export async function correctText(textId: string, reservedId?: string) {
       rubricContent: themeRubric.content,
     })
 
-    return await updateCorrection(correctionId, {
+    stage = "saving"
+    const saved = await updateCorrection(correctionId, {
       textId: textToCorrect.id,
       textContent: textToCorrect.content,
       rubricId: themeRubric.id,
       rubricContent: themeRubric.content,
       content: graded.content,
       score: graded.score,
+      structuredResult: graded.structuredResult,
       status: "COMPLETED",
     })
+    await reportCompleted(saved.correctionId)
+    return saved
   } catch (error) {
-    if (correctionId) await updateCorrectionStatus(correctionId, "FAILED")
+    if (correctionId) {
+      const reason = error instanceof Error ? error.message : String(error)
+      await markFailed(correctionId, {
+        stage: reason.startsWith(VALIDATION_FAILURE) ? "validation" : stage,
+        reason,
+      })
+    }
     throw error
   }
 }
@@ -132,6 +161,47 @@ async function updateCorrectionStatus(id: string, status: CorrectionStatus) {
   "use step"
 
   await correctionService.updateCorrectionStatus(id, status)
+  if (status === "IN_PROGRESS")
+    logEvent("info", "reading.started", { correctionId: id })
+}
+
+//* Records where the attempt stopped, logs it with its configuration and checks the failure rate.
+async function markFailed(
+  id: string,
+  failure: { stage: ReadingFailureStage; reason: string }
+) {
+  "use step"
+
+  await correctionService.updateCorrectionStatus(id, "FAILED", failure)
+  const attempt = await correctionService.findAttemptSnapshot(id)
+  logEvent("error", "reading.failed", {
+    correctionId: id,
+    stage: attempt?.failureStage ?? failure.stage,
+    reason: failure.reason,
+    modelId: attempt?.modelId,
+    promptVersion: attempt?.promptVersion,
+  })
+  await checkReadingHealth()
+}
+
+async function reportCompleted(id: string) {
+  "use step"
+
+  const attempt = await correctionService.findAttemptSnapshot(id)
+  logEvent("info", "reading.completed", {
+    correctionId: id,
+    modelId: attempt?.modelId,
+    promptVersion: attempt?.promptVersion,
+    queueMs:
+      attempt?.startedAt && attempt.createdAt
+        ? attempt.startedAt.getTime() - attempt.createdAt.getTime()
+        : null,
+    timeToReadingMs:
+      attempt?.finishedAt && attempt.createdAt
+        ? attempt.finishedAt.getTime() - attempt.createdAt.getTime()
+        : null,
+  })
+  await checkReadingHealth()
 }
 
 export async function getText(textId: string) {
@@ -158,10 +228,12 @@ export async function getRubric(themeId: string) {
   return result
 }
 
-async function gradeText(correctionId: string, source: CorrectionSource) {
-  "use step"
+type AttemptSnapshot = Awaited<
+  ReturnType<typeof correctionService.findAttemptSnapshot>
+>
 
-  const attempt = await correctionService.findAttemptSnapshot(correctionId)
+//* The attempt must still carry this deployment's configuration and the source it was reserved with.
+function frozenCriteria(attempt: AttemptSnapshot, source: GradingSource) {
   const config = correctionConfiguration()
   if (
     !attempt ||
@@ -180,32 +252,68 @@ async function gradeText(correctionId: string, source: CorrectionSource) {
   )
     throw new FatalError("Reading source changed before grading")
 
-  const saved = readSavedCorrection()
+  //* The structured reading needs the frozen criteria: they define coverage, maxima and bands.
+  if (!attempt.rubricCriteria)
+    throw new FatalError("Reading has no frozen rubric criteria")
 
-  if (saved) {
-    return gradedResult(saved.content, saved.score)
-  }
-
-  const { output } = await requestCorrection(openAI, source)
-
-  return gradedResult(output.content, output.score)
+  return { attempt, criteria: attempt.rubricCriteria }
 }
 
-function gradedResult(content: string, score: number) {
-  let formattedScore: string
+//* Outside production, the end-to-end stand-in replaces OpenAI and still goes through validation.
+function modelCaller(): CallModel {
+  const saved = readSavedCorrection()
+  return saved
+    ? async () => ({ output: saved, usage: null })
+    : (gradingSource, rejection) =>
+        requestCorrection(openAI, gradingSource, rejection)
+}
+
+function callRecorder(correctionId: string) {
+  const config = correctionConfiguration()
+
+  return async (call: GradingCall) => {
+    await correctionService.recordCall(correctionId, call, config)
+    logEvent(call.outcome === "accepted" ? "info" : "warn", "reading.call", {
+      correctionId,
+      sequence: call.sequence,
+      outcome: call.outcome,
+      rejection: call.rejection,
+      detail: call.detail,
+      discardedQuotes: call.discardedQuotes,
+      durationMs: call.durationMs,
+      modelId: config.modelId,
+      promptVersion: config.promptVersion,
+    })
+  }
+}
+
+async function gradeText(correctionId: string, source: GradingSource) {
+  "use step"
+
+  const { attempt, criteria } = frozenCriteria(
+    await correctionService.findAttemptSnapshot(correctionId),
+    source
+  )
 
   try {
-    formattedScore = formatCorrectionScore(score)
+    const graded = await gradeReading(
+      modelCaller(),
+      { ...source, textContent: attempt.textContent, criteria },
+      callRecorder(correctionId)
+    )
+
+    return {
+      content: renderReadingMarkdown(graded.reading, criteria),
+      score: graded.score,
+      structuredResult: graded.reading,
+    }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Correction score is invalid."
-
-    throw new FatalError(message)
-  }
-
-  return {
-    content,
-    score: formattedScore,
+    //* A second rejection is final; retrying the step would only pay for more of the same.
+    if (error instanceof ReadingRejectedError)
+      throw new FatalError(
+        `${VALIDATION_FAILURE}: ${error.rejection.code} (${error.rejection.detail})`
+      )
+    throw error
   }
 }
 
@@ -240,6 +348,7 @@ async function updateCorrection(
   const updated = await correctionService.updateCorrection(correctionId, {
     content: graded.content,
     score: graded.score,
+    structuredResult: graded.structuredResult,
     textContent: currentText.content,
     rubricId: graded.rubricId,
     rubricContent: currentRubric.content,

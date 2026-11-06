@@ -22,7 +22,8 @@
     "email:test": "bun scripts/send-test-email.ts",
     "eval:forms": "bun scripts/reference-forms.ts",
     "eval:baseline": "bun scripts/measure-reading.ts",
-    "eval:report": "bun scripts/reading-report.ts"
+    "eval:report": "bun scripts/reading-report.ts",
+    "ops:report": "bun scripts/reading-ops.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.109",

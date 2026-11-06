@@ -18,7 +18,11 @@ Runtime is Bun. Auth is Better Auth with email and password (`lib/auth.ts`). The
 
 ## Reading evaluation
 
-`evaluation/reference` holds the reference set of scenes for measuring the reading; its README explains how to measure and how to change the set. The reading's model call is `requestCorrection` in `workflows/correction-grading.ts`, shared by the workflow and `bun run eval:baseline`. Before changing the model, the instructions, or the prompt, measure the new setup with `bun run eval:baseline --label <name>` and compare its report with the latest one in `evaluation/reference/baselines`. A baseline sends every scene to OpenAI, so run it only when the task calls for a measurement.
+`evaluation/reference` holds the reference set of scenes for measuring the reading; its README explains how to measure and how to change the set. The reading is `gradeReading` in `workflows/correction-grading.ts`: one model call (`requestCorrection`), server validation in `lib/reading-assembly.ts`, and at most one retry. The workflow and `bun run eval:baseline` share it. Before changing the model, the instructions, or the prompt, measure the new setup with `bun run eval:baseline --label <name>` and compare its report with the latest one in `evaluation/reference/baselines`. A baseline sends every scene to OpenAI, so run it only when the task calls for a measurement.
+
+## Reading operations
+
+`bun run ops:report [--since 7d]` prints time to reading, failure rate by stage, and cost per reading from the database. Logs are one JSON object per line (`lib/telemetry.ts`); never put scene or reading text in them. Prices live in `lib/model-pricing.ts`: when a price changes, add an entry with its `effectiveFrom` and keep the old one.
 
 ## Local database
 

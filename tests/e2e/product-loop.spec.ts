@@ -104,7 +104,7 @@ for (const width of [1280, 320, 390]) {
       await expect(
         page.getByRole("heading", { name: themeTitle })
       ).toBeVisible()
-      await expect(page.getByText(savedCorrection.content)).toBeVisible()
+      await expect(page.getByText(savedCorrection.opening)).toBeVisible()
       await expect(page.getByText("Pontuação: 640 de 1000")).toBeVisible()
       await expect(page.getByText(submittedText)).toBeVisible()
       expect(
