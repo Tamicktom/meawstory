@@ -1,0 +1,181 @@
+versao_conjunto,caso,criterio,maximo,pontuacao,observacao
+1,acao-01,Aderência ao tema,150,20,"Resumo de reconciliação sem travessia, vão ou pessoa lá embaixo."
+1,acao-01,Movimento com consequência,200,10,Não há espaço percorrido nem obstáculo: 'As duas desceram'.
+1,acao-01,Clareza em velocidade,200,15,Não há posições a acompanhar; tudo é narrado de fora.
+1,acao-01,Pressão e escolha,250,30,Desejo e tristeza só rotulados: 'sentiu uma tristeza grande'.
+1,acao-01,Ritmo,200,15,Andamento de sumário uniforme do começo ao fim.
+1,acao-02,Aderência ao tema,150,60,"Feira e rua fechada aparecem, mas falta a escolha que ganha tempo e custa outra coisa."
+1,acao-02,Movimento com consequência,200,55,"Há trajeto, mas a rua fechada só troca uma rua por outra 'parecida'."
+1,acao-02,Clareza em velocidade,200,70,"Dá para saber que ela corre e Caio vem atrás, mas a geografia é vaga."
+1,acao-02,Pressão e escolha,250,35,Custo genérico ('ia perder tudo') e adrenalina rotulada.
+1,acao-02,Ritmo,200,30,Frases iguais e repetição 'correu e correu e correu' sem variação real.
+1,acao-03,Aderência ao tema,150,125,"Chuva, beiral, vão, escada verde e homem subindo mudam a cena; envelope importa no fim."
+1,acao-03,Movimento com consequência,200,150,O escorregão no beiral muda o plano e leva ao salto e à separação.
+1,acao-03,Clareza em velocidade,200,120,O trecho em que Jordana perde Beatriz deixa a posição ambígua demais.
+1,acao-03,Pressão e escolha,250,190,Entregar o envelope para pular leve e Beatriz rasgá-lo mostram o custo.
+1,acao-03,Ritmo,200,140,Frases curtas na hora do salto; alguns trechos de transição ficam lisos.
+1,acao-03-r1,Aderência ao tema,150,135,"Tema inteiro em cena: telha, beiral, laje, vão, homem subindo, envelope rasgado."
+1,acao-03-r1,Movimento com consequência,200,165,A caixa-d'água orienta o trajeto e o desequilíbrio no beiral decide o salto.
+1,acao-03-r1,Clareza em velocidade,200,170,A caixa-d'água como âncora resolve quem está onde mesmo quando Bia some.
+1,acao-03-r1,Pressão e escolha,250,210,A escolha é explícita e custa: 'pular leve e deixar Beatriz com a coisa'.
+1,acao-03-r1,Ritmo,200,150,Ritmo bom no salto; a frase final explica um pouco o custo.
+1,acao-04,Aderência ao tema,150,140,"Procissão, portão com corrente, farol e a disputa pela casa mudam o trajeto."
+1,acao-04,Movimento com consequência,200,170,"Cada trecho cobra: cera no pulso, jeans rasgado, capô, perna sangrando."
+1,acao-04,Clareza em velocidade,200,160,"Dá para seguir procissão, padaria, estacionamento e esquina com marcação de hora."
+1,acao-04,Pressão e escolha,250,210,"Pagar o pipoqueiro e rasgar a calça é o preço, e a tia cobra no fim."
+1,acao-04,Ritmo,200,160,Cortes de hora ('Seis e vinte e oito.') e frases curtas acompanham a pressa.
+1,acao-05,Aderência ao tema,150,140,"Cumeeira, calha, vão e o homem do carro prata determinam a escolha; envelope muda de mãos."
+1,acao-05,Movimento com consequência,200,165,"Telhas soltas, calha cedendo e Dalva atrás tornam o salto inviável."
+1,acao-05,Clareza em velocidade,200,180,"Posições claras: cumeeira, calha, Dalva agarrada, porta do pátio."
+1,acao-05,Pressão e escolha,250,230,Ela desiste do salto por Dalva e fica entre ela e a porta; custo visível.
+1,acao-05,Ritmo,200,175,Pausa do cálculo e frases secas ('A calha cedeu dois dedos') têm tempo de medo.
+1,luta-01,Aderência ao tema,150,15,Não há confronto físico; a discussão substitui a luta.
+1,luta-01,Causa e efeito físico,200,10,Nenhum golpe ou agarrão; corpos não mudam.
+1,luta-01,Espaço e recursos,200,20,"Cozinha e porta nomeadas, mas nada é usado."
+1,luta-01,O que os corpos protegem,250,40,"Motivo só declarado em fala ('Eu te amo, mas não dá mais')."
+1,luta-01,Coreografia legível,200,10,Não há coreografia a acompanhar.
+1,luta-02,Aderência ao tema,150,60,"Há luta e plateia, mas a regra fica vaga e as trocas não se diferenciam."
+1,luta-02,Causa e efeito físico,200,50,Socos em sequência sem rastro: 'O Dênis deu um gancho. O Paulão deu um direto'.
+1,luta-02,Espaço e recursos,200,30,"Galpão e círculo nomeados, sem nenhum papel na luta."
+1,luta-02,O que os corpos protegem,250,60,A dívida do irmão só aparece no fim; a recusa à falta é explicada por 'era honesta'.
+1,luta-02,Coreografia legível,200,35,A prosa lista golpes e vira sumário de violência.
+1,luta-03,Aderência ao tema,150,140,"Porta que abre para dentro, Davi dormindo, panela e cacos moldam a luta."
+1,luta-03,Causa e efeito físico,200,175,O corte no polegar e a maçaneta nas costelas mudam o que cada uma pode fazer.
+1,luta-03,Espaço e recursos,200,180,"Cadeira, copo, panela de feijão e porta conduzem a briga com geografia clara."
+1,luta-03,O que os corpos protegem,250,225,Joana bloqueia sem bater e oferece o pano; recusa e cuidado mostram o conflito.
+1,luta-03,Coreografia legível,200,170,Imagens precisas ('sangue com feijão') e pausa que muda a luta.
+1,luta-03-r1,Aderência ao tema,150,140,"Porta que abre para dentro, Davi dormindo, panela e cacos moldam a luta."
+1,luta-03-r1,Causa e efeito físico,200,175,O corte e a maçaneta nas costelas alteram o gesto seguinte e levam à parada.
+1,luta-03-r1,Espaço e recursos,200,180,"Cadeira, copo, feijão e porta conduzem a briga, sempre legível."
+1,luta-03-r1,O que os corpos protegem,250,225,Bloquear a porta sem atacar e jogar o pano mostram o que Joana protege.
+1,luta-03-r1,Coreografia legível,200,170,Imagem clara e pausa decisiva; estilo contido combina com as duas.
+1,luta-04,Aderência ao tema,150,145,"Regra do avô, risco de giz, tia com apito e o barco mudam como se luta."
+1,luta-04,Causa e efeito físico,200,185,"Cada troca deixa rastro: o tapa ensina, o braço lateja e define a terceira."
+1,luta-04,Espaço e recursos,200,160,O risco de giz e os caixotes conduzem a luta; o pátio fora disso pesa pouco.
+1,luta-04,O que os corpos protegem,250,235,A mão que fecha e abre e a irmã que vê mostram o conflito sem explicação.
+1,luta-04,Coreografia legível,200,180,Pausas curtas ('Abriu.') e imagens de ofício ('quem descarrega caminhão').
+1,luta-05,Aderência ao tema,150,80,"Briga na cozinha com panela, pia e porta, mas usadas de modo mecânico."
+1,luta-05,Causa e efeito físico,200,75,"Há sequência; a dor na mão abre a fuga, o resto não deixa rastro."
+1,luta-05,Espaço e recursos,200,110,"Panela, pia e porta para dentro mudam alguma coisa do que se pode fazer."
+1,luta-05,O que os corpos protegem,250,60,Motivo só declarado ('Você não vai sair daqui'); fim resumido.
+1,luta-05,Coreografia legível,200,45,Lista de golpes; o aviso ao sistema no meio quebra a cena e não é avaliado como ofício.
+1,romance-01,Aderência ao tema,150,40,"Toldo e chuva aparecem, mas sem casaco, detalhe físico nem afastamento."
+1,romance-01,Atenção entre pessoas,200,25,Nenhum detalhe da outra pessoa é notado.
+1,romance-01,Virada do vínculo,200,55,Beijo e mudança anunciados ('tudo seria diferente') sem serem mostrados.
+1,romance-01,Sentimento específico,250,30,Sentimento só rotulado: 'um amor enorme'.
+1,romance-01,Intimidade na prosa,200,20,A prosa resume o momento inteiro.
+1,romance-02,Aderência ao tema,150,65,"Copo, mala e quase-dito aparecem, mas o objeto não é das duas e a cena avança até o amanhecer."
+1,romance-02,Atenção entre pessoas,200,50,Ele 'olhava para ela'; gestos genéricos até o abraço.
+1,romance-02,Virada do vínculo,200,70,"'Eu volto' e o abraço anunciam a mudança, que é resumida no fim."
+1,romance-02,Sentimento específico,250,45,Emoção em rótulo: 'coração partido em mil pedaços'.
+1,romance-02,Intimidade na prosa,200,35,Narração explica o que cada um sente e fecha com resumo.
+1,romance-02-r1,Aderência ao tema,150,135,"Copo do Pernalonga, mala etiquetada e quase-dito trocado por 'Lá faz frio em março?'."
+1,romance-02-r1,Atenção entre pessoas,200,180,Ela vê o reflexo dele; ele vira o copo; atenção mútua em vários momentos.
+1,romance-02-r1,Virada do vínculo,200,180,"Ele leva o copo e diz 'Não é piada'; ela senta ao lado: 'Março, então'."
+1,romance-02-r1,Sentimento específico,250,225,"Detalhes delas (feira do Bixiga, orelha apagada) tornam o afeto intransferível."
+1,romance-02-r1,Intimidade na prosa,200,180,O não dito carrega a cena; frases curtas e gestos sem resumo final.
+1,romance-03,Aderência ao tema,150,140,"Toldo pequeno, casaco não vestido e a frase do jantar conduzem o toque e o calado."
+1,romance-03,Atenção entre pessoas,200,180,"Mangas, dentes batendo, ombro no peito: atenção mútua com resposta."
+1,romance-03,Virada do vínculo,200,180,"Bruno sai na chuva e deixa o passo claro: 'Se você vier, traz meu casaco'."
+1,romance-03,Sentimento específico,250,220,"Cedro e cigarro, mangas compridas, frase dita ao pai: afeto desta dupla."
+1,romance-03,Intimidade na prosa,200,170,Silêncios fortes; a recordação da frase do jantar explica um pouco.
+1,romance-04,Aderência ao tema,150,105,"Copo azul, carregador e quase-dito duas vezes, mas a cena avança até o dia nascer."
+1,romance-04,Atenção entre pessoas,200,110,"Diana nota a hesitação e os dedos se tocam no vidro, com pouca resposta."
+1,romance-04,Virada do vínculo,200,130,"Confissão e promessa de Natal visíveis, mas resolvidas em resumo."
+1,romance-04,Sentimento específico,250,115,"O vinho barato de sexta é delas, soterrado por fórmulas prontas."
+1,romance-04,Intimidade na prosa,200,70,Metáforas empilhadas repetem a emoção ('pintando o céu de esperança').
+1,romance-05,Aderência ao tema,150,145,"Copo de requeijão, casaco remendado e mala aberta são o material da cena."
+1,romance-05,Atenção entre pessoas,200,190,Neide vê o polegar no remendo; Ilda lê a boca aberta 'as duas vezes'.
+1,romance-05,Virada do vínculo,200,175,"O casaco deixado é um convite claro, embora a resposta fique em aberto."
+1,romance-05,Sentimento específico,250,235,"Doce de abóbora, linha um tom mais escura, máquina de costura: só delas."
+1,romance-05,Intimidade na prosa,200,180,Calado e gesto sustentam tudo; a última frase explica de leve.
+1,dialogo-01,Aderência ao tema,150,15,Conversa resumida em narração; não há cena conduzida por fala.
+1,dialogo-01,Vozes separáveis,200,10,Não há falas para distinguir vozes.
+1,dialogo-01,Subtexto e pressão,200,20,Segredo dito e resolvido em sumário.
+1,dialogo-01,Gente atrás das falas,250,35,Desejos só informados ('tinha o direito de saber').
+1,dialogo-01,Fala que parece fala,200,10,Não há fala direta; só exposição.
+1,dialogo-02,Aderência ao tema,150,70,"Banco, memória e pedido existem, mas a conversa não circula: tudo vai direto."
+1,dialogo-02,Vozes separáveis,200,25,As falas são intercambiáveis e ecoam uma à outra.
+1,dialogo-02,Subtexto e pressão,200,20,Tudo dito de frente e resolvido na hora.
+1,dialogo-02,Gente atrás das falas,250,55,O pedido é anunciado e aceito sem resistência.
+1,dialogo-02,Fala que parece fala,200,25,Exposição com travessão: 'Eu sei que nós brigamos há dez anos'.
+1,dialogo-03,Aderência ao tema,150,130,"Trânsito, bolo e segredo do desemprego entram na conversa; sair do carro não é considerado."
+1,dialogo-03,Vozes separáveis,200,165,Kátia pressiona com datas e fatos; Lúcio desvia com rádio e 'não é o momento'.
+1,dialogo-03,Subtexto e pressão,200,180,A frase da vergonha acerta mais do que ela queria e muda o fim.
+1,dialogo-03,Gente atrás das falas,250,220,Desvios de Lúcio e ultimato de Kátia combinam com quem eles são.
+1,dialogo-03,Fala que parece fala,200,180,"Falas curtas, cortes e 'tá' soam ditos; o rádio marca o silêncio."
+1,dialogo-03-r1,Aderência ao tema,150,130,"Trânsito, bolo e segredo entram na conversa; sair do carro não é considerado."
+1,dialogo-03-r1,Vozes separáveis,200,160,"Vozes distintas no que defendem, mas a fala ficou mais uniforme e formal."
+1,dialogo-03-r1,Subtexto e pressão,200,180,A frase sobre vergonha muda o rumo e o fim registra o acordo.
+1,dialogo-03-r1,Gente atrás das falas,250,220,Desvio de Lúcio e ultimato de Kátia são estratégias coerentes.
+1,dialogo-03-r1,Fala que parece fala,200,170,"Cortes bons, mas 'está bom?' e 'estava gripada' soam menos orais."
+1,dialogo-04,Aderência ao tema,150,145,"Estacionamento, ipê, sítio e prato posto no domingo conduzem a conversa."
+1,dialogo-04,Vozes separáveis,200,180,Gilda seca e acusadora; Ester defensiva e evasiva; vozes inconfundíveis.
+1,dialogo-04,Subtexto e pressão,200,190,A conversa circula no café e no padre e para no prato posto: 'Todo domingo'.
+1,dialogo-04,Gente atrás das falas,250,235,Pedido da chave e 'Não sozinha' mostram o que cada uma quer.
+1,dialogo-04,Fala que parece fala,200,185,Interrupções e detalhes ('Isso aqui é horrível sem açúcar') soam vivos.
+1,dialogo-05,Aderência ao tema,150,140,"Dutra parada, caminhão de melancia e casamento entram na fala; sair do carro fica no acostamento."
+1,dialogo-05,Vozes separáveis,200,190,Vó Zélia e Rafael têm desejos e ritmos próprios sem gíria decorativa.
+1,dialogo-05,Subtexto e pressão,200,180,O anel visto no Natal e 'Por causa da sua mãe' apertam até o pedido de perdão.
+1,dialogo-05,Gente atrás das falas,250,230,A avó chega ao pedido pela melancia e pelo pavê; Rafael se esquiva e cede.
+1,dialogo-05,Fala que parece fala,200,185,Fala muito oral e específica: 'Então traz o próximo'.
+1,suspense-01,Aderência ao tema,150,35,"Luz acesa, mas sem leitura lenta, som estranho ou medo aberto no fim."
+1,suspense-01,Uma pergunta aberta,200,25,A pergunta é respondida no segundo parágrafo pela vizinha.
+1,suspense-01,Informação controlada,200,30,A explicação é despejada logo e confirmada por bilhete.
+1,suspense-01,Aposta humana,250,25,Nada a perder; o medo é rotulado e descartado.
+1,suspense-01,Atmosfera na prosa,200,20,Sem detalhe sensorial que inquiete.
+1,suspense-02,Aderência ao tema,150,60,"Casa e degrau aparecem, mas a planta é descrita e o fim é explicado depois."
+1,suspense-02,Uma pergunta aberta,200,45,A pergunta é anunciada no início e respondida pelo narrador.
+1,suspense-02,Informação controlada,200,35,"Narrador onisciente entrega motivo, plano e identidade."
+1,suspense-02,Aposta humana,250,40,Medo nomeado ('ficou com muito medo') sem algo concreto em risco.
+1,suspense-02,Atmosfera na prosa,200,30,"Clichês ('noite escura e tempestuosa', 'silêncio terrível')."
+1,suspense-03,Aderência ao tema,150,135,"Luz, xícara fora do lugar, gotejar e cortina fechada fazem a leitura lenta pedida."
+1,suspense-03,Uma pergunta aberta,200,165,Cada detalhe reposiciona a dúvida; o box vazio resolve um medo e a porta abre outro.
+1,suspense-03,Informação controlada,200,165,"A memória dela é a fonte das pistas, com a alça da xícara como erro de um palmo."
+1,suspense-03,Aposta humana,250,160,Ela teme perder a confiança na própria memória; Caíque fica pouco concreto.
+1,suspense-03,Atmosfera na prosa,200,175,Taco que estala e pingo regular sustentam o tempo da suspeita.
+1,suspense-03-r1,Aderência ao tema,150,145,"Leitura lenta, xícara, gotejar e a chave do Caíque fazem do tema a fonte do medo."
+1,suspense-03-r1,Uma pergunta aberta,200,185,"O box molhado transforma a pergunta, e o fim a deixa aberta: trancar não muda nada."
+1,suspense-03-r1,Informação controlada,200,185,A alça virada e a chave não vista ganham sentido com a espuma no ralo.
+1,suspense-03-r1,Aposta humana,250,210,O silêncio do Caíque assusta mais que o banheiro; a mensagem apagada mostra o risco.
+1,suspense-03-r1,Atmosfera na prosa,200,180,"Detalhes escolhidos (espuma se desfazendo, duas voltas) têm o tempo do medo."
+1,suspense-04,Aderência ao tema,150,145,"A casa conhecida é a fonte da tensão: degrau, gaveta, despensa de duas portas."
+1,suspense-04,Uma pergunta aberta,200,180,Onde ele está e o que quer se complica até o encontro pelo vão.
+1,suspense-04,Informação controlada,200,185,A gaveta que guincha revela o intruso; a voz e o cofre reposicionam tudo.
+1,suspense-04,Aposta humana,250,225,As escrituras e a sobrinha dão a Odete algo concreto a perder.
+1,suspense-04,Atmosfera na prosa,200,185,"Retângulo de luz, cheiro de sabão e cebola, a vassoura: objetos trabalham."
+1,suspense-05,Aderência ao tema,150,85,"Leitura do quarto bem feita, mas fecha com o parágrafo de revelação que o tema veda."
+1,suspense-05,Uma pergunta aberta,200,110,A pergunta cresce até 'errado' e depois é inteiramente respondida no dia seguinte.
+1,suspense-05,Informação controlada,200,90,"Bom controle até a confissão, que despeja a explicação."
+1,suspense-05,Aposta humana,250,120,"A apresentação dá algo a perder, mas o fim 'muito aplaudida' esvazia a aposta."
+1,suspense-05,Atmosfera na prosa,200,130,Zumbido e travesseiro amassado trabalham; o último parágrafo vira relatório.
+1,virada-01,Aderência ao tema,150,20,"Mala citada, sem objeto, segunda arrumação nem decisão."
+1,virada-01,Antes e depois,200,20,Não há momento de mudança: 'não precisava decidir agora'.
+1,virada-01,Vida concreta em volta da decisão,200,25,Reflexão abstrata sem objeto que participe.
+1,virada-01,Virada merecida,250,25,Nada na cena prepara uma escolha.
+1,virada-01,Prosa interior,200,25,Pensamentos genéricos: 'A vida é cheia de escolhas difíceis'.
+1,virada-02,Aderência ao tema,150,70,"Chave e samambaia presentes, mas a decisão chega por discurso."
+1,virada-02,Antes e depois,200,70,A decisão é declarada; a chave na gaveta é a única consequência.
+1,virada-02,Vida concreta em volta da decisão,200,60,"Ateliê e samambaia nomeados, sem participar da escolha."
+1,virada-02,Virada merecida,250,55,A virada vem de um discurso que explica o tema ('deixar ir').
+1,virada-02,Prosa interior,200,35,Interior genérico: 'sentiu uma tristeza enorme'.
+1,virada-03,Aderência ao tema,150,140,"Mala refeita, relógio que não é dela e ônibus marcado são o material da escolha."
+1,virada-03,Antes e depois,200,175,"O relógio volta, o casaco fica, ela sai, e a mãe aumenta o som."
+1,virada-03,Vida concreta em volta da decisão,200,180,O relógio na meia e o casaco na cadeira carregam a decisão.
+1,virada-03,Virada merecida,250,200,A memória do hospital muda as mãos e o custo aparece na mãe que não se vira.
+1,virada-03,Prosa interior,200,165,Voz contida e específica; um trecho sobre a mãe que nota tudo explica um pouco.
+1,virada-04,Aderência ao tema,150,145,"Chave, cartas, revista e pitanga são o material da escolha."
+1,virada-04,Antes e depois,200,180,A chave empurrada e o convite para sábado mudam a relação em sequência.
+1,virada-04,Vida concreta em volta da decisão,200,190,"Xícara virada e desvirada, cartas sobre a chave: os objetos decidem."
+1,virada-04,Virada merecida,250,225,A falta de reclamação da xícara planta a virada; o leitor segue o custo.
+1,virada-04,Prosa interior,200,170,Percepção específica; 'entendeu que alguma coisa tinha mudado' explica o que já estava claro.
+1,virada-04-r1,Aderência ao tema,150,145,"Chave, cartas, revista e pitanga são o material da escolha."
+1,virada-04-r1,Antes e depois,200,180,"Situação, chave empurrada e convite para sábado em sequência visível."
+1,virada-04-r1,Vida concreta em volta da decisão,200,190,A xícara virada e desvirada e as cartas sobre a chave carregam a decisão.
+1,virada-04-r1,Virada merecida,250,225,A virada é plantada pela xícara sem reclamação e responde a ela.
+1,virada-04-r1,Prosa interior,200,170,"Interior preciso, com uma frase que explica a mudança já mostrada."
+1,virada-05,Aderência ao tema,150,135,"Mala refeita, xale que não é dela e táxi às nove decidem; o fim sai do quarto."
+1,virada-05,Antes e depois,200,180,"As camisas voltam à gaveta, fica só o xale, e a mensagem é enviada."
+1,virada-05,Vida concreta em volta da decisão,200,185,O xale e o que as mãos devolvem à cômoda são a própria decisão.
+1,virada-05,Virada merecida,250,220,A delegacia de 1998 e o xale tornam a escolha de ficar rastreável.
+1,virada-05,Prosa interior,200,175,Frase longa com voz própria; o fecho nomeia 'o que tinha custado'.

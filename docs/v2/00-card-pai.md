@@ -84,8 +84,10 @@ Total: 86 cards.
 
 ### A. Referência e linha de base
 
-- [ ] [1A-1](fase-1-revisao/1A-1-montar-conjunto-de-referencia.md) — Montar o conjunto de referência das leituras
-- [ ] [1A-2](fase-1-revisao/1A-2-medir-consistencia-da-leitura-atual.md) — Medir a consistência da leitura atual
+- [x] [1A-1](fase-1-revisao/1A-1-montar-conjunto-de-referencia.md) — Montar o conjunto de referência das leituras
+- [x] [1A-2](fase-1-revisao/1A-2-medir-consistencia-da-leitura-atual.md) — Medir a consistência da leitura atual
+
+**Validação da etapa A (2026-11-05):** o conjunto v2 tem 37 cenas, 6 revisões e 1 controle. A linha de base foi medida duas vezes com a configuração em produção: 180 tentativas na v1 e 220 na v2, com 3 falhas recuperáveis. A diferença absoluta mediana entre as duas rodadas foi de 9,4 pontos. Os achados que alimentam as etapas B e C: 2 leituras incompletas aceitas com nota errada e 1 erro de soma do modelo (1C-1, 1C-2); +50 pontos causados pela instrução dentro da cena, medidos contra o controle (1C-4); 7% das citações fora da cena e do enunciado (1C-3); revisões só cosméticas ganhando cerca de 13 pontos. Nas 6 cenas que a leitora pôs em Funciona, a leitura deu de 30 a 218 pontos a mais. Uma leitora humana e um painel de 5 modelos de IA concordam que a leitura não pune os defeitos das sondas: ela fica até 218 pontos acima da leitora nesses casos, na medição da v2. Com a v2, a avaliação humana cobre as quatro faixas no conjunto e pelo menos três em cada gênero. Tamicktom, responsável pelo conjunto, fechou a etapa com três lacunas registradas em 1A-1: Funciona em Ação e em Diálogo, e Ausente em Virada. Passaram 255 testes unitários, `bun run typecheck` e o Fallow nas alterações. Não houve mudança de tabelas nem migração.
 
 ### B. Dados da leitura e do exercício
 

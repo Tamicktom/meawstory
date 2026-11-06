@@ -91,6 +91,10 @@ bun run start
 
 `RESEND_API_KEY` precisa estar preenchida para o build porque o ambiente de produção a valida. Um valor fictício serve apenas para verificar o build local; para operar o serviço, use credenciais válidas. O build não envia e-mails. `bun run lint` está disponível, mas há uma incompatibilidade conhecida do `typescript-eslint` com o TypeScript 7 fixado no projeto. `bun run doctor` executa o React Doctor.
 
+## Avaliação das leituras
+
+O conjunto de referência em [`evaluation/reference`](evaluation/reference/README.md) tem 37 cenas, 6 revisões e 1 controle, nos seis gêneros da rubrica. Antes de trocar modelo, prompt ou formato da leitura, meça a configuração nova com `bun run eval:baseline` e compare o relatório gerado por `bun run eval:report` com a [linha de base atual](evaluation/reference/baselines/2026-11-05-atual-v2/report.md). `bun run eval:forms` gera o material da avaliação humana.
+
 ## Banco de dados
 
 Leia [database/schema.md](database/schema.md) antes de alterar tabelas, consultas, exclusões, seeds ou comportamento da leitura. Ele define exclusão lógica, cascatas e os dados congelados em cada leitura. [database/schema.ts](database/schema.ts) é a definição Drizzle; `database/migrations` guarda o SQL.
@@ -105,6 +109,7 @@ Para alterar o schema, use `bun run db:generate`, revise o SQL e aplique com `bu
 - `app/api/[[...slugs]]`: API HTTP em Elysia; `app/api/auth/[...all]`: autenticação Better Auth.
 - `services`: operações do domínio; `workflows/correction.ts`: processamento da leitura.
 - `database/seed`: catálogo e conta local.
+- `evaluation`: conjunto de referência, medição e relatório das leituras.
 - `components`, `hooks` e `schemas`: interface, estado do cliente e validação.
 
 O [card pai V2](docs/v2/00-card-pai.md) concentra o andamento, as decisões e os critérios de cada fase. A [visão de produto](docs/produto-fluxo-novo.md) explica a direção de treino, leitura e revisão. As convenções de desenvolvimento e as instruções específicas desta versão do Next.js estão em [AGENTS.md](AGENTS.md).
