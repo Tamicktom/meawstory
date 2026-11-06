@@ -34,7 +34,7 @@ type CreateTextInput = {
   content: string
 }
 
-export type UndoableScene = {
+type UndoableScene = {
   id: string
   title: string
   deletedAt: Date
