@@ -203,10 +203,13 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### C. Catálogo e sugestões
 
-- [ ] [2C-1](fase-2-retorno/2C-1-enriquecer-cards-do-catalogo.md) — Enriquecer os cards do catálogo de exercícios
-- [ ] [2C-2](fase-2-retorno/2C-2-filtrar-exercicios-por-genero-e-situacao.md) — Filtrar exercícios por gênero e situação
+- [x] [2C-1](fase-2-retorno/2C-1-enriquecer-cards-do-catalogo.md) — Enriquecer os cards do catálogo de exercícios
+- [x] [2C-2](fase-2-retorno/2C-2-filtrar-exercicios-por-genero-e-situacao.md) — Filtrar exercícios por gênero e situação
 - [x] [2C-3](fase-2-retorno/2C-3-sugerir-exercicio-por-ponto-fraco.md) — Sugerir exercício a partir de pontos fracos — não se aplica; a sugestão por diagnóstico fica fora deste ciclo
 - [x] [2C-4](fase-2-retorno/2C-4-resumir-encerramento-e-sugerir-proximo-exercicio.md) — Resumir o encerramento e sugerir o próximo exercício — não se aplica; o encerramento fica em 2B-1, sem sugestão de próximo exercício
+
+
+**Validação da etapa C (2026-11-06):** os cards do catálogo mostram gênero, título, objetivo, extensão sugerida e a situação da pessoa: Não escrito, Rascunho, Em revisão ou Encerrado. A situação considera somente cenas e tentativas ativas da própria pessoa. Uma cena aberta tem prioridade sobre cenas encerradas; entre cenas do mesmo grupo, o card retoma a mais recentemente alterada. Rascunhos abrem diretamente no editor; cenas já enviadas e encerradas abrem sua leitura. Os filtros por gênero e situação podem ser combinados, persistem na URL e têm ações para limpar ou remover filtros quando não há resultado. O filtro considera todo o catálogo ativo, sem o corte anterior de 32 exercícios. Passaram 414 testes unitários e três jornadas E2E em 320, 390 e 1280 px, além de `bun run typecheck` e do build de produção. Após o ajuste dos rótulos dos filtros, os 21 testes unitários afetados, as três jornadas e o build passaram novamente. Sem alteração de tabelas, migrações, modelo ou prompt, e sem chamadas à OpenAI. O build usou uma chave Resend fictícia apenas para validar o ambiente, sem enviar e-mails. 2C-3 e 2C-4 permanecem fora deste ciclo, conforme o recorte.
 
 ### D. Progresso
 

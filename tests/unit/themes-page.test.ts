@@ -1,5 +1,7 @@
 //* Libraries imports
-import { afterEach, describe, expect, it, spyOn } from "bun:test"
+import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test"
+import * as nextHeaders from "next/headers"
+import { openSession } from "@/tests/helpers/open-session"
 import { renderToStaticMarkup } from "react-dom/server"
 
 //* Local imports
@@ -14,25 +16,44 @@ type ListedTheme = {
   title: string
   description: string
   image: string | null
+  genre?: "action" | "romance"
+  objective?: string
+  minWords?: number
+  maxWords?: number
+  situation?: "unwritten" | "draft" | "revising" | "closed"
+  sceneId?: string | null
 }
 
 let restoreList = () => {}
+let session: Awaited<ReturnType<typeof openSession>>
+let restoreHeaders = () => {}
+beforeEach(async () => {
+  session = await openSession()
+  const spy = spyOn(nextHeaders, "headers").mockImplementation(
+    async () => session.headers as never
+  )
+  restoreHeaders = () => spy.mockRestore()
+})
 
 afterEach(async () => {
+  restoreHeaders()
+  await session.close()
   restoreList()
   restoreList = () => {}
   await rows.cleanup()
 })
 
 function stubCatalog(themes: ListedTheme[]) {
-  const spy = spyOn(themeService, "listActiveThemes").mockResolvedValue(
+  const spy = spyOn(themeService, "listCatalog").mockResolvedValue(
     themes.map((t) => ({
-      ...t,
       genre: null,
       objective: null,
       minWords: null,
       maxWords: null,
       briefing: null,
+      situation: "unwritten",
+      sceneId: null,
+      ...t,
     }))
   )
   restoreList = () => {
@@ -54,14 +75,13 @@ function linkBlock(markup: string, themeId: string) {
 }
 
 describe("ThemesPage", () => {
-  it("lists active themes by title and stops at 32", async () => {
-    const catalog = await themeService.listActiveThemes()
+  it("lists all catalog themes by title", async () => {
+    const catalog = await themeService.listCatalog(session.userId)
     const markup = renderToStaticMarkup(await ThemesPage())
     const ids = [
       ...markup.matchAll(/href="\/dashboard\/themes\/([^"]+)"/g),
     ].map((match) => match[1])
 
-    expect(catalog.length).toBeLessThanOrEqual(32)
     expect(ids).toEqual(catalog.map((theme) => theme.id))
 
     let cursor = 0
@@ -194,5 +214,95 @@ describe("ThemesPage", () => {
       "Ainda não há exercícios disponíveis. Volte em breve."
     )
     expect(markup).not.toContain('href="/dashboard/themes/')
+  })
+  it("shows structured training data and combines both filters", async () => {
+    stubCatalog([
+      {
+        id: "match",
+        title: "Treino certo",
+        description: "Descrição antiga",
+        image: null,
+        genre: "action",
+        objective: "Treinar consequências visíveis.",
+        minWords: 100,
+        maxWords: 500,
+        situation: "draft",
+        sceneId: "draft-id",
+      },
+      {
+        id: "other-genre",
+        title: "Outro gênero",
+        description: "",
+        image: null,
+        genre: "romance",
+        situation: "draft",
+      },
+      {
+        id: "other-state",
+        title: "Outra situação",
+        description: "",
+        image: null,
+        genre: "action",
+        situation: "closed",
+        sceneId: "closed-id",
+      },
+    ])
+    const markup = renderToStaticMarkup(
+      await ThemesPage({
+        searchParams: Promise.resolve({ genero: "action", situacao: "draft" }),
+      })
+    )
+    expect(markup).toContain("Treino certo")
+    expect(markup).toContain("Treinar consequências visíveis.")
+    expect(markup).toContain("100–500 palavras")
+    expect(markup).toContain("Continuar rascunho")
+    expect(markup).toContain("/dashboard/exercises/match/write?textId=draft-id")
+    expect(markup).not.toContain("Descrição antiga")
+    expect(markup).not.toContain("Outro gênero")
+    expect(markup).not.toContain("Outra situação")
+    expect(markup).toContain("Limpar filtros")
+  })
+
+  it.each([
+    ["unwritten", null, "Abrir exercício", "/dashboard/themes/exercise"],
+    [
+      "draft",
+      "scene",
+      "Continuar rascunho",
+      "/dashboard/exercises/exercise/write?textId=scene",
+    ],
+    ["revising", "scene", "Continuar cena", "/dashboard/texts/scene"],
+    ["closed", "scene", "Ver cena encerrada", "/dashboard/texts/scene"],
+  ] as const)(
+    "preserves the action and destination for %s",
+    async (situation, sceneId, action, href) => {
+      stubCatalog([
+        {
+          id: "exercise",
+          title: "Treino",
+          description: "Uma cena.",
+          image: null,
+          situation,
+          sceneId,
+        },
+      ])
+      const markup = renderToStaticMarkup(await ThemesPage())
+      expect(markup).toContain(`href="${href}"`)
+      expect(markup).toContain(action)
+    }
+  )
+
+  it("offers to remove filters when no exercise matches", async () => {
+    stubCatalog([
+      { id: "one", title: "Uma cena", description: "", image: null },
+    ])
+    const markup = renderToStaticMarkup(
+      await ThemesPage({
+        searchParams: Promise.resolve({ situacao: "closed" }),
+      })
+    )
+    expect(markup).toContain("Nenhum exercício corresponde a esses filtros.")
+    expect(markup).toContain("Remover filtros")
+    expect(markup).not.toContain("Uma cena")
   })
 })

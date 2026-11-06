@@ -4,7 +4,7 @@ import { eq, like } from "drizzle-orm"
 
 //* Local imports
 import { db } from "@/database"
-import { theme } from "@/database/schema"
+import { theme, text, correction } from "@/database/schema"
 import { themeService } from "@/services/theme"
 import { createIsolatedRows } from "@/tests/helpers/schema-fixtures"
 
@@ -124,5 +124,64 @@ describe("themeService.findThemeById", () => {
       .where(eq(theme.id, themeId))
 
     expect(stored).toHaveLength(1)
+  })
+})
+
+describe("themeService.listCatalog", () => {
+  it("derives personal status from active owned scenes and attempts", async () => {
+    const graph = await rows.insertActiveText()
+    const otherUser = await rows.insertUser()
+    const get = async () =>
+      (await themeService.listCatalog(graph.userId)).find(
+        (item) => item.id === graph.themeId
+      )
+    expect(await get()).toMatchObject({
+      situation: "draft",
+      sceneId: graph.textId,
+    })
+
+    const reading = await rows.insertCorrection({
+      textId: graph.textId,
+      rubricId: graph.rubricId,
+      status: "COMPLETED",
+    })
+    expect(await get()).toMatchObject({
+      situation: "revising",
+      sceneId: graph.textId,
+    })
+    await db
+      .update(text)
+      .set({ closedAt: new Date() })
+      .where(eq(text.id, graph.textId))
+    expect(await get()).toMatchObject({
+      situation: "closed",
+      sceneId: graph.textId,
+    })
+    await db
+      .update(text)
+      .set({ closedAt: null })
+      .where(eq(text.id, graph.textId))
+    expect(await get()).toMatchObject({ situation: "revising" })
+    await db
+      .update(correction)
+      .set({ deletedAt: new Date() })
+      .where(eq(correction.id, reading))
+    expect(await get()).toMatchObject({ situation: "draft" })
+
+    await db
+      .update(text)
+      .set({ deletedAt: new Date() })
+      .where(eq(text.id, graph.textId))
+    await rows.insertText({ userId: otherUser, themeId: graph.themeId })
+    expect(await get()).toMatchObject({ situation: "unwritten", sceneId: null })
+  })
+
+  it("filters the complete catalog rather than truncating it to 32 exercises", async () => {
+    const rubricId = await rows.insertRubric()
+    const userId = await rows.insertUser()
+    const ids = []
+    for (let i = 0; i < 33; i++) ids.push(await rows.insertTheme(rubricId))
+    const catalog = await themeService.listCatalog(userId)
+    expect(ids.every((id) => catalog.some((item) => item.id === id))).toBe(true)
   })
 })
