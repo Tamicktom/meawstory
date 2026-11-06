@@ -197,6 +197,88 @@ for (const width of [320, 1280]) {
   })
 }
 
+for (const width of [320, 390, 1280]) {
+  test(`shows the revision effect and a regression beside the gains at ${width}px`, async ({
+    mount,
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 850 })
+    const view = await mount("components/feedback/structured-reading/Compared")
+    const comparison = view.getByRole("region", {
+      name: "Comparação com a versão anterior",
+    })
+    await expect(
+      comparison.getByRole("heading", { name: "O foco foi atendido" })
+    ).toBeVisible()
+    await expect(comparison).toContainText(
+      "O gesto de esperar aparece na versão nova."
+    )
+    await expect(comparison).toContainText("A chave ficou na mesa")
+    await expect(comparison).toContainText(
+      "Tornar o gesto diante da chave visível."
+    )
+    const losses = comparison.getByRole("region", { name: "O que piorou" })
+    await expect(losses).toContainText("Aderência")
+    await expect(losses).toContainText("Desceu")
+    await expect(comparison).toContainText(
+      "A pontuação total foi de 640 para 676."
+    )
+    await expect(
+      comparison.getByRole("link", { name: "Revisar novamente", exact: true })
+    ).toHaveAttribute(
+      "href",
+      "/dashboard/exercises/theme-1/write?textId=scene-1"
+    )
+    const previous = comparison.getByRole("region", {
+      name: "Versão anterior",
+      exact: true,
+    })
+    const current = comparison.getByRole("region", {
+      name: "Esta versão",
+      exact: true,
+    })
+    await expect(current).toContainText("Ela esperou.")
+    if (width < 768) {
+      await expect(previous).toBeHidden()
+      await comparison
+        .getByRole("tab", { name: "Versão anterior", exact: true })
+        .click()
+      await expect(previous).toBeVisible()
+      await expect(current).toBeHidden()
+    } else {
+      await expect(previous).toBeVisible()
+    }
+    await expect(previous).not.toContainText("Ela esperou.")
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth
+      )
+    ).toBe(true)
+  })
+}
+
+test("does not treat an unchanged text as an improvement", async ({
+  mount,
+}) => {
+  const view = await mount(
+    "components/feedback/structured-reading/UnchangedComparison"
+  )
+  const comparison = view.getByRole("region", {
+    name: "Comparação com a versão anterior",
+  })
+  await expect(comparison).toContainText(
+    "O texto desta versão é igual ao da anterior. A diferença de pontuação não conta como melhora."
+  )
+  await expect(comparison.getByText("Subiu", { exact: true })).toHaveCount(0)
+  await expect(comparison.getByText("Desceu", { exact: true })).toHaveCount(0)
+  await expect(
+    comparison.getByRole("region", { name: "O que piorou" })
+  ).toHaveCount(0)
+  await expect(
+    comparison.getByText("esta diferença não conta como melhora")
+  ).toHaveCount(5)
+})
+
 test("an earlier version keeps its reading and points to the latest one", async ({
   mount,
 }) => {

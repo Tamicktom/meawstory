@@ -2,7 +2,7 @@
 
 Um espaço para treinar ficção: escolha um exercício, escreva uma cena e receba uma leitura por IA baseada nos critérios daquele exercício. A leitura e a pontuação ajudam a decidir o que revisar; a autoria e as decisões sobre o texto continuam com quem escreve.
 
-A versão atual permite criar conta, recuperar senha, confirmar o e-mail, enviar uma cena, acompanhar a leitura e reencontrá-la em **Minhas cenas**, no computador e no celular. A revisão é feita pela pessoa autora; versões, comparação de revisões e acompanhamento de progresso fazem parte das próximas fases do [plano V2](docs/v2/00-card-pai.md).
+A versão atual permite criar conta, recuperar senha, confirmar o e-mail, enviar uma cena, acompanhar a leitura e reencontrá-la em **Minhas cenas**, no computador e no celular. A pessoa autora revisa a cena em uma nova versão e, a partir da segunda leitura concluída, vê a comparação com a anterior. O acompanhamento de progresso faz parte das próximas fases do [plano V2](docs/v2/00-card-pai.md).
 
 ## Ambiente de desenvolvimento local
 

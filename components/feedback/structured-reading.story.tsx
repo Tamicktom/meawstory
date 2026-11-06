@@ -91,6 +91,89 @@ export function Revision() {
   )
 }
 
+const comparisonCriteria = props.criteria.map((criterion, index) => {
+  if (index === 0)
+    return {
+      id: criterion.id,
+      previousScore: 128,
+      score: 40,
+      previousBand: "working" as const,
+      band: "missing" as const,
+      movement: "regressed" as const,
+    }
+  if (index === 1 || index === 2)
+    return {
+      id: criterion.id,
+      previousScore: 128,
+      score: 190,
+      previousBand: "working" as const,
+      band: "strong" as const,
+      movement: "improved" as const,
+    }
+  return {
+    id: criterion.id,
+    previousScore: 128,
+    score: 128,
+    previousBand: "working" as const,
+    band: "working" as const,
+    movement: "unchanged" as const,
+  }
+})
+
+export function Compared() {
+  return (
+    <StructuredReadingView
+      {...props}
+      version={2}
+      revisionIntent="Tornar o gesto diante da chave visível."
+      previousScene="A chave ficou na mesa entre as duas.\n\nFim."
+      comparison={{
+        version: 1,
+        previousCorrectionId: "reading-0",
+        textUnchanged: false,
+        focus: {
+          status: "met",
+          answer: "O gesto de esperar aparece na versão nova.",
+          evidence: "A chave ficou na mesa",
+        },
+        criteria: comparisonCriteria,
+      }}
+      versions={[
+        {
+          version: 1,
+          href: "/dashboard/texts/scene-1?versao=1",
+          current: false,
+        },
+        { version: 2, href: "/dashboard/texts/scene-1", current: true },
+      ]}
+    />
+  )
+}
+
+export function UnchangedComparison() {
+  return (
+    <StructuredReadingView
+      {...props}
+      version={2}
+      previousScene={scene}
+      comparison={{
+        version: 1,
+        previousCorrectionId: "reading-0",
+        textUnchanged: true,
+        focus: { status: "unchanged" },
+        criteria: props.criteria.map((criterion) => ({
+          id: criterion.id,
+          previousScore: 80,
+          score: 128,
+          previousBand: "thin" as const,
+          band: "working" as const,
+          movement: "unchanged" as const,
+        })),
+      }}
+    />
+  )
+}
+
 export function EarlierVersion() {
   return (
     <StructuredReadingView

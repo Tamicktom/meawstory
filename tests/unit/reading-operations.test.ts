@@ -188,6 +188,44 @@ describe("readingCosts", () => {
       { key: "action", completedReadings: 2 },
     ])
     expect(costs.prices).toEqual([MODEL_PRICES[0]])
+    expect(costs.comparisonCostUsd).toBe(0)
+    expect(costs.comparisonCalls).toBe(0)
+  })
+
+  it("keeps the comparison cost out of the cost per reading", async () => {
+    const window = privateWindow()
+    const { rubricId, textId } = await scene()
+    const created = at(window.since, 60)
+    const completed = await rows.insertCorrection({
+      textId,
+      rubricId,
+      status: "COMPLETED",
+      createdAt: created,
+    })
+    await call(completed, "accepted", "0.00200000")
+    await db.insert(readingCall).values({
+      id: crypto.randomUUID(),
+      correctionId: completed,
+      kind: "comparison",
+      sequence: 1,
+      outcome: "accepted",
+      modelId: "gpt-5-mini",
+      promptVersion: "sha256:comparison",
+      inputTokens: 400,
+      outputTokens: 200,
+      costUsd: "0.00900000",
+      price: MODEL_PRICES[0],
+      startedAt: created,
+      durationMs: 1000,
+    })
+
+    const costs = await readingCosts(window)
+
+    expect(costs.totalCostUsd).toBeCloseTo(0.002, 10)
+    expect(costs.costPerCompletedUsd).toBeCloseTo(0.002, 10)
+    expect(costs.comparisonCostUsd).toBeCloseTo(0.009, 10)
+    expect(costs.comparisonCalls).toBe(1)
+    expect(costs.ownCost.maxUsd).toBeCloseTo(0.002, 10)
   })
 })
 

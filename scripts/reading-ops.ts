@@ -146,7 +146,7 @@ console.log(
     "",
     "## Custo",
     "",
-    `Leituras concluídas: ${costs.completedReadings}. Custo total: ${usd(costs.totalCostUsd)}. Custo por leitura concluída, com as tentativas descartadas: ${usd(costs.costPerCompletedUsd)}. Gasto em tentativas que falharam: ${usd(costs.failedAttemptsCostUsd)}.`,
+    `Leituras concluídas: ${costs.completedReadings}. Custo da avaliação: ${usd(costs.totalCostUsd)}. Custo por leitura concluída, com as tentativas descartadas: ${usd(costs.costPerCompletedUsd)}. Gasto em tentativas que falharam: ${usd(costs.failedAttemptsCostUsd)}. Custo da comparação, separado da avaliação: ${usd(costs.comparisonCostUsd)} em ${costs.comparisonCalls} chamadas (${costs.comparisonUnpricedCalls} sem preço).`,
     "",
     `Custo próprio de cada leitura concluída: média ${usd(costs.ownCost.meanUsd)}, p50 ${usd(costs.ownCost.p50Usd)}, p90 ${usd(costs.ownCost.p90Usd)}, máximo ${usd(costs.ownCost.maxUsd)}.`,
     "",
