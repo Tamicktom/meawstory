@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button"
 import { ReadingDataNotice } from "@/components/legal/reading-data-notice"
 import { countWords, sceneSizeError } from "@/lib/reading-policy"
 
-type EditorProps = { themeId: string; textId?: string; initialContent?: string }
+type EditorProps = {
+  themeId: string
+  textId?: string
+  initialContent?: string
+  minWords?: number
+  maxWords?: number
+}
 const Editor = (props: EditorProps) => {
   const router = useRouter()
   const [content, setContent] = useState(props.initialContent ?? "")
@@ -67,6 +73,9 @@ const Editor = (props: EditorProps) => {
       <p id="scene-limits">
         {countWords(content).toLocaleString("pt-BR")} palavras · Limites: 100 a
         2.000 palavras
+        {props.minWords && props.maxWords
+          ? ` · Sugestão do exercício: ${props.minWords.toLocaleString("pt-BR")} a ${props.maxWords.toLocaleString("pt-BR")} palavras`
+          : null}
       </p>
       {error ? (
         <p id="scene-error" role="alert">

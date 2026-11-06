@@ -64,6 +64,8 @@ export default async function WritePage(props: WritePageProps) {
         </aside>
         <Editor
           themeId={params.themeId}
+          minWords={thisTheme.minWords ?? undefined}
+          maxWords={thisTheme.maxWords ?? undefined}
           textId={draft?.id}
           initialContent={draft?.content}
         />

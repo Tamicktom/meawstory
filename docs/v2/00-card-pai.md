@@ -11,7 +11,7 @@ Este é o único lugar onde o andamento é marcado. Os cards descrevem o trabalh
 
 ## Visão geral
 
-- [ ] **[Fase 0 — Corrigir a base](#fase-0--corrigir-a-base)** (25 cards)
+- [x] **[Fase 0 — Corrigir a base](#fase-0--corrigir-a-base)** (25 cards)
 - [ ] **[Fase 1 — Ciclo de revisão](#fase-1--ciclo-de-revisão)** (33 cards)
 - [ ] **[Fase 2 — Motivo para voltar](#fase-2--motivo-para-voltar)** (20 cards)
 - [ ] **[Fase 3 — Sustentar o negócio](#fase-3--sustentar-o-negócio)** (8 cards)
@@ -91,11 +91,13 @@ Total: 86 cards.
 
 ### B. Dados da leitura e do exercício
 
-- [ ] [1B-1](fase-1-revisao/1B-1-estruturar-rubrica-e-versao-publica.md) — Estruturar a rubrica e criar sua versão pública
-- [ ] [1B-2](fase-1-revisao/1B-2-estruturar-metadados-do-exercicio.md) — Estruturar gênero, objetivo e extensão do exercício
-- [ ] [1B-3](fase-1-revisao/1B-3-estruturar-briefing-do-exercicio.md) — Estruturar o briefing do exercício
-- [ ] [1B-4](fase-1-revisao/1B-4-congelar-criterios-em-cada-leitura.md) — Congelar critérios e pontuações em cada leitura
-- [ ] [1B-5](fase-1-revisao/1B-5-registrar-modelo-e-versao-do-prompt.md) — Registrar modelo e versão do prompt em cada leitura
+- [x] [1B-1](fase-1-revisao/1B-1-estruturar-rubrica-e-versao-publica.md) — Estruturar a rubrica e criar sua versão pública
+- [x] [1B-2](fase-1-revisao/1B-2-estruturar-metadados-do-exercicio.md) — Estruturar gênero, objetivo e extensão do exercício
+- [x] [1B-3](fase-1-revisao/1B-3-estruturar-briefing-do-exercicio.md) — Estruturar o briefing do exercício
+- [x] [1B-4](fase-1-revisao/1B-4-congelar-criterios-em-cada-leitura.md) — Congelar critérios e pontuações em cada leitura
+- [x] [1B-5](fase-1-revisao/1B-5-registrar-modelo-e-versao-do-prompt.md) — Registrar modelo e versão do prompt em cada leitura
+
+**Validação da etapa B (2026-11-05):** rubricas passam a guardar os cinco critérios, máximos, faixas e frases públicas; os 12 exercícios têm gênero, objetivo, extensão e briefing estruturados, preenchidos pela migração `20261106015708_reading_data` e mantidos pelo seed. O briefing público usa esses dados, sem instruções internas; o contador recebe a extensão sugerida, mantendo os limites operacionais de 100–2.000 palavras. Cada nova tentativa congela critérios, fontes e configuração completa do modelo/prompt, inclusive em falhas. O banco protege os snapshots e resultados terminais; o contrato versionado guarda pontuações, faixas, citações, leitura geral, ponto forte e foco, sem recalcular resultados antigos. A geração desse resultado estruturado continua na etapa C: o motor atual ainda produz markdown, preservado sem inventar critérios para leituras antigas. Os relatórios de avaliação registram a versão do prompt; medições antigas continuam legíveis. Passaram 270 testes unitários, 13 testes de componentes, 3 jornadas E2E em 320, 390 e 1280 px, `bun run typecheck` e `bun run build`; React Doctor nas alterações: 96/100, sem diagnósticos. Migração testada em PostgreSQL 18 isolado na porta 5434, tanto em banco vazio quanto sobre o esquema anterior com catálogo e leitura concluída; o conteúdo legado foi preservado. A migração também foi aplicada ao banco local da porta 5432, com os 12 exercícios preenchidos. Modelo, instruções, rubricas renderizadas e prompt atuais permaneceram iguais; nenhuma chamada à OpenAI ou nova linha de base. O build usou uma chave Resend fictícia apenas para validação do ambiente, sem enviar e-mails.
 
 ### C. Motor e operação da leitura
 

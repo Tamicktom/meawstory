@@ -37,6 +37,8 @@ export type BaselineRun = {
   label: string
   set: { version: string; fingerprint: string }
   config: {
+    promptVersion?: string
+    promptConfig?: import("@/lib/reading-contract").PromptConfig
     modelId: string
     instructionsSha256: string
     store: false

@@ -1,3 +1,4 @@
+import { correctionConfiguration } from "@/workflows/correction-config"
 //* Libraries imports
 import { AsyncLocalStorage } from "node:async_hooks"
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test"
@@ -580,3 +581,29 @@ describe("correctText", () => {
     })
   })
 })
+
+for (const field of ["modelId", "promptVersion"] as const) {
+  it(`fails before calling the model if reserved ${field} differs from this deployment`, async () => {
+    const graph = await insertOpenText()
+    const id = nextStepId()
+    await correctionService.insertCorrection({
+      id,
+      textId: graph.textId,
+      textContent: "She measured the gap.",
+      rubricId: graph.rubricId,
+      rubricContent: "Score the scene.",
+      content: "",
+      score: "0.00",
+      status: "PENDING",
+      ...correctionConfiguration(),
+      [field]: "old-configuration",
+    })
+    const error = await captureFatal(() => correctText(graph.textId, id))
+    expect(error.message).toBe("Reading configuration changed before grading")
+    expect(generateTextSpy.mock.calls).toHaveLength(0)
+    expect(await correctionService.findAttemptSnapshot(id)).toMatchObject({
+      status: "FAILED",
+      [field]: "old-configuration",
+    })
+  })
+}

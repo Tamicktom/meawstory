@@ -226,12 +226,12 @@ describe("correctionService.updateCorrectionStatus", () => {
 })
 
 describe("correctionService.updateCorrection", () => {
-  it("writes the content, score, frozen text, frozen rubric, and status", async () => {
-    const graph = await rows.insertActiveText()
-    const nextRubricId = await rows.insertRubric({
-      title: "Later rubric",
-      content: "Later rubric body",
-    })
+  it("completes a reading while preserving the originally frozen text and rubric", async () => {
+    const graph = await rows.insertActiveText({ content: "Frozen text body" })
+    await db
+      .update(rubric)
+      .set({ content: "Frozen rubric body" })
+      .where(eq(rubric.id, graph.rubricId))
     const id = await rows.insertCorrection({
       textId: graph.textId,
       rubricId: graph.rubricId,
@@ -244,7 +244,7 @@ describe("correctionService.updateCorrection", () => {
       content: "Finished note",
       score: "640.50",
       textContent: "Frozen text body",
-      rubricId: nextRubricId,
+      rubricId: graph.rubricId,
       rubricContent: "Frozen rubric body",
       status: "COMPLETED",
     })
@@ -272,7 +272,7 @@ describe("correctionService.updateCorrection", () => {
         content: "Finished note",
         score: "640.50",
         textContent: "Frozen text body",
-        rubricId: nextRubricId,
+        rubricId: graph.rubricId,
         rubricContent: "Frozen rubric body",
         status: "COMPLETED",
       },

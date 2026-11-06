@@ -12,6 +12,7 @@ type ThemeCardTheme = {
   title: string
   description: string
   image: string | null
+  briefing?: { situation: string } | null
 }
 
 type ThemeCardProps = {
@@ -48,7 +49,8 @@ function ThemeCard(props: ThemeCardProps) {
         </CardHeader>
         <CardContent>
           <p className="line-clamp-4 text-muted-foreground">
-            {themeExcerpt(props.theme.description)}
+            {props.theme.briefing?.situation ??
+              themeExcerpt(props.theme.description)}
           </p>
         </CardContent>
       </Card>

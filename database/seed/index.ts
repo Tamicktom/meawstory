@@ -19,16 +19,11 @@ export async function seedNarrativeCatalog(): Promise<{
     for (const item of rubricSeeds) {
       await tx
         .insert(rubric)
-        .values({
-          id: item.id,
-          title: item.title,
-          content: item.content,
-        })
+        .values(item)
         .onConflictDoUpdate({
           target: rubric.id,
           set: {
-            title: item.title,
-            content: item.content,
+            ...item,
             updatedAt: new Date(),
           },
         })
@@ -37,18 +32,11 @@ export async function seedNarrativeCatalog(): Promise<{
     for (const item of themeSeeds) {
       await tx
         .insert(theme)
-        .values({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          rubricId: item.rubricId,
-        })
+        .values(item)
         .onConflictDoUpdate({
           target: theme.id,
           set: {
-            title: item.title,
-            description: item.description,
-            rubricId: item.rubricId,
+            ...item,
             updatedAt: new Date(),
           },
         })

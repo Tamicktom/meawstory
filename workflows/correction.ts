@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util"
+import { correctionConfiguration } from "@/workflows/correction-config"
 //* Libraries imports
 import { FatalError, getStepMetadata } from "workflow"
 
@@ -49,7 +51,7 @@ export async function correctText(textId: string, reservedId?: string) {
     )
     await updateCorrectionStatus(correctionId, "IN_PROGRESS")
 
-    const graded = await gradeText({
+    const graded = await gradeText(correctionId, {
       themeTitle: textToCorrect.themeTitle,
       themeDescription: textToCorrect.themeDescription,
       textContent: textToCorrect.content,
@@ -113,6 +115,7 @@ export async function createEmptyCorrection(
 
   const inserted = await correctionService.insertCorrection({
     id: stepId,
+    ...correctionConfiguration(),
     content: "",
     score: "0.00",
     textContent: currentText.content,
@@ -155,8 +158,27 @@ export async function getRubric(themeId: string) {
   return result
 }
 
-async function gradeText(source: CorrectionSource) {
+async function gradeText(correctionId: string, source: CorrectionSource) {
   "use step"
+
+  const attempt = await correctionService.findAttemptSnapshot(correctionId)
+  const config = correctionConfiguration()
+  if (
+    !attempt ||
+    attempt.modelId !== config.modelId ||
+    attempt.promptVersion !== config.promptVersion ||
+    !isDeepStrictEqual(attempt.promptConfig, config.promptConfig)
+  )
+    throw new FatalError("Reading configuration changed before grading")
+
+  if (
+    !isDeepStrictEqual(attempt.source, {
+      themeTitle: source.themeTitle,
+      themeDescription: source.themeDescription,
+      rubricTitle: source.rubricTitle,
+    })
+  )
+    throw new FatalError("Reading source changed before grading")
 
   const saved = readSavedCorrection()
 

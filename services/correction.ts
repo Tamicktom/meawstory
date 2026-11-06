@@ -1,3 +1,4 @@
+import { validateStructuredReading } from "@/lib/reading-contract"
 //* Libraries imports
 import { and, eq, gt, inArray } from "drizzle-orm"
 
@@ -8,16 +9,7 @@ import { correction, type CorrectionStatus } from "@/database/schema"
 import { READING_TIMEOUT_MS } from "@/lib/reading-policy"
 import { expireReadings } from "@/services/reading"
 
-type InsertCorrectionValues = {
-  id: string
-  content: string
-  score: string
-  textContent: string
-  rubricId: string
-  rubricContent: string
-  textId: string
-  status: CorrectionStatus
-}
+type InsertCorrectionValues = typeof correction.$inferInsert
 
 type CorrectionWriteResult = {
   id: string
@@ -26,6 +18,23 @@ type CorrectionWriteResult = {
 }
 
 async function insertCorrection(values: InsertCorrectionValues) {
+  if (values.structuredResult) {
+    if (
+      values.status !== "COMPLETED" ||
+      !values.rubricCriteria ||
+      !values.modelId ||
+      !values.promptVersion ||
+      !values.promptConfig
+    )
+      throw new Error(
+        "Structured completion requires frozen rubric and configuration."
+      )
+    validateStructuredReading(
+      values.structuredResult,
+      values.rubricCriteria,
+      values.score
+    )
+  }
   const inserted = await db
     .insert(correction)
     .values(values)
@@ -99,6 +108,24 @@ async function updateCorrection(
   id: string,
   values: Partial<Omit<InsertCorrectionValues, "id">>
 ): Promise<CorrectionWriteResult | null> {
+  if (values.structuredResult) {
+    const attempt = await findAttemptSnapshot(id)
+    if (
+      values.status !== "COMPLETED" ||
+      !attempt?.rubricCriteria ||
+      !attempt.modelId ||
+      !attempt.promptVersion ||
+      !attempt.promptConfig
+    )
+      throw new Error(
+        "Structured completion requires frozen rubric and configuration."
+      )
+    validateStructuredReading(
+      values.structuredResult,
+      attempt.rubricCriteria,
+      values.score ?? attempt.score
+    )
+  }
   const result = await db
     .update(correction)
     .set(values)

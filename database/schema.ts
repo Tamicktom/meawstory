@@ -1,3 +1,11 @@
+import type {
+  Briefing,
+  RubricCriteria,
+  StructuredReading,
+  ReadingSourceSnapshot,
+  PromptConfig,
+  Genre,
+} from "@/lib/reading-contract"
 //* Libraries imports
 import { defineRelations, sql } from "drizzle-orm"
 import * as p from "drizzle-orm/pg-core"
@@ -15,12 +23,20 @@ const softDelete = {
   deletedAt: p.timestamp("deleted_at"),
 }
 
-const score = p.decimal("score", { precision: 6, scale: 2 });
+const score = p.decimal("score", { precision: 6, scale: 2 })
 
-export const correctionStatusEnum = ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"] as const;
-export type CorrectionStatus = (typeof correctionStatusEnum)[number];
+export const correctionStatusEnum = [
+  "PENDING",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "FAILED",
+] as const
+export type CorrectionStatus = (typeof correctionStatusEnum)[number]
 
-export const correctionStatus = p.pgEnum("correction_status", correctionStatusEnum);
+export const correctionStatus = p.pgEnum(
+  "correction_status",
+  correctionStatusEnum
+)
 
 export const user = p.pgTable("user", {
   id: p.text("id").primaryKey(),
@@ -86,6 +102,8 @@ export const rubric = p.pgTable("rubric", {
   id: p.text("id").primaryKey(),
 
   title: p.text("title").notNull(),
+  genre: p.text("genre").$type<Genre>(),
+  criteria: p.jsonb("criteria").$type<RubricCriteria>(),
   //* Rubric content explaining the rubric rules.
   content: p.text("content").notNull(),
 
@@ -100,6 +118,11 @@ export const theme = p.pgTable(
 
     title: p.text("title").notNull(),
     description: p.text("description").notNull(),
+    genre: p.text("genre").$type<Genre>(),
+    objective: p.text("objective"),
+    minWords: p.integer("min_words"),
+    maxWords: p.integer("max_words"),
+    briefing: p.jsonb("briefing").$type<Briefing>(),
     image: p.text("image"), //* Image URL
 
     rubricId: p
@@ -164,6 +187,13 @@ export const correction = p.pgTable(
       .text("text_id")
       .notNull()
       .references(() => text.id, { onDelete: "cascade" }),
+
+    rubricCriteria: p.jsonb("rubric_criteria").$type<RubricCriteria>(),
+    source: p.jsonb("source").$type<ReadingSourceSnapshot>(),
+    structuredResult: p.jsonb("structured_result").$type<StructuredReading>(),
+    modelId: p.text("model_id"),
+    promptVersion: p.text("prompt_version"),
+    promptConfig: p.jsonb("prompt_config").$type<PromptConfig>(),
 
     status: correctionStatus("status").default("PENDING").notNull(),
 

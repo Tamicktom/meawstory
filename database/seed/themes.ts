@@ -4,6 +4,16 @@ import type { ThemeDefinition } from "@/database/seed/render-theme"
 export const themeDefinitions: ThemeDefinition[] = [
   {
     id: "theme_roof_gap",
+    genre: "action",
+    objective:
+      "Treinar movimento e escolhas sob pressão em um espaço instável.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "O destino do envelope e a decisão de pular ou recusar o salto.",
+    ],
     title: "O vão entre os telhados",
     rubricId: "rubric_action",
     situation:
@@ -25,6 +35,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_last_blocks",
+    genre: "action",
+    objective:
+      "Treinar uma corrida contra o tempo com obstáculos e custos concretos.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "Uma chegada, um atraso ou a decisão de parar.",
+    ],
     title: "Os três quarteirões finais",
     rubricId: "rubric_action",
     situation:
@@ -46,6 +66,15 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_narrow_kitchen",
+    genre: "fight",
+    objective: "Treinar causa e efeito físico numa luta em espaço apertado.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "Uma luta contida e um desfecho sem morte.",
+    ],
     title: "A cozinha estreita",
     rubricId: "rubric_fight",
     situation:
@@ -67,6 +96,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_agreed_bout",
+    genre: "fight",
+    objective:
+      "Treinar trocas de luta que revelem regras, intenções e consequências.",
+    minWords: 500,
+    maxWords: 1000,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "Uma vitória, uma derrota ou a recusa de continuar.",
+    ],
     title: "O combate combinado",
     rubricId: "rubric_fight",
     situation:
@@ -88,6 +127,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_under_the_awning",
+    genre: "romance",
+    objective:
+      "Treinar aproximação e mudança do vínculo por meio de pequenos gestos.",
+    minWords: 400,
+    maxWords: 800,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "A aproximação não terminar em casal.",
+    ],
     title: "Debaixo do toldo",
     rubricId: "rubric_romance",
     situation:
@@ -109,6 +158,15 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_two_am_glass",
+    genre: "romance",
+    objective: "Treinar intimidade e tensão diante de uma partida próxima.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "A partida acontecer ou ser abandonada.",
+    ],
     title: "O copo às duas da manhã",
     rubricId: "rubric_romance",
     situation:
@@ -130,6 +188,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_traffic",
+    genre: "dialogue",
+    objective:
+      "Treinar vozes distintas e subtexto numa conversa sem saída imediata.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "O conflito terminar sem acordo.",
+    ],
     title: "O trânsito que não anda",
     rubricId: "rubric_dialogue",
     situation:
@@ -151,6 +219,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_everything_but_the_dead",
+    genre: "dialogue",
+    objective:
+      "Treinar uma conversa em que o assunto evitado pressiona cada fala.",
+    minWords: 500,
+    maxWords: 1000,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "O funeral permanecer fora da cena.",
+    ],
     title: "Tudo, menos quem morreu",
     rubricId: "rubric_dialogue",
     situation:
@@ -172,6 +250,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_light_left_on",
+    genre: "suspense",
+    objective:
+      "Treinar pistas e controle de informação diante de uma ameaça incerta.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "O mistério permanecer sem solução.",
+    ],
     title: "A luz que devia estar apagada",
     rubricId: "rubric_suspense",
     situation:
@@ -193,6 +281,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_knows_the_house",
+    genre: "suspense",
+    objective:
+      "Treinar suspense usando o espaço conhecido e uma aposta humana.",
+    minWords: 500,
+    maxWords: 1000,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "A ameaça não se revelar por completo.",
+    ],
     title: "Quem conhece a casa",
     rubricId: "rubric_suspense",
     situation:
@@ -214,6 +312,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_what_stays_in_the_bag",
+    genre: "turning_point",
+    objective:
+      "Treinar uma decisão interior por meio de objetos e ações concretas.",
+    minWords: 400,
+    maxWords: 800,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "A decisão ser pequena ou ambígua.",
+    ],
     title: "O que fica na mala",
     rubricId: "rubric_turning_point",
     situation:
@@ -235,6 +343,16 @@ export const themeDefinitions: ThemeDefinition[] = [
   },
   {
     id: "theme_key_on_the_table",
+    genre: "turning_point",
+    objective:
+      "Treinar uma virada de relação sustentada por uma escolha visível.",
+    minWords: 400,
+    maxWords: 900,
+    doNotPenalize: [
+      "Um final triste, aberto ou sem vitória.",
+      "Escolhas de estilo e de ponto de vista que sirvam à cena.",
+      "A relação não recomeçar.",
+    ],
     title: "A chave na mesa",
     rubricId: "rubric_turning_point",
     situation:
