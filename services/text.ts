@@ -36,6 +36,7 @@ export type OwnedTextListItem = {
   band: BandId | null
   label: string
   unopened: boolean
+  revisionFocus: string | null
   correction: OwnedTextCorrection | null
 }
 
@@ -155,6 +156,7 @@ async function listOwnedTexts(userId: string): Promise<OwnedTextListItem[]> {
       },
       corrections: {
         columns: {
+          structuredResult: true,
           score: true,
           status: true,
           textContent: true,
@@ -207,6 +209,7 @@ async function listOwnedTexts(userId: string): Promise<OwnedTextListItem[]> {
         band: status.band,
         label: status.label,
         unopened: status.unopened,
+        revisionFocus: latestCorrection?.structuredResult?.revision ?? null,
         correction: latestCorrection
           ? {
               status: latestCorrection.status,
