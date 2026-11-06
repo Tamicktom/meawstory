@@ -17,8 +17,11 @@ for (const width of [320, 390, 1280]) {
       view.getByText("Pontuação: 640 de 1000", { exact: true })
     ).not.toBeVisible()
     await expect(
-      view.getByRole("button", { name: "Revisar com esse foco", exact: true })
-    ).toBeDisabled()
+      view.getByRole("link", { name: "Revisar com esse foco", exact: true })
+    ).toHaveAttribute(
+      "href",
+      "/dashboard/exercises/theme-1/write?textId=scene-1"
+    )
     const criterion = view.getByRole("article", {
       name: "Aderência",
       exact: true,
@@ -167,4 +170,46 @@ test("identical evidence is shown once and still locates the scene", async ({
   ).toHaveCount(1)
   await criterion.getByRole("button", { name: /Ver trecho \d/ }).click()
   await expect(view.locator("mark:focus")).toHaveText("chave ficou na mesa")
+})
+
+for (const width of [320, 1280]) {
+  test(`revision context stays on its version at ${width}px`, async ({
+    mount,
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 850 })
+    const view = await mount("components/feedback/structured-reading/Revision")
+    await expect(
+      view.getByRole("navigation", { name: "Versões da cena" })
+    ).toBeVisible()
+    const context = view.getByRole("region", { name: "Contexto da revisão" })
+    await expect(context).toContainText(
+      "Tornar o gesto diante da chave visível."
+    )
+    await expect(
+      view.getByRole("link", { name: "Revisar com esse foco", exact: true })
+    ).toBeVisible()
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth
+      )
+    ).toBe(true)
+  })
+}
+
+test("an earlier version keeps its reading and points to the latest one", async ({
+  mount,
+}) => {
+  const view = await mount(
+    "components/feedback/structured-reading/EarlierVersion"
+  )
+  await expect(
+    view.getByRole("region", { name: "Contexto da revisão" })
+  ).toHaveCount(0)
+  await expect(
+    view.getByRole("link", { name: "Revisar com esse foco", exact: true })
+  ).toHaveCount(0)
+  await expect(
+    view.getByRole("link", { name: "Abrir a versão mais recente" })
+  ).toHaveAttribute("href", "/dashboard/texts/scene-1")
 })

@@ -160,6 +160,8 @@ export const text = p.pgTable(
     title: p.text("title").notNull(),
     content: p.text("content").notNull(), //* Text content
     checklist: p.jsonb("checklist").$type<string[]>().notNull().default([]),
+    //* Optional draft answer for the next version. Null means omitted (1G-2).
+    revisionIntent: p.text("revision_intent"),
 
     // one text belongs to one theme
     themeId: p
@@ -178,6 +180,10 @@ export const text = p.pgTable(
   (table) => [
     p.index("text_themeId_idx").on(table.themeId),
     p.index("text_userId_idx").on(table.userId),
+    p.check(
+      "text_revision_intent_length",
+      sql`${table.revisionIntent} IS NULL OR length(${table.revisionIntent}) <= 2000`
+    ),
   ]
 )
 
@@ -220,6 +226,8 @@ export const correction = p.pgTable(
     failureStage: p.text("failure_stage").$type<ReadingFailureStage>(),
     //* Internal reason, for diagnosis. Never selected for the writing UI.
     failureReason: p.text("failure_reason"),
+    //* What the writer tried to change in this version. Null on the first version and when omitted.
+    revisionIntent: p.text("revision_intent"),
 
     ...timestamps,
     ...softDelete,
@@ -235,6 +243,10 @@ export const correction = p.pgTable(
     p.check(
       "correction_score_range",
       sql`${table.score} >= 0 AND ${table.score} <= 1000`
+    ),
+    p.check(
+      "correction_revision_intent_length",
+      sql`${table.revisionIntent} IS NULL OR length(${table.revisionIntent}) <= 2000`
     ),
   ]
 )

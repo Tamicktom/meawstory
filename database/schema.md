@@ -238,10 +238,12 @@ The JSON string array `text.checklist` records manually checked briefing items.
 It is writing metadata only, never included in model input or correction snapshots.
 
 Draft-only saves accept content below the reading minimum. They use the same
-per-author transaction lock as reading reservation and reject updates once any
-correction exists. Submission checks its confirmed content again inside the
-reservation transaction, so an intervening edit from another tab cannot silently
-change what is submitted. The UI serializes autosaves and waits for them before
+per-author transaction lock as reading reservation. Updates are rejected while
+a reading is pending or in progress, while the latest attempt failed and must
+be retried unchanged, and while the latest completed reading has no structured
+focus. Submission checks its confirmed content again inside the reservation
+transaction, so an intervening edit from another tab cannot silently change
+what is submitted. The UI serializes autosaves and waits for them before
 submission. Once reserved, the frozen text remains visible in the reading state.
 
 ## Reading feedback (Phase 1-F)
@@ -258,3 +260,31 @@ of the correction; soft deletion preserves feedback but hides it from active qua
 reports. Quality reports aggregate by model/prompt; an explicit candidate export
 provides reading and criterion ids for investigation, never automatically changes
 the reference set. Feedback contains user-supplied text and must not enter telemetry.
+
+## Scene versions (Phase 1-G)
+
+A version is an active completed correction, numbered by `created_at` among
+that scene's completed corrections. A failed attempt is not a version and does
+not replace the previous completed text. Each completed correction already
+freezes its own `text_content`, score, rubric and structured result. Editing
+the scene later does not change those rows.
+
+After the latest active correction is completed and structured, `text.content`
+is the draft of the next version. It opens with the body of that latest
+version and may then diverge. The draft stays on the same text row. Reserving
+the next reading freezes the draft into a new correction and leaves every
+earlier correction untouched. The new reading uses the same admission locks,
+size bounds and edit lock as the first one: once it is pending or in progress,
+`text.content` cannot change. A failed reading of that draft is retried from
+its frozen body, still without counting as a version.
+
+`text.revision_intent` is the optional draft answer to "O que você tentou
+mudar?", at most 2,000 characters. Blank means omitted and is stored as null.
+It is writing metadata: it is not part of the model prompt, the score, or
+telemetry. Reservation of a new version copies the current draft answer onto
+`correction.revision_intent` and clears the draft field. A retry copies the
+answer from the failed attempt, not from the cleared draft. The column then
+freezes with the rest of the correction snapshot. The answer is shown only
+with the completed version it belongs to. The first version has none.
+Comparison in Phase 1-H reads this frozen answer for that version and does not
+send it to the grader.

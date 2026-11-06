@@ -92,7 +92,7 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 **Condição de saída:** Uma revisão pode ser enviada e comparada com a versão anterior, sem inflar a pontuação. Erros e custo já são medidos.
 
-**Ordem:** A → B → C → D. **D é o portão da fase:** G e H só começam depois dele. A implementação de F foi antecipada por pedido explícito de Tamicktom em 2026-11-06; isso não aprova a qualidade da leitura nem encerra D. E pode começar assim que B terminar. Em I, a exclusão pode entrar a qualquer momento. A instrumentação do funil não se aplica neste ciclo.
+**Ordem:** A → B → C → D. **D é o portão da fase:** G e H só começam depois dele. A implementação de F e de G foi antecipada por pedido explícito de Tamicktom em 2026-11-06; isso não aprova a qualidade da leitura nem encerra D. H continua aguardando. E pode começar assim que B terminar. Em I, a exclusão pode entrar a qualquer momento. A instrumentação do funil não se aplica neste ciclo.
 
 ### A. Referência e linha de base
 
@@ -155,8 +155,12 @@ Total neste ciclo: 68 cards. Dezoito ficam fora e permanecem no plano só como r
 
 ### G. Revisão e versões
 
-- [ ] [1G-1](fase-1-revisao/1G-1-criar-revisao-e-guardar-versoes.md) — Criar uma revisão e guardar as versões
-- [ ] [1G-2](fase-1-revisao/1G-2-registrar-intencao-da-revisao.md) — Registrar a intenção da revisão
+- [x] [1G-1](fase-1-revisao/1G-1-criar-revisao-e-guardar-versoes.md) — Criar uma revisão e guardar as versões
+- [x] [1G-2](fase-1-revisao/1G-2-registrar-intencao-da-revisao.md) — Registrar a intenção da revisão
+
+**Decisão de execução (2026-11-06):** por pedido explícito para implementar a etapa 1G, a revisão e as versões foram antecipadas. A avaliação bloqueante de 1D-1 e as sessões reais pendentes de 1D-2 continuam registradas; esta entrega não libera o portão D para H.
+
+**Validação da etapa G (2026-11-06):** “Revisar com esse foco” abre a versão seguinte com o texto da última leitura concluída, o foco e os trechos citados no lugar do briefing. A versão anterior permanece congelada na leitura concluída; falhas não viram versão e continuam sendo repetidas sobre o texto congelado. Enquanto a nova leitura corre, o texto fica bloqueado como em 1E-4. O rascunho da próxima versão, inclusive a intenção, é salvo e retomado. “O que você tentou mudar?” é opcional, fica só na versão enviada e não entra no prompt nem na pontuação. A resposta aparece na leitura dessa versão; a comparação visual entre versões continua na etapa H, que lê o mesmo campo. A migração `20261106123937_steady_switch` acrescenta `revision_intent` em `text` e `correction` e foi aplicada ao banco local. Passaram 340 testes unitários, 15 testes de componentes das telas alteradas e a jornada de revisão em 320 e 1280 px, além de `bun run typecheck`. React Doctor nas alterações: 93/100, com o aviso de complexidade já conhecido no editor. Sem alteração de modelo, prompt, rubricas ou chamadas à OpenAI; o teste de ponta a ponta usa a leitura salva.
 
 ### H. Comparação
 

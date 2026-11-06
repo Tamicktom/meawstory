@@ -16,7 +16,8 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
   "/:themeId",
   async (request) => {
     const { themeId } = request.params
-    const { content, textId, draftOnly, title, checklist } = request.body
+    const { content, textId, draftOnly, title, checklist, revisionIntent } =
+      request.body
 
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -50,6 +51,7 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
       newText = await saveScene(session.user.id, themeId, content, textId, {
         title,
         checklist,
+        revisionIntent,
       })
     } catch (error) {
       const readingError = requireReadingError(error)
@@ -86,6 +88,7 @@ const writeRoutes = new Elysia({ prefix: "/write" }).post(
       content: z.string().max(200000),
       title: z.string().max(200).optional(),
       checklist: z.array(z.string().max(1000)).max(100).optional(),
+      revisionIntent: z.string().max(2000).optional(),
       draftOnly: z.boolean().optional(),
       textId: z.string().optional(),
     }),

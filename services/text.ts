@@ -67,6 +67,7 @@ async function findOwnedText(textId: string, userId: string) {
       content: true,
       title: true,
       checklist: true,
+      revisionIntent: true,
     },
     where: {
       id: textId,

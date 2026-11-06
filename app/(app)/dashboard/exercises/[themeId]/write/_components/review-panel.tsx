@@ -8,6 +8,7 @@ type ReviewPanelProps = {
   missing: string[]
   pending: boolean
   locked: boolean
+  revisionIntent?: string
   onBack: () => void
   onConfirm: () => void
 }
@@ -44,8 +45,28 @@ export function ReviewPanel(props: ReviewPanelProps) {
         ))}
       </ul>
       {props.missing.length === 0 ? <p>Nenhum item pendente.</p> : null}
-      <p>Ao confirmar, esta versão fica congelada para a leitura.</p>
+      {props.revisionIntent !== undefined ? (
+        <section
+          className="flex flex-col gap-2"
+          aria-label="Intenção da revisão"
+        >
+          <h3 className="font-medium">O que você tentou mudar</h3>
+          <p className="whitespace-pre-wrap">
+            {props.revisionIntent.trim()
+              ? props.revisionIntent
+              : "Não informada. O envio não exige este campo e ele não muda a pontuação."}
+          </p>
+        </section>
+      ) : null}
+      <p>
+        Ao confirmar, esta versão fica congelada para a leitura.
+        {props.revisionIntent !== undefined
+          ? " A versão anterior permanece como foi lida."
+          : ""}
+      </p>
       <Button
+        id="back-to-writing"
+        type="button"
         variant="outline"
         disabled={props.pending}
         onClick={props.onBack}
@@ -53,6 +74,8 @@ export function ReviewPanel(props: ReviewPanelProps) {
         Voltar a escrever
       </Button>
       <Button
+        id="confirm-submission"
+        type="button"
         disabled={props.pending || props.locked}
         onClick={props.onConfirm}
       >
