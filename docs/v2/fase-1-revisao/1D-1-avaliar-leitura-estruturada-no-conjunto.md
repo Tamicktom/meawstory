@@ -22,3 +22,7 @@ Só avançar para as telas depois de medir se o novo formato melhora a leitura.
 - [1C-2 · Calcular pontuação e faixas no servidor](1C-2-calcular-pontuacao-e-faixas-no-servidor.md)
 - [1C-3 · Validar os trechos citados pela leitura](1C-3-validar-trechos-citados.md)
 - [1C-4 · Proteger a leitura contra instruções dentro da cena](1C-4-proteger-leitura-contra-instrucoes-da-cena.md)
+
+## Evidências
+
+O método, as tolerâncias exploratórias, a comparação com a linha de base, a inspeção qualitativa e os bloqueios estão em [validação 1D](../validacao-1d/resultado.md). `bun run eval:gate <baseline anterior> <baseline estruturada>` recalcula a evidência quantitativa sem chamar a OpenAI. O andamento é registrado apenas no card pai; concluir a medição não significa que a configuração passou pelo portão.

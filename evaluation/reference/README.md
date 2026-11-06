@@ -81,6 +81,17 @@ Na leitura estruturada, uma leitura usa cerca de 2,8 mil tokens de entrada e 2,6
 
 `eval:report` não chama o modelo: recalcula `report.md` a partir de `readings.json`. Para comparar uma configuração nova, meça com outro `--label` e compare os dois relatórios.
 
+## Portão da leitura estruturada (1D)
+
+```sh
+bun run eval:gate evaluation/reference/baselines/2026-11-05-atual-v2 evaluation/reference/baselines/2026-11-06-estruturada-portao
+bun run eval:prototype evaluation/reference/baselines/2026-11-06-estruturada-portao
+```
+
+Os dois comandos usam somente arquivos locais e não fazem chamadas à OpenAI. `eval:gate` grava `gate.md` na pasta da medição nova: compara apenas casos com a mesma cena, enunciado e rubrica, confere a integridade dos resultados e aponta diferenças de revisões e sondas em relação ao ruído. As citações da estrutura são conferidas como trechos contíguos exatos da cena armazenada, incluindo acentos, sem o comparador permissivo usado para o markdown legado. Uma execução incompleta aparece com os slots ausentes; não libera o portão.
+
+As tolerâncias exploratórias, a decisão, as limitações e a inspeção qualitativa ficam em [docs/v2/validacao-1d](../../docs/v2/validacao-1d/resultado.md). `eval:prototype` gera `forms/1d/prototipo-leitura-revisao.html`, um arquivo descartável que abre diretamente no navegador e inclui seis cenas e leituras reais (rodada #1; `dialogo-02` usa #2 porque #1 terminou em timeout, exceção registrada no roteiro). O gerador recusa fontes diferentes ou ausência de qualquer slot explicitamente escolhido; não substitui leituras automaticamente. O rascunho fica só na memória da aba; nenhuma nova leitura ou comparação é feita. O [roteiro de pesquisa](../../docs/v2/validacao-1d/roteiro.md) explica a aplicação com 5 a 10 escritores. Material preparado não equivale a teste realizado.
+
 ## Mudar o conjunto
 
 1. Edite `cases.ts` e os arquivos em `scenes/`.

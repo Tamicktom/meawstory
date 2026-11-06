@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="pt-BR">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meawstory · Ensaio de leitura e revisão</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: transparent;
+      color: var(--foreground, #242522);
+      font:
+        17px/1.6 var(--font-sans, system-ui),
+        sans-serif;
+    }
+    main {
+      max-width: 1050px;
+      margin: auto;
+      padding: 0;
+    }
+    h1,
+    h2,
+    h3 {
+      line-height: 1.25;
+    }
+    h1 {
+      font:
+        36px/1.2 Georgia,
+        serif;
+    }
+    h2 {
+      font:
+        28px/1.3 Georgia,
+        serif;
+    }
+    p {
+      margin: 12px 0;
+    }
+    button,
+    select,
+    textarea,
+    input {
+      font: inherit;
+      max-width: 100%;
+    }
+    button,
+    select {
+      padding: 10px 14px;
+      border: 1px solid var(--border, #a7aea6);
+      border-radius: 6px;
+      background: var(--card, white);
+      color: inherit;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--primary, #285441);
+      color: var(--primary-foreground, white);
+      border-color: var(--primary, #285441);
+    }
+    button:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--ring, #a64814);
+      outline-offset: 3px;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    nav,
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 18px 0;
+    }
+    .panel,
+    article {
+      padding: 16px;
+      background: var(--card, white);
+      border: 1px solid var(--border, #d6dad3);
+      border-radius: var(--radius, 8px);
+      margin: 16px 0;
+    }
+    .focus {
+      border-left: 5px solid var(--primary, #285441);
+    }
+    blockquote {
+      margin: 12px 0;
+      padding-left: 16px;
+      border-left: 2px solid var(--border, #b7bdb4);
+      white-space: pre-wrap;
+    }
+    small,
+    .muted {
+      color: var(--muted-foreground, #5a625b);
+    }
+    textarea {
+      width: 100%;
+      min-height: 370px;
+      resize: vertical;
+      padding: 16px;
+      line-height: 1.7;
+      border: 1px solid var(--border, #a7aea6);
+      border-radius: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border, #a7aea6);
+      border-radius: 6px;
+    }
+    label {
+      display: block;
+      margin-top: 16px;
+    }
+    details {
+      margin: 14px 0;
+    }
+    summary {
+      cursor: pointer;
+    }
+    .scene {
+      white-space: pre-wrap;
+      font:
+        19px/1.8 Georgia,
+        serif;
+      overflow-wrap: anywhere;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    .badge {
+      font-size: 14px;
+      color: var(--primary, #285441);
+    }
+    #state {
+      font-size: 14px;
+    }
+    .notice {
+      padding: 14px;
+      background: var(--warning-surface, #f4eee1);
+      border-radius: 6px;
+    }
+    @media (max-width: 700px) {
+      main {
+        padding: 0;
+      }
+      .grid {
+        display: block;
+      }
+      h1 {
+        font-size: 30px;
+      }
+      .panel,
+      article {
+        padding: 16px;
+      }
+    }
+  </style>
+  <main>
+    <header>
+      <small>MEAWSTORY · PROTÓTIPO DESCARTÁVEL · 1D-2</small>
+      <h1>Uma leitura que leva à próxima versão</h1>
+      <p>
+        Depois desta leitura, você sabe o que mudar e quer reescrever? Explore a
+        leitura, escolha seu caminho e ensaie uma revisão.
+      </p>
+      <p class="notice">
+        Este é um ensaio com cenas de referência e leituras reais de IA. Você
+        pode alterar uma cópia; a cena anterior fica preservada. Nada é enviado
+        ou salvo: fechar ou recarregar apaga o rascunho.
+      </p>
+      <label for="case">Cena do ensaio</label
+      ><select id="case"></select>
+    </header>
+    <aside class="panel" id="state" aria-live="polite"></aside>
+    <nav aria-label="Etapas do ensaio">
+      <button id="read">Ler a leitura</button
+      ><button id="scene">Ler a cena anterior</button
+      ><button id="draft">Abrir rascunho</button>
+    </nav>
+    <section id="reading">
+      <h2 id="title"></h2>
+      <p class="muted" id="metadata"></p>
+      <details>
+        <summary>Ver o exercício</summary>
+        <p class="scene" id="brief"></p>
+      </details>
+      <article>
+        <h3>Leitura geral</h3>
+        <p id="opening"></p>
+        <h3>Um ponto forte para manter</h3>
+        <p id="highlight"></p>
+        <blockquote id="highlight-quote"></blockquote>
+      </article>
+      <article class="focus">
+        <h3>Um foco para a próxima versão</h3>
+        <p id="focus"></p>
+        <div class="actions">
+          <button class="primary" id="revise">Revisar com esse foco</button
+          ><button id="own-focus">Escolher outro foco</button>
+        </div>
+      </article>
+      <h3>Critérios da leitura</h3>
+      <div id="criteria"></div>
+      <details>
+        <summary>Ver pontuação total</summary>
+        <p id="total"></p>
+      </details>
+      <p class="muted">
+        A leitura de IA serve para treino e não define o valor da sua escrita.
+        Você pode discordar e escolher outro caminho.
+      </p>
+    </section>
+    <section id="original" hidden>
+      <h2>Cena anterior · versão 1</h2>
+      <p>Esta versão permanece como foi lida.</p>
+      <div class="panel scene" id="original-text"></div>
+    </section>
+    <section id="editor" hidden>
+      <h2>Sua próxima versão · rascunho 2</h2>
+      <div class="grid">
+        <div>
+          <label for="text">Cena para revisar</label
+          ><textarea id="text"></textarea
+          ><label for="intention"
+            >O que você tentou mudar? <small>(opcional)</small></label
+          ><input id="intention" />
+          <div class="actions">
+            <button class="primary" id="check">Conferir revisão</button
+            ><button id="back">Voltar à leitura</button>
+          </div>
+        </div>
+        <aside class="panel focus">
+          <h3 id="focus-label">Foco escolhido</h3>
+          <p id="editor-focus"></p>
+          <label id="custom-label" for="custom" hidden
+            >Qual será seu foco?</label
+          ><textarea id="custom" style="min-height: 110px" hidden></textarea>
+          <details>
+            <summary>Rever os trechos citados</summary>
+            <div id="evidence"></div>
+          </details>
+        </aside>
+      </div>
+    </section>
+    <section id="review" hidden>
+      <h2>Conferir a próxima versão</h2>
+      <p id="change-status"></p>
+      <h3>Seu foco</h3>
+      <p id="review-focus"></p>
+      <h3>O que você tentou mudar</h3>
+      <p id="review-intention"></p>
+      <details>
+        <summary>Ver o texto revisado</summary>
+        <div class="scene" id="review-text"></div>
+      </details>
+      <div class="actions">
+        <button id="edit-again">Continuar revisando</button
+        ><button class="primary" id="finish">Concluir o ensaio</button>
+      </div>
+      <p class="notice">
+        No produto, o próximo passo proposto é pedir uma nova leitura e só
+        depois comparar as versões. Este ensaio termina antes disso.
+      </p>
+    </section>
+    <section id="done" hidden>
+      <h2>Ensaio concluído</h2>
+      <p>
+        Seu rascunho continua disponível nesta aba. Nenhuma leitura nova foi
+        gerada e nenhuma resposta foi enviada.
+      </p>
+      <button id="resume">Voltar ao rascunho</button>
+    </section>
+    <details class="panel">
+      <summary>Percursos guiados (usar depois da exploração livre)</summary>
+      <div class="actions" role="group" aria-label="Percursos">
+        <button data-walk="focus">Ler e revisar</button
+        ><button data-walk="disagree">Discordar do foco</button
+        ><button data-walk="return">Voltar sem perder o rascunho</button>
+      </div>
+      <p id="walk-note">
+        Escolher um percurso reinicia este ensaio. Na sessão, a pessoa
+        facilitadora apresenta as tarefas sem apontar botões.
+      </p>
+      <button id="walk-step" hidden></button>
+    </details>
+    <button id="reset">Reiniciar este ensaio</button>
+  </main>
+  <script id="prototype-data" type="application/json">
+    __PROTOTYPE_DATA__
+  </script>
+  <script>
+    // Pure state transitions; this prototype never requests, grades or persists anything.
+    function initial(index = 0) {
+      return {
+        index,
+        step: "reading",
+        draft: null,
+        intention: "",
+        customFocus: null,
+      }
+    }
+    function reduce(state, action) {
+      if (action.type === "reset") return initial(action.index ?? state.index)
+      if (action.type === "revise")
+        return {
+          ...state,
+          step: "editor",
+          draft: state.draft ?? DATA[state.index].text,
+          customFocus: action.own ? "" : null,
+        }
+      if (action.type === "text") return { ...state, draft: action.value }
+      if (action.type === "intention")
+        return { ...state, intention: action.value }
+      if (action.type === "custom")
+        return { ...state, customFocus: action.value }
+      if (action.type === "go") return { ...state, step: action.step }
+      return state
+    }
+    const DATA = JSON.parse(
+      document.getElementById("prototype-data").textContent
+    )
+    const $ = (id) => document.getElementById(id),
+      text = (id, value) => ($(id).textContent = value)
+    const labels = {
+      missing: "Ausente",
+      thin: "Em esboço",
+      working: "Funciona",
+      strong: "Forte",
+    }
+    let state = initial(),
+      walk = null,
+      walkIndex = 0
+    DATA.forEach((d, index) => {
+      const o = document.createElement("option")
+      o.value = index
+      o.textContent = d.genre + " · " + d.title
+      $("case").append(o)
+    })
+    function send(action) {
+      state = reduce(state, action)
+      render()
+    }
+    function addQuote(parent, quote) {
+      const b = document.createElement("blockquote")
+      b.textContent = quote
+      parent.append(b)
+    }
+    function render() {
+      const d = DATA[state.index],
+        r = d.reading,
+        focus =
+          state.customFocus === null
+            ? r.revision
+            : state.customFocus || "Foco ainda não escolhido"
+      ;["reading", "original", "editor", "review", "done"].forEach(
+        (id) => ($(id).hidden = state.step !== id)
+      )
+      $("case").value = state.index
+      text(
+        "state",
+        "Etapa: " +
+          {
+            reading: "leitura",
+            original: "cena anterior",
+            editor: "revisão",
+            review: "conferência",
+            done: "concluído",
+          }[state.step] +
+          " · Versão anterior: preservada · Rascunho: " +
+          (state.draft === null
+            ? "ainda não aberto"
+            : state.draft === d.text
+              ? "sem alterações"
+              : "com alterações") +
+          " · Foco: " +
+          (state.customFocus === null
+            ? "sugerido pela leitura"
+            : "escolhido por você")
+      )
+      text("title", d.title)
+      text(
+        "metadata",
+        "Versão 1 · " +
+          d.date +
+          " · Leitura registrada " +
+          d.caseId +
+          " #" +
+          d.run
+      )
+      text("brief", d.brief)
+      text("opening", r.opening)
+      text("highlight", r.highlight.description)
+      text("highlight-quote", r.highlight.evidence)
+      text("focus", r.revision)
+      text("total", d.score + " / 1000")
+      text("original-text", d.text)
+      $("criteria").replaceChildren()
+      $("evidence").replaceChildren()
+      r.criteria.forEach((c) => {
+        const def = d.criteria.find((x) => x.id === c.id),
+          article = document.createElement("article"),
+          h = document.createElement("h3")
+        h.textContent = def.name + " · " + labels[c.band]
+        article.append(h)
+        const s = document.createElement("small")
+        s.textContent = c.score + " / " + def.maxScore
+        article.append(s)
+        for (const [label, value] of [
+          ["O que funciona", c.strengths],
+          ["O que falta", c.gaps],
+        ]) {
+          const p = document.createElement("p"),
+            b = document.createElement("strong")
+          b.textContent = label + ": "
+          p.append(b, document.createTextNode(value))
+          article.append(p)
+        }
+        c.evidence.forEach((q) => {
+          addQuote(article, q)
+          addQuote($("evidence"), q)
+        })
+        $("criteria").append(article)
+      })
+      $("text").value = state.draft ?? ""
+      $("intention").value = state.intention
+      $("custom").value = state.customFocus ?? ""
+      $("custom").hidden = $("custom-label").hidden = state.customFocus === null
+      text("editor-focus", focus)
+      text("review-focus", focus)
+      text("review-intention", state.intention || "Não informada")
+      text("review-text", state.draft || "")
+      text(
+        "change-status",
+        state.draft === d.text
+          ? "O texto continua igual à versão anterior. Uma nova leitura pode variar mesmo sem mudança; isso não demonstra melhora."
+          : "Você alterou o texto. Só a próxima leitura e a comparação poderão indicar o efeito da revisão."
+      )
+      $("draft").disabled = state.draft === null
+    }
+    $("case").onchange = (e) => {
+      if (
+        state.draft !== null &&
+        !confirm("Trocar de cena apaga o rascunho deste ensaio. Continuar?")
+      ) {
+        e.target.value = state.index
+        return
+      }
+      stopWalk()
+      send({ type: "reset", index: Number(e.target.value) })
+    }
+    function go(step) {
+      send({ type: "go", step })
+      window.scrollTo(0, 0)
+    }
+    $("read").onclick = () => go("reading")
+    $("scene").onclick = () => go("original")
+    $("draft").onclick = () => go("editor")
+    $("revise").onclick = () => {
+      send({ type: "revise" })
+      window.scrollTo(0, 0)
+    }
+    $("own-focus").onclick = () => {
+      send({ type: "revise", own: true })
+      window.scrollTo(0, 0)
+    }
+    $("text").oninput = (e) => {
+      state = reduce(state, { type: "text", value: e.target.value })
+      text(
+        "state",
+        "Etapa: revisão · Versão anterior: preservada · Rascunho: " +
+          (state.draft === DATA[state.index].text
+            ? "sem alterações"
+            : "com alterações") +
+          " · Não salvo"
+      )
+    }
+    $("intention").oninput = (e) =>
+      (state = reduce(state, { type: "intention", value: e.target.value }))
+    $("custom").oninput = (e) =>
+      (state = reduce(state, { type: "custom", value: e.target.value }))
+    $("check").onclick = () => go("review")
+    $("back").onclick = () => go("reading")
+    $("edit-again").onclick = () => go("editor")
+    $("finish").onclick = () => go("done")
+    $("resume").onclick = () => go("editor")
+    function stopWalk() {
+      walk = null
+      $("walk-step").hidden = true
+      text("walk-note", "Escolher um percurso reinicia este ensaio.")
+    }
+    $("reset").onclick = () => {
+      if (
+        state.draft !== null &&
+        !confirm("Reiniciar apaga o rascunho deste ensaio. Continuar?")
+      )
+        return
+      stopWalk()
+      send({ type: "reset" })
+    }
+    const walks = {
+      focus: [
+        ["Abrir a revisão com o foco da leitura", { type: "revise" }],
+        [
+          "Conferir antes de pedir outra leitura",
+          { type: "go", step: "review" },
+        ],
+      ],
+      disagree: [
+        ["Abrir um rascunho com outro foco", { type: "revise", own: true }],
+        [
+          "Voltar à leitura para conferir a evidência",
+          { type: "go", step: "reading" },
+        ],
+      ],
+      return: [
+        ["Abrir um rascunho", { type: "revise" }],
+        ["Voltar à leitura", { type: "go", step: "reading" }],
+        ["Retomar o mesmo rascunho", { type: "go", step: "editor" }],
+      ],
+    }
+    document.querySelectorAll("[data-walk]").forEach(
+      (b) =>
+        (b.onclick = () => {
+          if (
+            state.draft !== null &&
+            !confirm(
+              "Iniciar o percurso apaga o rascunho deste ensaio. Continuar?"
+            )
+          )
+            return
+          send({ type: "reset" })
+          walk = walks[b.dataset.walk]
+          walkIndex = 0
+          text(
+            "walk-note",
+            "Explore o percurso. Você pode editar a cena entre os passos."
+          )
+          $("walk-step").hidden = false
+          $("walk-step").textContent = walk[0][0]
+        })
+    )
+    $("walk-step").onclick = () => {
+      if (!walk) return
+      send(walk[walkIndex][1])
+      walkIndex++
+      if (walkIndex >= walk.length) {
+        $("walk-step").hidden = true
+        text("walk-note", "Percurso terminado. Continue explorando livremente.")
+      } else $("walk-step").textContent = walk[walkIndex][0]
+    }
+    addEventListener("beforeunload", (e) => {
+      if (state.draft !== null && state.draft !== DATA[state.index].text) {
+        e.preventDefault()
+        e.returnValue = ""
+      }
+    })
+    render()
+  </script>
+</html>
